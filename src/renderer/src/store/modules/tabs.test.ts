@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { DEFAULT_TAB_KEY, useTabsStore, type TabItem } from './tabs'
+import { DEFAULT_TAB_KEY, isTabUserClosable, useTabsStore, type TabItem } from './tabs'
 
 function createTab(overrides: Partial<TabItem>): TabItem {
   return {
@@ -221,5 +221,16 @@ describe('tabs store library cleanup', () => {
     expect(changed).toBe(false)
     expect(store.historyTabs[0]?.key).toBe('/notebooks/notebook-1?_tab_id=nb-tab-1')
     expect(store.activeTab).toBe('/notebooks/notebook-1?_tab_id=nb-tab-1')
+  })
+})
+
+describe('isTabUserClosable', () => {
+  it('固定的标签页不能手动关闭，取消固定后可以', () => {
+    expect(isTabUserClosable(createTab({ fixed: true }))).toBe(false)
+    expect(isTabUserClosable(createTab({ fixed: false }))).toBe(true)
+  })
+
+  it('不可删除的标签页不能手动关闭', () => {
+    expect(isTabUserClosable(createTab({ isCanDelete: false }))).toBe(false)
   })
 })

@@ -83,10 +83,10 @@ const pageHeaders: Record<string, { titleKey: string }> = {
     titleKey: 'mcp.client.title'
   },
   agentV3Debug: {
-    titleKey: 'agentV3Debug.title'
+    titleKey: 'profile.menu.agentV3Debug'
   },
   project: {
-    titleKey: 'profile.project.title'
+    titleKey: 'profile.menu.project'
   },
   plugin: {
     titleKey: 'profile.plugin.title'
@@ -98,7 +98,7 @@ const pageHeaders: Record<string, { titleKey: string }> = {
     titleKey: 'profile.objectStorage.title'
   },
   asset: {
-    titleKey: 'profile.asset.title'
+    titleKey: 'profile.menu.asset'
   },
   notebook: {
     titleKey: 'profile.notebook.title'

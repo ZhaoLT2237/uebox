@@ -1,4 +1,5 @@
 import { message as antdMessage } from 'ant-design-vue'
+import { h } from 'vue'
 
 /**
  * 消息类型
@@ -13,6 +14,8 @@ interface MessageConfig {
   duration?: number
   onClose?: () => void
   key?: string // 消息的唯一标识，用于更新或销毁特定消息
+  /** 跟在文字后面的一个操作（「撤销」）。只对带 key 的消息生效，点完由调用方按 key 收掉 */
+  action?: { label: string; onClick: () => void }
 }
 
 /**
@@ -220,9 +223,28 @@ class MessageManager {
     config: MessageConfig,
     fallbackDuration: number
   ): () => void {
+    const text = config.content || ' '
+    const action = config.action
     return antdMessage[type]({
       // 空字符串过不了 antd 的「这是配置对象」判断，整个对象会被当成内容渲染出来，key 也丢了
-      content: config.content || ' ',
+      content: action
+        ? () =>
+            h('span', [
+              text,
+              h(
+                'button',
+                {
+                  type: 'button',
+                  class: 'app-message-action',
+                  style:
+                    'margin-left: var(--space-3); padding: 0; border: none; background: none; ' +
+                    'color: var(--color-accent-text); font: inherit; cursor: pointer;',
+                  onClick: action.onClick
+                },
+                action.label
+              )
+            ])
+        : text,
       key: config.key,
       duration: config.duration ?? fallbackDuration,
       onClose: config.onClose

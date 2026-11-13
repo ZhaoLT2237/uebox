@@ -12,9 +12,11 @@ import { useEngineVersionLabel } from '@renderer/hooks/useEngineVersionLabel'
 
 interface Props {
   open: boolean
+  /** 侧栏里已有的项目名，列表中置灰打勾、不可重复添加 */
+  existingProjectNames?: string[]
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { existingProjectNames: () => [] })
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
@@ -156,6 +158,14 @@ function handleConfirmImported(): void {
 
 const canConfirmImported = computed<boolean>(() => Boolean(selectedImported.value))
 
+const existingNameSet = computed(
+  () => new Set(props.existingProjectNames.map((name) => name.trim().toLowerCase()))
+)
+
+function isInSidebar(project: ImportedProject): boolean {
+  return existingNameSet.value.has(project.projectName.trim().toLowerCase())
+}
+
 const filteredImportedProjects = computed<ImportedProject[]>(() => {
   const keyword = importedSearchKeyword.value.trim().toLowerCase()
   if (!keyword) return importedProjects.value
@@ -238,8 +248,12 @@ const filteredImportedProjects = computed<ImportedProject[]>(() => {
             :key="project.selectionKey"
             type="button"
             class="add-project-row"
-            :class="{ selected: selectedImported === project.selectionKey }"
+            :class="{
+              selected: selectedImported === project.selectionKey,
+              existing: isInSidebar(project)
+            }"
             :aria-pressed="selectedImported === project.selectionKey"
+            :disabled="isInSidebar(project)"
             @click="selectedImported = project.selectionKey"
           >
             <span class="add-project-cover">
@@ -263,7 +277,10 @@ const filteredImportedProjects = computed<ImportedProject[]>(() => {
                 {{ project.projectPath }}
               </span>
             </span>
-            <PhCheck v-if="selectedImported === project.selectionKey" class="add-project-check" />
+            <PhCheck
+              v-if="isInSidebar(project) || selectedImported === project.selectionKey"
+              class="add-project-check"
+            />
           </button>
 
           <div v-if="!loading && importedProjects.length === 0" class="add-project-empty">
@@ -449,6 +466,15 @@ const filteredImportedProjects = computed<ImportedProject[]>(() => {
 
   &.selected:hover {
     background: var(--color-bg-selected-hover);
+  }
+
+  &.existing {
+    cursor: default;
+    opacity: 0.5;
+
+    &:hover {
+      background: transparent;
+    }
   }
 
   &:focus-visible {

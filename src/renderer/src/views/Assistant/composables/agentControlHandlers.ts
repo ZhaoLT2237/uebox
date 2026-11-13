@@ -57,8 +57,18 @@ export function isAgentNetworkError(data: { message: string; code?: string }): b
  * 加一个 IPC 通道名，而界面上「改方向」就是在输入框里继续打字。
  */
 const STARTUP_ERROR_COPY: Record<string, string> = {
-  SESSION_BUSY: 'assistant.agentMode.sessionBusy'
+  SESSION_BUSY: 'assistant.agentMode.sessionBusy',
+  MODEL_NOT_CONFIGURED: 'assistant.agentMode.modelNotConfigured'
 } satisfies Record<AgentStartRejectionCode, string>
+
+/** 启动失败挂在气泡上的按钮：没配模型时给「打开模型设置」，和 401、余额不足一致 */
+export function startupErrorActionButtons(
+  error: { code?: string } | null | undefined,
+  t: (key: string) => string
+): Array<{ label: string; action: string }> | undefined {
+  if (error?.code !== 'MODEL_NOT_CONFIGURED') return undefined
+  return [{ label: t('assistant.agentMode.openModelSettings'), action: OPEN_MODEL_SETTINGS_ACTION }]
+}
 
 /**
  * 启动失败该跟用户说什么。

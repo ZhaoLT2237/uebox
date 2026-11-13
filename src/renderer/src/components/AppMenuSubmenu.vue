@@ -3,11 +3,15 @@ import { nextTick, onBeforeUnmount, ref } from 'vue'
 
 const open = ref(false)
 const opensLeft = ref(false)
+const shiftUp = ref(0)
 const rootRef = ref<HTMLElement | null>(null)
 const popupRef = ref<HTMLElement | null>(null)
 
+const VIEWPORT_MARGIN = 8
+
 async function show(): Promise<void> {
   open.value = true
+  shiftUp.value = 0
   await nextTick()
 
   const root = rootRef.value
@@ -15,10 +19,15 @@ async function show(): Promise<void> {
   if (!root || !popup) return
 
   const rootRect = root.getBoundingClientRect()
-  const popupWidth = popup.getBoundingClientRect().width
+  const popupRect = popup.getBoundingClientRect()
   const roomOnRight = window.innerWidth - rootRect.right
   const roomOnLeft = rootRect.left
-  opensLeft.value = roomOnRight < popupWidth + 8 && roomOnLeft > roomOnRight
+  opensLeft.value = roomOnRight < popupRect.width + VIEWPORT_MARGIN && roomOnLeft > roomOnRight
+
+  // 贴近窗口底边时整体上移，但不越过窗口顶边。
+  const overflowBottom = popupRect.bottom - (window.innerHeight - VIEWPORT_MARGIN)
+  const roomAbove = popupRect.top - VIEWPORT_MARGIN
+  shiftUp.value = Math.max(0, Math.min(overflowBottom, roomAbove))
 }
 
 function hide(): void {
@@ -78,7 +87,13 @@ onBeforeUnmount(hide)
       <span class="app-menu-submenu__arrow" aria-hidden="true" />
     </div>
 
-    <ul v-if="open" ref="popupRef" class="app-menu-submenu__popup" role="menu">
+    <ul
+      v-if="open"
+      ref="popupRef"
+      class="app-menu-submenu__popup"
+      :style="shiftUp ? { transform: `translateY(-${shiftUp}px)` } : undefined"
+      role="menu"
+    >
       <slot />
     </ul>
   </li>

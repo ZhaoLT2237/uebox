@@ -629,6 +629,16 @@ describe('Agent V3 真实 IPC 生命周期', () => {
     expect(String(result.error)).toContain('正在执行中')
   })
 
+  it('没配模型：execute 带 MODEL_NOT_CONFIGURED 码，原文照旧留着', async () => {
+    const { ModelNotConfiguredError } = await import('../ai/resolveModel')
+    mock.create.mockRejectedValueOnce(new ModelNotConfiguredError('尚无可用的 AI 模型。', 'agent'))
+
+    const result = await invoke('execute', { sessionId: 'no-model', prompt: 'hi' })
+
+    expect(result).toMatchObject({ success: false, code: 'MODEL_NOT_CONFIGURED' })
+    expect(String(result.error)).toContain('尚无可用的 AI 模型')
+  })
+
   /**
    * steer 的第二道闸：进队之前要等附件落盘、媒体处理，这几秒里这一轮可能
    * 刚好跑完。那时内核的插话队列已经没人读了 —— 原来照样回「成功」，

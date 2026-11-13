@@ -4,7 +4,7 @@ layout: home
 hero:
   name: 虚幻盒子
   text: 虚幻引擎的 agent harness
-  tagline: 给一个目标，让 AI 在你正在跑的工程里把活干完 —— 放 Actor、改蓝图、连材质、编译 C++。
+  tagline: 给一个目标，让 AI 在你正在跑的项目里把活干完 —— 放 Actor、改蓝图、连材质、编译 C++。
   image:
     light: /icon.svg
     dark: /icon-dark.svg

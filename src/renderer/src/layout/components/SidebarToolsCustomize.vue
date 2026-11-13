@@ -163,6 +163,7 @@ const handleDone = (): void => {
 <template>
   <AppModal
     :open="props.open"
+    :title="t('sidebarTools.title')"
     :width="360"
     :closable="false"
     centered

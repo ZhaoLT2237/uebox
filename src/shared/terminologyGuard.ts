@@ -36,8 +36,9 @@ export const BANNED_TERMS: BannedTerm[] = [
   // 分支
   { word: '会话分支', suggestion: '分支' },
   { word: '对话分支', suggestion: '分支' },
-  // 侧边问一句
-  { word: '侧边对话', suggestion: '侧边问一句' },
+  // 侧边提问
+  { word: '侧边对话', suggestion: '侧边提问' },
+  { word: '侧边问一句', suggestion: '侧边提问' },
   { word: 'side chat', suggestion: 'side question' },
   // 语音通话
   { word: '语音对话', suggestion: '语音通话' },
@@ -105,3 +106,14 @@ export function scan(
   }
   return failures
 }
+
+/**
+ * 只管界面文案的禁用词，工具说明守卫不用。
+ *
+ * 工具说明是写给模型的，「工程」在那里和「项目」同义、不会被用户看到；界面上则要和
+ * UE 官方中文本地化一致，统一写「项目」。
+ */
+export const UI_ONLY_BANNED_TERMS: BannedTerm[] = [
+  // 用户的 .uproject
+  { word: '工程', suggestion: '项目' }
+]

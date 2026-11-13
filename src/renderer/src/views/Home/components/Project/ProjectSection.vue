@@ -174,12 +174,33 @@
         :title="t('page.home.project.noSearchResults', { keyword: keyword.trim() })"
         :description="t('page.home.project.noSearchResultsDesc')"
       />
+      <!-- 分组和版本叠在一起筛空了：两个条件都要说出来，否则用户以为是版本的问题 -->
+      <AppEmpty
+        v-else-if="engineFilter && activeFilterKey !== FILTER_ALL"
+        :title="
+          t('page.home.project.noVersionResultsInGroup', {
+            group: activeFilterLabel,
+            version: engineFilterLabel
+          })
+        "
+      >
+        <template #action>
+          <AppButton @click="clearProjectFilters">
+            {{ t('page.home.project.clearFilters') }}
+          </AppButton>
+        </template>
+      </AppEmpty>
       <!-- 版本筛没了：原因是这个版本，不是没工程 -->
       <AppEmpty
         v-else-if="engineFilter"
         :title="t('page.home.project.noVersionResults', { version: engineFilterLabel })"
-        :description="t('page.home.project.noVersionResultsDesc')"
-      />
+      >
+        <template #action>
+          <AppButton @click="clearProjectFilters">
+            {{ t('page.home.project.clearFilters') }}
+          </AppButton>
+        </template>
+      </AppEmpty>
       <!-- 筛到了一个空分组：这不是「没有工程」，别拿导入引导来答非所问 -->
       <AppEmpty
         v-else-if="activeFilterKey !== FILTER_ALL"
@@ -793,6 +814,15 @@ watch([activeFilterKey, engineFilter], ([collection, version]) => {
     // 存不下就算了，筛选状态丢了远不如把页面崩掉严重
   }
 })
+
+const activeFilterLabel = computed(
+  () => filterChips.value.find((chip) => chip.key === activeFilterKey.value)?.label ?? ''
+)
+
+const clearProjectFilters = (): void => {
+  activeFilterKey.value = FILTER_ALL
+  engineFilter.value = ''
+}
 
 const handleClickFilter = (chip: FilterChip): void => {
   // 再点一下已选中的分组＝回到全部，省得专门去够「全部」那颗

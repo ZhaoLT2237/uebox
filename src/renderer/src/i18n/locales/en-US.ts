@@ -39,6 +39,7 @@ export default {
   },
   // Sidebar tool customization: pinned list and the "More" group
   sidebarTools: {
+    title: 'Sidebar',
     more: 'More',
     customize: 'Customize',
     done: 'Done',
@@ -50,6 +51,8 @@ export default {
     projects: 'Projects',
     archive: 'Archive chat',
     unarchive: 'Unarchive',
+    archivedToast: 'Archived',
+    undo: 'Undo',
     newChat: 'New chat',
     projectSessionCount: 'Chats: {count}',
     newChatInProject: 'New chat in this project',
@@ -77,7 +80,7 @@ export default {
       folder: 'Local folder',
       folderDesc: 'Pick a UE project folder on this computer',
       imported: 'Imported project',
-      importedDesc: 'Pick from projects already imported',
+      importedDesc: 'Pick from the project library',
       importedEmpty: 'No imported projects yet',
       searchPlaceholder: 'Search project name or path',
       searchEmpty: 'No matching projects',
@@ -126,7 +129,6 @@ export default {
   // Archived chats: the dialog in Preferences → AI; the sidebar no longer has an Archived section
   archivedChats: {
     title: 'Archived chats',
-    description: 'Archived chats stay out of the sidebar. Unarchive one to bring it back.',
     count: '{count} archived',
     empty: 'No archived chats yet',
     open: 'Open',
@@ -404,13 +406,12 @@ First work out why the install failed from the output above. If you can run comm
   aiProvider: {
     title: 'Providers',
     banner: {
-      notConfigured: 'Add a provider and select a default Chat model to use AI.',
+      notConfigured: 'Add a provider and select a Main model to use AI.',
       noEncryption:
         'Keys cannot be stored securely. Provide your key through an environment variable.'
     },
     sources: {
-      title: 'Providers',
-      desc: 'Configure providers, API keys, and models.'
+      title: 'Providers'
     },
     list: {
       modelCount: '{count} models',
@@ -677,7 +678,6 @@ First work out why the install failed from the output above. If you can run comm
     },
     roles: {
       title: 'Default models',
-      desc: 'Assign models by purpose.',
       unset: 'Not set',
       moreLabel: 'Show details',
       chat: 'Main model',
@@ -963,6 +963,7 @@ First work out why the install failed from the output above. If you can run comm
     copy: 'Duplicate',
     pin: 'Pin',
     unpin: 'Unpin',
+    pinned: 'Pinned',
     newChat: 'New chat',
     openInNewWindow: 'Open in New Window'
   },
@@ -1142,7 +1143,7 @@ First work out why the install failed from the output above. If you can run comm
       assetTypeOther: 'Other'
     },
     vault: {
-      default: 'Default Vault',
+      default: 'Default Asset Library',
       unnamed: 'Unnamed Vault',
       untitled: 'Unnamed Vault',
       create: 'Create Asset Library',
@@ -1297,7 +1298,7 @@ First work out why the install failed from the output above. If you can run comm
       selectFolder: 'Please select a folder first',
       addAsset: 'Add Assets',
       emptyFiltered: 'No assets match the current filters',
-      emptyTrash: 'Trash is empty',
+      emptyTrash: 'Recently Deleted is empty',
       emptyFavorites: 'No favorite assets',
       clearFilters: 'Clear filters',
       rootFolder: 'All',
@@ -1390,6 +1391,7 @@ First work out why the install failed from the output above. If you can run comm
       cancelBtn: 'Cancel',
       mainTitle: 'Manage<br />Asset Tags.',
       mainTitle2: 'Manage Tags',
+      addToAssets: 'Add tags to {count} assets',
       createNew: 'Create new...',
       mainSubtitle: 'Organize your asset library with tags for better efficiency',
       tagCatAsset: 'Auto-detected asset types',
@@ -1907,7 +1909,8 @@ First work out why the install failed from the output above. If you can run comm
         allEngineVersions: 'All versions',
         unknownEngineVersion: 'Unknown version',
         noVersionResults: 'No "{version}" projects',
-        noVersionResultsDesc: 'Pick another version, or choose "All versions" to see the rest.',
+        noVersionResultsInGroup: 'No {version} projects in "{group}"',
+        clearFilters: 'Clear filters',
         opening: 'Opening project...',
         unnamedCollection: 'Unnamed group',
         unnamedProject: 'Unnamed Project',
@@ -2676,6 +2679,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       scrollToBottom: 'Scroll to bottom',
       discardLaterTurns: '{count} later turn(s) will be deleted.',
       discardContinue: 'Continue',
+      discardAndRegenerate: 'Delete and regenerate',
+      discardAndResend: 'Delete and resend',
       discardCancel: 'Cancel',
       我的资产库有多少的资产: 'How many assets are in my asset library'
     },
@@ -2990,6 +2995,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       agentMode: 'Agent'
     },
     topNav: {
+      more: 'More',
       agentMode: 'Agent Mode',
       clearChat: 'Clear chat',
       exportImage: 'Export Image',
@@ -3217,6 +3223,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       // into the input box
       sessionBusy:
         'This chat still has a run in progress. Wait for it to finish, or just type what you want changed.',
+      modelNotConfigured:
+        'No AI model is available. Add a provider and choose a default model in Preferences → Models.',
       resume: 'Try again',
       resumeProgress: 'Resuming from where it stopped…',
       resumeFailed: "Couldn't resume: {reason}",
@@ -3593,6 +3601,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
         '{on} of {total} on, about {tokens} tokens per chat. Tools that are off are not given to the model.',
       listNoteSearch:
         '{on} of {total} resident, about {tokens} tokens per chat; the rest load when needed.',
+      listNoteFullNoCost: '{on} of {total} on. Tools that are off are not given to the model.',
+      listNoteSearchNoCost: '{on} of {total} resident; the rest load when needed.',
       lockedHint:
         'Irreversible tools cannot be turned off — what holds them back is the per-step approval, not this list.',
       lockedToggleLabel: '{name}: irreversible tools cannot be turned off',
@@ -4094,7 +4104,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       bridgeState: 'Engine bridge',
       bridgeOn: 'Running',
       bridgeOff: 'Not running',
-      bridgeListening: 'Listening on port {port} for the engine to connect.',
+      bridgeListening: 'Waiting for Unreal Engine to connect.',
+      bridgePort: 'Port {port}',
       bridgeOffline: 'The bridge is not running, so Unreal Engine cannot connect.',
       // Used until the status is actually known — never report a failure you have not confirmed
       bridgeChecking: 'Checking',
@@ -4652,8 +4663,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       researchComplete: 'Research complete! Notes added to notebook',
       researchFailed: 'Deep research failed',
       // Empty state
-      emptyTitle: 'Studio - Outputs will be saved here',
-      emptyDesc: 'After adding sources, click to add infographics, mind maps, quizzes and more!',
+      emptyTitle: 'Studio outputs will be saved here',
       // Menu actions
       rename: 'Rename',
       renameSuccess: 'Renamed successfully',
@@ -4706,10 +4716,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       title: 'Add Source',
       urlLabel: 'URL',
       wechatLabel: 'WeChat article URL',
-      description:
-        'After adding sources, UnrealBox can answer based on the information that matters most to you.',
-      examples:
-        '(Examples: marketing plans, course readings, research notes, meeting transcripts, sales documents, etc.)',
       /*
        * Copy for pulling things out of a UE project into the notebook.
        *
@@ -4763,9 +4769,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
         title: 'Upload Source',
         dragHint: 'Drag and drop or',
         selectFile: 'select files',
-        suffix: ' to upload',
-        supportedTypes:
-          'Supported file types: PDF, Word (doc, docx), Excel (xlsx, xls), csv, txt, Markdown, Images (jpg, jpeg, png, gif, bmp, webp, ico, tif, tiff, heic, heif, jp2), Videos (mp4, avi, mov, mkv, wmv, flv, webm, m4v, 3gp), Audio (mp3, wav, flac, ogg, m4a, aac, wma, opus, aiff, ape)'
+        suffix: ' to upload'
       },
       ue: {
         title: 'UE Project',
@@ -4990,8 +4994,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
   },
   serverManagement: {
     header: {
-      title: 'Asset Node Management',
-      subtitle: 'Manage standalone node connections, vaults, and platform authorization'
+      title: 'Asset Node Management'
     },
     status: {
       connected: 'Connected',
@@ -5460,6 +5463,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       typeLabel: 'Collection'
     },
     menu: {
+      open: 'Open',
       changeCover: 'Change cover',
       recordCover: 'Record cover',
       resetCover: 'Reset to default cover',
@@ -6166,6 +6170,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       unmute: 'Unmute microphone',
       muted: 'Microphone muted. Background tasks continue.',
       retry: 'Retry connection',
+      unconfigured: 'No realtime voice model configured',
+      openModelSettings: 'Open model settings',
       boundCall: 'Voice call: {name}',
       interruptByVoice: 'Speak or click to interrupt',
       stop: 'End voice call (background tasks continue)',
@@ -6202,7 +6208,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     },
     skillMenu: {
       title: 'Commands & skills',
-      hint: '↑↓ select · Enter to use',
       loading: 'Loading installed skills…',
       loadFailed: 'Could not load skills',
       retry: 'Retry',
@@ -6210,7 +6215,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       groupCommands: 'Commands',
       groupSkills: 'Skills',
       attach: 'Add files',
-      attachHint: 'Images, documents, spreadsheets, audio and video',
       plusTooltip: 'Add files, commands and skills',
       source: {
         user: 'User',
@@ -6248,14 +6252,16 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       label: 'Thinking effort',
       processing: 'Thinking...',
       finished: 'Thought process',
-      autoDesc: 'Use the model default',
-      offDesc: 'Reasoning off',
-      minimalDesc: 'Minimal reasoning',
-      lowDesc: 'Low reasoning',
-      mediumDesc: 'Medium reasoning',
-      highDesc: 'High reasoning',
-      xhighDesc: 'Extra high reasoning',
-      maxDesc: 'Maximum reasoning',
+      levels: {
+        auto: 'Auto',
+        off: 'Off',
+        minimal: 'Minimal',
+        low: 'Low',
+        medium: 'Medium',
+        high: 'High',
+        xhigh: 'Extra high',
+        max: 'Max'
+      },
       clamped: '{model} has no {chosen} level — this run uses {actual} instead',
       fast: 'Fast',
       fastDesc: 'Faster responses, uses about 2× quota'
@@ -6900,7 +6906,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // The chat's project chip in the top-right corner
     sessionProject: {
       none: 'No project',
-      pick: 'Move to project'
+      pick: 'Move to project',
+      current: 'Current project'
     },
     // Top bar status monitor (the heartbeat button left of the project chip)
     statusMonitor: {
@@ -7173,13 +7180,25 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       title: 'Delete confirmation',
       okText: 'Delete',
       cancelText: 'Cancel',
-      content: 'This will delete {filesCount} file(s) and {foldersCount} folder(s)',
+      content: {
+        named: 'This will delete "{name}".',
+        files: 'This will delete {count} file(s).',
+        folders: 'This will delete {count} folder(s).',
+        mixed: 'This will delete {filesCount} file(s) and {foldersCount} folder(s).'
+      },
       recoverable: 'They move to Recently Deleted and can be restored later.',
       dontAskAgain: "Don't ask again",
       network: {
         title: 'Delete from the shared vault?',
-        content:
-          'This will delete {filesCount} file(s) and {foldersCount} folder(s), along with the matching directories on the shared drive.',
+        content: {
+          named: 'This will delete "{name}", along with the matching item on the shared drive.',
+          files:
+            'This will delete {count} file(s), along with the matching files on the shared drive.',
+          folders:
+            'This will delete {count} folder(s), along with the matching directories on the shared drive.',
+          mixed:
+            'This will delete {filesCount} file(s) and {foldersCount} folder(s), along with the matching directories on the shared drive.'
+        },
         irreversible:
           'Everyone on the team loses them. A shared vault has no Recently Deleted, so this cannot be undone.'
       }
@@ -9188,5 +9207,39 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       approve: 'Approve delivery {name}',
       reference: 'Send to {name}'
     }
+  },
+  skillDescriptions: {
+    'agent-complaint': 'Turn friction from the last task into an actionable defect report',
+    'ai-3d-asset-production': 'Produce new 3D assets with AI images, DCC tools and the engine',
+    'asset-library': 'Search and curate assets, notes and tags in the asset library',
+    'blender-ue-pipeline': 'Refine UE static meshes or architecture in Blender and bring them back',
+    'deep-research': 'Research public web sources and the knowledge base into a cited report',
+    'game-jam': 'Guide a time-boxed game jam from idea to submitted entry',
+    'image-generation': 'Generate or edit images to spec',
+    'knowledge-base-and-projects':
+      'Manage knowledge base sources, the project library and templates, and import assets into projects',
+    'local-files': 'Read and write local files, search contents and run programs',
+    'sound-effects': 'Create UE-ready WAV sound effects',
+    'task-to-video': 'Turn the current task and results into an editable tutorial or promo video',
+    'ue-actor-placement': 'Place, query, move, modify and delete actors in the open level',
+    'ue-ai-render-from-blockout': 'Capture a blockout viewport and render an AI concept image',
+    'ue-animation-retargeting': 'Retarget animation between skeletons and preview the result',
+    'ue-blueprint-graph-editing': 'Write and modify nodes, wires and defaults in Blueprint graphs',
+    'ue-content-import-organize': 'Import files; find, rename and move assets; trace references',
+    'ue-cpp-workflow': 'Write and compile C++ and hot-reload it into the editor',
+    'ue-editor-inspection':
+      'Inspect the viewport, project settings and levels; change engine config',
+    'ue-geometry-editing': 'Edit mesh geometry with Geometry Script',
+    'ue-landscape': 'Create landscapes and set up runtime virtual textures',
+    'ue-level-organize': 'File level actors into World Outliner folders',
+    'ue-material-authoring': 'Author materials and instances, and diagnose material problems',
+    'ue-material-substrate': 'Author Substrate materials (UE 5.4+)',
+    'ue-pcg-scattering': 'Build and debug PCG graphs that scatter meshes over landscapes',
+    'ue-project-audit': 'Audit project size, performance and assets into a ranked report',
+    'ue-sequencer': 'Keyframe camera moves in a Level Sequence',
+    'ue-skill-creator': 'Turn proven work into skills, or fix skills that turned out wrong',
+    'ue-system-diagnostics':
+      'Run console commands and Python, read performance data and crash reports, manage plugins',
+    'ue-widget-umg-layout': 'Create and edit UMG Widget Blueprints'
   }
 }

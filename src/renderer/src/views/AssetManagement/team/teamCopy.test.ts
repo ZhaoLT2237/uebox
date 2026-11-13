@@ -88,7 +88,7 @@ describe('team copy', () => {
     expect(get('teamProject.shortcuts.checkouts')).toBe('签出中')
     expect(get('teamProject.shortcuts.inbox')).toBe('等你处理')
     expect(get('teamProject.history.title')).toBe('历史')
-    expect(get('teamProject.banner.notLocal')).toBe('这个工程还不在你电脑上。')
+    expect(get('teamProject.banner.notLocal')).toBe('这个项目还不在你电脑上。')
     expect(get('teamProject.join.cardTitle')).toBe('加入团队')
     expect(get('teamProject.folder.whoCanSubmit')).toBe('谁能提交')
     expect(get('teamProject.compare.bisect')).toBe('找出是哪次提交弄坏的')

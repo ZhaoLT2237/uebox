@@ -24,11 +24,13 @@ export type DiscardChoice = 'continue' | 'cancel'
 export interface DiscardLaterTurnsOptions {
   title: string
   count: number
+  /** 确认按钮文字，写清这一下会做什么；不传用通用的「继续」 */
+  okText?: string
   t: (key: string, params?: Record<string, unknown>) => string
 }
 
 export function askDiscardLaterTurns(options: DiscardLaterTurnsOptions): Promise<DiscardChoice> {
-  const { title, count, t } = options
+  const { title, count, okText, t } = options
   return new Promise<DiscardChoice>((resolve) => {
     let settled = false
     let handle: DialogHandle | null = null
@@ -64,7 +66,7 @@ export function askDiscardLaterTurns(options: DiscardLaterTurnsOptions): Promise
                 danger: true,
                 onClick: () => pick('continue')
               },
-              () => t('assistant.chat.discardContinue')
+              () => okText ?? t('assistant.chat.discardContinue')
             )
           ]
         )

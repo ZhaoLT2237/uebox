@@ -124,7 +124,6 @@ function handleDelete(session: ChatSession): void {
     @cancel="closeModal"
   >
     <div class="archived-head">
-      <span class="archived-desc">{{ t('archivedChats.description') }}</span>
       <span class="archived-count">{{ t('archivedChats.count', { count: sessions.length }) }}</span>
     </div>
 
@@ -178,11 +177,6 @@ function handleDelete(session: ChatSession): void {
   margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--color-border-subtle);
-}
-
-.archived-desc {
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
 }
 
 .archived-count {

@@ -116,3 +116,18 @@ describe('服务器标签菜单', () => {
     expect(cs.maxHeight).not.toBe('')
   })
 })
+
+describe('筛选工具栏', () => {
+  it('窄宽度下换行，不固定单行高度', () => {
+    const host = document.createElement('div')
+    host.className = 'toolbar-row'
+    host.setAttribute(SCOPE_ID, '')
+    document.body.appendChild(host)
+    cleanups.push(() => host.remove())
+    injectStyles()
+
+    const cs = getComputedStyle(host)
+    expect(cs.flexWrap).toBe('wrap')
+    expect(cs.height).not.toBe('44px')
+  })
+})

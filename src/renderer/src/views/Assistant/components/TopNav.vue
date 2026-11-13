@@ -19,9 +19,15 @@
         :pending-project-name="pendingProjectName"
       />
       <AppDropdown :trigger="['click']">
-        <span class="more-btn" @click.stop>
-          <PhDotsThree class="more" />
-        </span>
+        <button
+          type="button"
+          class="more-btn"
+          :aria-label="t('assistant.topNav.more')"
+          :title="t('assistant.topNav.more')"
+          @click.stop
+        >
+          <PhDotsThree class="more" aria-hidden="true" />
+        </button>
         <template #overlay>
           <AppMenu>
             <!--
@@ -143,7 +149,16 @@ function emitExportMarkdown(): void {
   align-items: center;
   justify-content: center;
   padding: 4px 6px;
+  border: none;
   border-radius: 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
   cursor: pointer;
+}
+
+.more-btn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 1px;
 }
 </style>

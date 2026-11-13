@@ -27,6 +27,7 @@ import AppSegmented from '@renderer/components/AppSegmented.vue'
  * （发现路径用户优先），所以随包更新不会把用户的修改冲掉，删掉副本就退回内置版。
  */
 import { computed, onMounted, ref } from 'vue'
+import { skillDescription } from '@renderer/utils/skillDescription'
 import { useI18n } from 'vue-i18n'
 import { PhMagnifyingGlass } from '@phosphor-icons/vue'
 
@@ -48,7 +49,9 @@ import {
   type SkillSourceFilter
 } from './skillFilter'
 
-const { t } = useI18n()
+const { t, te } = useI18n()
+const describeSkill = (skill: Parameters<typeof skillDescription>[0]): string =>
+  skillDescription(skill, te, t)
 const aiConfigStore = useAIConfigStore()
 
 // ── 自动沉淀 ────────────────────────────────────────────────────────────
@@ -378,7 +381,7 @@ onMounted(refresh)
                 {{ $t('profile.skills.learningOffBadge') }}
               </span>
             </div>
-            <div class="entity-desc">{{ skill.description }}</div>
+            <div class="entity-desc">{{ describeSkill(skill) }}</div>
           </button>
           <AppSwitch
             :checked="skill.enabled"

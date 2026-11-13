@@ -18,6 +18,7 @@
  */
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useMenuEscape } from '@renderer/views/library-common/composables/useMenuEscape'
 import { useInitialLoading } from '@renderer/composables/useInitialLoading'
 
 import LibraryCard from '@renderer/views/library-common/components/LibraryCard.vue'
@@ -74,6 +75,7 @@ const emit = defineEmits<{
 const viewMode = defineModel<BrowserViewMode>('viewMode', { default: 'grid' })
 
 const { t } = useI18n()
+const { onMenuEnter, onMenuLeave, onMenuKeydown } = useMenuEscape()
 const initialLoading = useInitialLoading(
   () => props.loading,
   () => props.items.length > 0
@@ -517,7 +519,14 @@ function onSidebarResizeStart(e: MouseEvent): void {
             </span>
             <span class="col-actions">
               <!-- 复用网格卡那个 card-menu 插槽，调用方不用为列表再写一份 -->
-              <div v-if="$slots['card-menu']" class="row-menu" @click.stop>
+              <div
+                v-if="$slots['card-menu']"
+                class="row-menu"
+                @click.stop
+                @keydown="onMenuKeydown"
+                @mouseenter="onMenuEnter"
+                @mouseleave="onMenuLeave"
+              >
                 <button type="button" class="row-menu-trigger">⋯</button>
                 <div class="row-menu-dropdown">
                   <slot name="card-menu" :item="item" />
@@ -756,6 +765,11 @@ function onSidebarResizeStart(e: MouseEvent): void {
 .row-menu:hover .row-menu-dropdown,
 .row-menu:focus-within .row-menu-dropdown {
   display: block;
+}
+
+// 按过 Esc（见 useMenuEscape）
+.row-menu.is-dismissed .row-menu-dropdown {
+  display: none;
 }
 
 // 菜单项由调用方渲染，外观跟网格卡里的那份保持一致

@@ -550,6 +550,40 @@ describe('useRealtimeVoice', () => {
     expect(stop).toHaveBeenCalledOnce()
   })
 
+  it('没配实时语音：记下 unconfigured 码，clearError 一并收掉', async () => {
+    window.api = {
+      realtimeVoice: {
+        audioSpec: vi.fn().mockResolvedValue({ ok: false }),
+        start: vi.fn().mockResolvedValue({
+          ok: false,
+          error: '还没有配置「实时语音」模型。',
+          code: 'unconfigured'
+        }),
+        stop: vi.fn().mockResolvedValue({ ok: true }),
+        playbackReady: vi.fn(),
+        sendAudio: vi.fn(),
+        sendText: vi.fn(),
+        sendToolResults: vi.fn(),
+        onEvent: vi.fn(() => vi.fn()),
+        onRunTask: vi.fn(() => vi.fn())
+      }
+    } as unknown as typeof window.api
+
+    const voice = useRealtimeVoice({
+      resolveSession: () => HERE,
+      onDispatch: vi.fn(),
+      unsupportedAudioMessage: 'unsupported audio',
+      asrFailedMessage: '没听清，再说一遍'
+    })
+    await voice.start()
+
+    expect(voice.error.value).toBe('还没有配置「实时语音」模型。')
+    expect(voice.errorCode.value).toBe('unconfigured')
+    voice.clearError()
+    expect(voice.error.value).toBeNull()
+    expect(voice.errorCode.value).toBeNull()
+  })
+
   /*
    * 审批这道确认拦的是「听错一句就删了场景」。代价不对称：拒了大不了让用户
    * 再说一遍，批了可能是不可逆的。所以拿不准一律 reject。

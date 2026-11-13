@@ -1018,7 +1018,8 @@ const STUDIO_TOOL_TINTS: Partial<Record<StudioOutput['type'], string>> = {
   knowledgeGraph: 'rgba(115, 87, 63, 0.12)',
   interview: 'rgba(77, 94, 115, 0.12)',
   webpage: 'rgba(52, 152, 219, 0.12)',
-  brainstorm: 'rgba(167, 255, 255, 0.09)'
+  // 走主题变量：原来的淡青色 rgba 只在深色底上看得见，浅色主题下几乎是白的
+  brainstorm: 'color-mix(in srgb, var(--color-filetype-doc) 14%, transparent)'
 }
 
 /**
@@ -1719,7 +1720,6 @@ function handleEditTaskPrompt(type: string, label: string, e: Event): void {
         <!-- 空状态 -->
         <div v-if="outputs.length === 0 && isOutputsReady" class="empty-state">
           <div class="info-title">{{ t('notebook.studio.emptyTitle') }}</div>
-          <div class="info-desc">{{ t('notebook.studio.emptyDesc') }}</div>
         </div>
         <!-- 加载中占位 -->
         <div v-else-if="!isOutputsReady" class="output-list">

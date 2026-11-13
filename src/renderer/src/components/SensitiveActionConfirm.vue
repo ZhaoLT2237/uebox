@@ -45,8 +45,11 @@
             <PhCircleNotch class="icon-spin" />
           </span>
         </div>
-        <div v-if="pendingAction.details" class="action-details">
-          <code>{{ formatDetails(pendingAction.details) }}</code>
+        <div v-if="detailBlocks.length" class="action-details">
+          <div v-for="block in detailBlocks" :key="block.key" class="detail-block">
+            <div v-if="detailBlocks.length > 1" class="detail-key">{{ block.key }}</div>
+            <pre><code>{{ block.text }}</code></pre>
+          </div>
         </div>
       </div>
       <div class="confirm-footer">
@@ -63,7 +66,12 @@
           </AppButton>
         </div>
         <div class="footer-right">
-          <AppButton variant="default" class="btn-reject" @click="handleReject">
+          <AppButton
+            ref="rejectButtonRef"
+            variant="default"
+            class="btn-reject"
+            @click="handleReject"
+          >
             <template #icon><PhX /></template>
             {{ t('assistant.sensitiveAction.reject') }}
           </AppButton>
@@ -85,7 +93,12 @@
           >
             {{ t('assistant.sensitiveAction.allowForever') }}
           </AppButton>
-          <AppButton variant="primary" class="btn-confirm" @click="handleConfirm">
+          <AppButton
+            variant="primary"
+            class="btn-confirm"
+            :danger="pendingAction.destructive"
+            @click="handleConfirm"
+          >
             <template #icon><PhCheck /></template>
             {{ t('assistant.sensitiveAction.confirm') }}
           </AppButton>
@@ -106,7 +119,7 @@ import AppButton from '@renderer/components/AppButton.vue'
  * 事件分发器上。原因见那个 store 的注释 —— 助手页没有 keep-alive，状态和监听
  * 一旦跟着组件走，切个标签页这次审批就只能等超时了。
  */
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import {
   PhCheck,
   PhCircleNotch,
@@ -203,16 +216,41 @@ watch(
 onBeforeUnmount(cancelExplain)
 
 /**
- * 格式化操作详情
+ * 参数按字段拆开显示。字符串字段（脚本、命令、路径）显示原文，不再是
+ * 带 `\"`、`\n` 的 JSON 转义串 —— 用户批的就是这段原文；其余字段照旧按 JSON 排版。
+ * 只有一个字段时不显示字段名。
  */
-function formatDetails(details: Record<string, unknown>): string {
+const detailBlocks = computed<Array<{ key: string; text: string }>>(() => {
+  const details = pendingAction.value?.details
+  if (!details) return []
+  return Object.entries(details).map(([key, value]) => ({
+    key,
+    text: typeof value === 'string' ? value : stringifyDetail(value)
+  }))
+})
+
+function stringifyDetail(value: unknown): string {
   try {
-    // 将 JSON 中的转义换行符 \n 替换为实际换行符，以便在界面上正确显示多行文本
-    return JSON.stringify(details, null, 2).replace(/\\n/g, '\n')
+    return JSON.stringify(value, null, 2) ?? String(value)
   } catch {
-    return String(details)
+    return String(value)
   }
 }
+
+/**
+ * 不可撤销的操作：焦点默认落在「拒绝」上，误按回车不会把事做了。
+ * 其他级别不抢焦点，用户可能正在输入框里打字。
+ */
+const rejectButtonRef = ref<{ $el?: HTMLElement } | null>(null)
+watch(
+  () => pendingAction.value?.toolCallId,
+  async (id) => {
+    if (!id || !pendingAction.value?.destructive) return
+    await nextTick()
+    rejectButtonRef.value?.$el?.focus?.()
+  },
+  { immediate: true }
+)
 
 function handleConfirm(): void {
   reply('approve')
@@ -512,12 +550,26 @@ Please explain what this operation means and does.`
   max-height: 300px;
   overflow: auto;
 
-  code {
-    font-family: 'Consolas', 'Monaco', monospace;
+  .detail-block + .detail-block {
+    margin-top: var(--space-2);
+  }
+
+  .detail-key {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  pre {
+    margin: 0;
+    font-family: var(--font-mono);
     font-size: 12px;
     color: var(--color-text-secondary);
-    white-space: pre-wrap;
-    word-break: break-all;
+    /* 脚本保留原有缩进和换行，长行横向滚动，不在半个标识符处折断 */
+    white-space: pre;
+  }
+
+  code {
+    font-family: inherit;
   }
 }
 

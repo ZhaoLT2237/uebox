@@ -18,7 +18,8 @@ import {
 const mocks = vi.hoisted(() => ({
   ask: vi.fn(),
   submitText: vi.fn(),
-  restoreText: vi.fn()
+  restoreText: vi.fn(),
+  requireAgentModel: vi.fn()
 }))
 
 vi.mock('./composables/discardLaterTurns', async (importOriginal) => {
@@ -39,7 +40,11 @@ vi.mock('vue-router', () => ({
 const InputComposerStub = defineComponent({
   name: 'InputComposer',
   setup(_props, { expose }) {
-    expose({ submitText: mocks.submitText, restoreText: mocks.restoreText })
+    expose({
+      submitText: mocks.submitText,
+      restoreText: mocks.restoreText,
+      requireAgentModel: mocks.requireAgentModel
+    })
     return () => h('div')
   }
 })
@@ -96,6 +101,8 @@ beforeEach(() => {
   mocks.ask.mockReset()
   mocks.submitText.mockReset()
   mocks.restoreText.mockReset()
+  mocks.requireAgentModel.mockReset()
+  mocks.requireAgentModel.mockReturnValue(true)
 })
 
 describe('Welcome 重新生成 / 编辑前确认', () => {
@@ -135,6 +142,67 @@ describe('Welcome 重新生成 / 编辑前确认', () => {
 
     expect(mocks.ask).toHaveBeenCalledWith(expect.objectContaining({ count: 1 }))
     expect(ids()).toEqual(['u1', 'a1', 'u2', 'a2'])
+  })
+})
+
+describe('Welcome 没配模型时重新生成 / 编辑', () => {
+  it('重新生成：输入框拦下后不问、不删', async () => {
+    mocks.requireAgentModel.mockReturnValue(false)
+    const chatLog = mountChat().findComponent({ name: 'ChatLog' })
+    await (chatLog.vm.$attrs.onRetry as (p: unknown) => Promise<void>)({
+      id: 'a1',
+      content: '第一答'
+    })
+    await flushPromises()
+
+    expect(mocks.requireAgentModel).toHaveBeenCalled()
+    expect(mocks.ask).not.toHaveBeenCalled()
+    expect(ids()).toEqual(['u1', 'a1', 'u2', 'a2'])
+  })
+
+  it('编辑：输入框拦下后不问、不删，恢复编辑态', async () => {
+    mocks.requireAgentModel.mockReturnValue(false)
+    const reopen = vi.fn()
+    const chatLog = mountChat().findComponent({ name: 'ChatLog' })
+    await (chatLog.vm.$attrs.onUserConfirmEdit as (p: unknown) => Promise<void>)({
+      id: 'u2',
+      newContent: '改过的第二问',
+      originalContent: '第二问',
+      reopen
+    })
+    await flushPromises()
+
+    expect(mocks.ask).not.toHaveBeenCalled()
+    expect(reopen).toHaveBeenCalled()
+    expect(ids()).toEqual(['u1', 'a1', 'u2', 'a2'])
+  })
+
+  it('确认按钮写明删除后做什么', async () => {
+    mocks.ask.mockResolvedValue('cancel')
+    const chatLog = mountChat().findComponent({ name: 'ChatLog' })
+    await (chatLog.vm.$attrs.onRetry as (p: unknown) => Promise<void>)({
+      id: 'a1',
+      content: '第一答'
+    })
+    await (chatLog.vm.$attrs.onUserConfirmEdit as (p: unknown) => Promise<void>)({
+      id: 'u1',
+      newContent: '改',
+      originalContent: '第一问'
+    })
+    await flushPromises()
+
+    expect(mocks.ask.mock.calls[0][0].okText).toBe('删除并重新生成')
+    expect(mocks.ask.mock.calls[1][0].okText).toBe('删除并重新发送')
+  })
+})
+
+describe('Welcome 回复下的跟进建议', () => {
+  it('走输入框的发送路径', async () => {
+    const chatLog = mountChat().findComponent({ name: 'ChatLog' })
+    ;(chatLog.vm.$attrs.onSuggest as (p: unknown) => void)({ id: 'a2', text: ' 再来一个 ' })
+    await flushPromises()
+
+    expect(mocks.submitText).toHaveBeenCalledWith('再来一个')
   })
 })
 

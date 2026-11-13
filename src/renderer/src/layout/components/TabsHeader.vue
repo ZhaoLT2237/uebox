@@ -24,7 +24,7 @@ import { computed, watch, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { generateChatSessionId, chatSidOfTab } from '@renderer/common/chatRoute'
 import { chatWindowAPI } from '@renderer/api/chatWindow'
-import { useTabsStore, DEFAULT_TAB_KEY } from '@renderer/store/modules/tabs'
+import { useTabsStore, DEFAULT_TAB_KEY, isTabUserClosable } from '@renderer/store/modules/tabs'
 import { useI18n } from '@renderer/hooks/useI18n'
 import ContextMenu from '@renderer/components/ContextMenu/ContextMenu.vue'
 import type { MenuItem } from '@renderer/components/ContextMenu/types'
@@ -219,7 +219,7 @@ const handleMiddleClick = (event: MouseEvent, tabKey: string) => {
 
   // 检查标签页是否可关闭
   const tab = tabsStore.historyTabs.find((t) => t.key === tabKey)
-  if (!tab || tab.isCanDelete === false || tab.fixed) return
+  if (!tab || !isTabUserClosable(tab)) return
 
   handleTabRemove(tabKey, event)
 }
@@ -443,7 +443,7 @@ const getContextMenuItems = (tabKey: string): MenuItem[] => {
       key: 'close',
       label: t('tabs.close'),
       icon: PhX,
-      disabled: !tab.isCanDelete || tab.fixed
+      disabled: !isTabUserClosable(tab)
     },
     {
       key: 'close-other',
@@ -815,8 +815,15 @@ onBeforeUnmount(() => {
           >
             {{ t(tab.title) }}
           </span>
+          <PhPushPin
+            v-if="tab.fixed"
+            class="tab-pin"
+            weight="fill"
+            :aria-label="t('tabs.pinned')"
+            role="img"
+          />
           <button
-            v-if="tab.isCanDelete !== false"
+            v-else-if="isTabUserClosable(tab)"
             type="button"
             class="tab-close"
             :aria-label="t('tabs.closeTab')"
@@ -1153,6 +1160,12 @@ onBeforeUnmount(() => {
 
 .tab-item:hover .tab-close {
   opacity: 1;
+}
+
+.tab-pin {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
 }
 
 /* 渐隐遮罩 */

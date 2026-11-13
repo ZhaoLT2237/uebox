@@ -1,5 +1,20 @@
-import { Modal } from 'ant-design-vue'
+import { ConfigProvider, Modal } from 'ant-design-vue'
 import type { CSSProperties, VNode } from 'vue'
+
+/*
+ * 命令式弹窗不在 App.vue 的 ConfigProvider 底下，读的是 antd 的全局配置。
+ * 关掉两字中文按钮的自动加空格：「取消」不显示成「取 消」，和应用里的 AppButton 一致。
+ * 第一次开弹窗时才设：放在模块顶层的话，只是 import 了这个文件的模块也会去碰 antd。
+ */
+let globalConfigApplied = false
+function applyGlobalConfig(): void {
+  if (globalConfigApplied) return
+  globalConfigApplied = true
+  // 运行时整份透传给弹窗外层的 ConfigProvider，类型声明里只是没列这一项
+  ConfigProvider.config({ autoInsertSpaceInButton: false } as Parameters<
+    typeof ConfigProvider.config
+  >[0])
+}
 
 /**
  * 全局对话框（确认框 / 提示框）。
@@ -74,6 +89,7 @@ export interface AlertDialogOptions extends BaseDialogOptions {
 
 /** 把我们的选项翻译成 antd 的形状。换底层时，要重写的只有这个函数和下面五个入口。 */
 function toAntdConfig(options: ConfirmDialogOptions | AlertDialogOptions): Record<string, unknown> {
+  applyGlobalConfig()
   const { danger, ...rest } = options
   const { focusCancel, ...antdRest } = rest as ConfirmDialogOptions
   const config: Record<string, unknown> = { ...antdRest }

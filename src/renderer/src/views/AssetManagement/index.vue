@@ -447,7 +447,7 @@
                     ? t('assetManagement.recent.clearNotSupported')
                     : t('assetLib.ui.clearRecent')
                 "
-                :disabled="isHttpNetworkVault"
+                :disabled="isHttpNetworkVault || currentFiles.length === 0"
                 @click="handleClearDeleted"
               >
                 <PhTrash />
@@ -471,7 +471,6 @@
             v-model:asset-types="filterForm.assetTypes"
             v-model:size-range="filterForm.sizeRange"
             v-model:date-range="filterForm.dateRange"
-            v-model:tags="filterForm.tags"
             v-model:include-tags="filterForm.includeTags"
             v-model:exclude-tags="filterForm.excludeTags"
             v-model:tag-match-mode="filterForm.tagMatchMode"
@@ -973,6 +972,7 @@
 
 <script setup lang="ts">
 import { displayFolderName } from './utils/folderDisplayName'
+import { excludeCurrentFolder } from './utils/folderSearchTree'
 import AppAlert from '@renderer/components/AppAlert.vue'
 import AppDropdown from '@renderer/components/AppDropdown.vue'
 import AppMenu from '@renderer/components/AppMenu.vue'
@@ -1939,7 +1939,6 @@ watch(
       filterForm.assetTypes = []
       filterForm.sizeRange = undefined
       filterForm.dateRange = undefined
-      filterForm.tags = []
       filterForm.includeTags = []
       filterForm.excludeTags = []
       filterForm.tagMatchMode = 'any'
@@ -3437,7 +3436,6 @@ const routingFilterCount = computed((): number => {
     count += filterForm.assetTypes.length
   if (filterForm.sizeRange) count++
   if (filterForm.dateRange && filterForm.dateRange.length > 0) count++
-  if (filterForm.tags && filterForm.tags.length > 0) count++
   if (filterForm.includeTags && filterForm.includeTags.length > 0) count++
   if (filterForm.excludeTags && filterForm.excludeTags.length > 0) count++
   if (filterForm.hasNoTags) count++
@@ -3470,7 +3468,6 @@ const filterForm = reactive<{
   assetTypes: string[]
   sizeRange?: SizeRangeCategory
   dateRange?: any[]
-  tags: string[]
   includeTags: string[]
   excludeTags: string[]
   tagMatchMode: 'any' | 'all'
@@ -3486,7 +3483,6 @@ const filterForm = reactive<{
   assetTypes: [],
   sizeRange: undefined,
   dateRange: undefined,
-  tags: [],
   includeTags: [],
   excludeTags: [],
   tagMatchMode: 'any',
@@ -3761,12 +3757,16 @@ const performSearchWithPagination = async (isLoadMore = false): Promise<void> =>
 
   try {
     // 仅在第一页且不是"加载更多"时搜索文件夹
-    // 注意：当有资产类型、文件格式或文件大小筛选时，不搜索文件夹，只显示资产
+    // 注意：当有资产类型、文件格式、文件大小或标签筛选时，不搜索文件夹，只显示资产
+    // （文件夹没有标签；不拦的话空关键字的文件夹搜索会把当前文件夹自己列出来）
     const shouldSearchFolders =
       !isLoadMore &&
       !criteria.classNameCnFilters?.length &&
       !criteria.fileExtensions?.length &&
-      !criteria.sizeRange
+      !criteria.sizeRange &&
+      !filterForm.includeTags.length &&
+      !filterForm.excludeTags.length &&
+      !filterForm.hasNoTags
 
     const folderSearch =
       shouldSearchFolders && libraryCaps.value.folderSearch
@@ -3781,14 +3781,22 @@ const performSearchWithPagination = async (isLoadMore = false): Promise<void> =>
             .then((data) => ({ success: true, data }))
         : undefined
 
+    // 详情面板的文件夹统计用真实总数：直接带着筛选进来的文件夹没走过浏览，总数还没取过
+    const folderTotals = isLoadMore ? undefined : loadFolderTotals(currentFolderKey)
+
     // 并行请求：如果是第一页，同时搜索文件夹（不分页，上限1000）和文件（分页）
-    const [fileItems, folderResponse] = await Promise.all([
+    const [fileItems, folderResponse, totals] = await Promise.all([
       searchAssetsWithCriteria(criteria),
-      folderSearch
+      folderSearch,
+      folderTotals
     ])
 
     // 慢查询在途时用户可能已经清了关键词、点去别的文件夹或切了视图
     if (isStaleListRequest(requestToken)) return
+    if (totals) {
+      currentFolderCounts.folders = totals.folders
+      currentFolderCounts.files = totals.files
+    }
 
     console.log(
       `[performSearchWithPagination] Received ${fileItems.length} assets. hasMore check: ${fileItems.length} >= pageSize (${searchPagination.pageSize})`
@@ -3797,14 +3805,18 @@ const performSearchWithPagination = async (isLoadMore = false): Promise<void> =>
     // 处理文件夹结果（仅在第一页）
     let folderItems: any[] = []
     if (!isLoadMore && folderResponse && folderResponse.success && folderResponse.data) {
-      folderItems = folderResponse.data.map((folder: any) => ({
-        id: folder.folderKey || folder.id,
-        name: folder.folderName || folder.name,
-        type: 'folder',
-        path: folder.path || '',
-        folderKey: folder.folderKey,
-        isFavoriteFolder: false // 搜索结果中的文件夹暂时不标记为收藏
-      }))
+      // 文件夹搜索的 SQL 会连当前文件夹自己一起返回，列表里不该出现它
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 搜索接口回的是宽松的行对象，和下面原有写法一致
+      folderItems = excludeCurrentFolder<any>(folderResponse.data, currentFolderKey).map(
+        (folder) => ({
+          id: folder.folderKey || folder.id,
+          name: folder.folderName || folder.name,
+          type: 'folder',
+          path: folder.path || '',
+          folderKey: folder.folderKey,
+          isFavoriteFolder: false // 搜索结果中的文件夹暂时不标记为收藏
+        })
+      )
       console.log(`[performSearchWithPagination] Received ${folderItems.length} folders`)
     }
 
@@ -4430,6 +4442,22 @@ const handleEmptyClick = () => {
 }
 
 /**
+ * 收藏 / 最近删除里，详情面板上的资产已经不在列表里（恢复了、彻底删了、回收站清空了）：
+ * 面板不再停在它身上。
+ */
+watch(currentFiles, (files) => {
+  if (!isShowingShortcutView.value || !selectedAsset.value) return
+  const current = selectedAsset.value
+  const stillListed = (files || []).some(
+    (f: { id?: unknown }) => f === current || (f.id != null && f.id === current.id)
+  )
+  if (!stillListed) {
+    selectedAsset.value = null
+    selectedListFolder.value = null
+  }
+})
+
+/**
  * 监听保管库切换状态，立即清除详情面板的选中数据
  * 这样可以避免保管库切换时详情面板显示旧数据造成闪动
  */
@@ -4468,11 +4496,9 @@ const selectedFolderDetail = computed(() => {
     (f: any) => f.type === 'folder'
   ).length
   const loadedFilesCount = (currentFiles.value || []).filter((f: any) => f.type !== 'folder').length
+  // 搜索 / 筛选时详情面板仍报文件夹的真实总数，不报这一页命中的条数
   const useBrowseTotals =
-    assetViewStore.mode === 'assets' &&
-    !selectionStore.selectedShortcut &&
-    !isSearching.value &&
-    !isShowingDeleted.value
+    assetViewStore.mode === 'assets' && !selectionStore.selectedShortcut && !isShowingDeleted.value
   const foldersCount = useBrowseTotals ? currentFolderCounts.folders : loadedFoldersCount
   const filesCount = useBrowseTotals ? currentFolderCounts.files : loadedFilesCount
   return key ? { key, name, path, foldersCount, filesCount, img: node?.img } : null
@@ -4872,6 +4898,22 @@ const mapSubFolderToListItem = (folder: any) => ({
   img: folder.img
 })
 
+/** 文件夹的真实子文件夹数和文件数（不受搜索、筛选影响）；取不到时返回 undefined */
+const loadFolderTotals = async (
+  folderKey: string
+): Promise<{ folders: number; files: number } | undefined> => {
+  const librarySource = getActiveLibrarySource()
+  try {
+    const [folders, files] = await Promise.all([
+      librarySource.folders.getChildCount(folderKey),
+      librarySource.assets.getCountByFolderKey(folderKey, showDependencies.value)
+    ])
+    return { folders, files }
+  } catch {
+    return undefined
+  }
+}
+
 const loadBrowsePage = async (
   selectedFolderKey: string,
   page: number,
@@ -5119,6 +5161,8 @@ const enhancedHandleTreeSelect = async (selectedKeys: string[], info: any) => {
 
   // 处理收藏快捷方式
   if (info?.shortcut === 'favorites') {
+    // 换了视图，详情面板不再停在上一个视图里的资产上
+    handleEmptyClick()
     // 必须清空树选中：收藏不属于任何文件夹，留着上一个 folderKey 的话，
     // 「加载更多」会拿它去查那个文件夹的第 2 页，把别人的内容混进收藏列表
     originalHandleTreeSelect([], info)
@@ -5129,6 +5173,7 @@ const enhancedHandleTreeSelect = async (selectedKeys: string[], info: any) => {
 
   // 处理最近删除快捷方式
   if (info?.shortcut === 'recent' || info?.shortcut === 'deleted') {
+    handleEmptyClick()
     originalHandleTreeSelect([], info)
     // 持久化快捷选择（统一使用 'recent' 作为键）
     selectionStore.setShortcut('recent')
@@ -7514,7 +7559,6 @@ const handleResetFilter = async () => {
     filterForm.assetTypes = []
     filterForm.sizeRange = undefined
     filterForm.dateRange = undefined
-    filterForm.tags = []
     filterForm.includeTags = []
     filterForm.excludeTags = []
     filterForm.tagMatchMode = 'any'
@@ -7573,7 +7617,6 @@ const handleLocateInFolder = async (folderKey?: string, assetKey?: string) => {
   filterForm.assetTypes = []
   filterForm.sizeRange = undefined
   filterForm.dateRange = undefined
-  filterForm.tags = []
   filterForm.includeTags = []
   filterForm.excludeTags = []
   filterForm.tagMatchMode = 'any'

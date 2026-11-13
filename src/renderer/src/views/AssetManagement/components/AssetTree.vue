@@ -824,8 +824,7 @@ const contextMenuItems = computed<MenuItem[]>(() => {
     {
       key: 'addFolder',
       label: t('assetLib.contextMenu.newSubFolder'),
-      icon: PhPlus,
-      shortcut: 'Ctrl+N'
+      icon: PhPlus
     },
     {
       key: 'rename',

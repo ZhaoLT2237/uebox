@@ -20,7 +20,11 @@ import {
 import { onAgentReattached } from './agentReattach'
 import { rememberSteerDraft } from './steerDrafts'
 import { isDuplicateNotify, NOTIFY_DEDUP_WINDOW_MS } from './notifyDedup'
-import { describeStartupError, describeSteerRejection } from './agentControlHandlers'
+import {
+  describeStartupError,
+  describeSteerRejection,
+  startupErrorActionButtons
+} from './agentControlHandlers'
 import { createAgentModeHandlers } from './useAgentModeHandlers'
 import { useAgentStreamStore } from '@renderer/store/modules/agentStream'
 import { useNotebookStore } from '@renderer/store/modules/notebookStore'
@@ -928,7 +932,8 @@ export function useAgentMode(params: UseAgentModeParams) {
             const targetTypingId = (isCurrent && currentTypingId.value) || typingId
             const errorMsg = `${t('assistant.agentMode.errorPrefix')}: ${readable}`
             chatMsgStore.replaceTyping(chatSid, targetTypingId, errorMsg, true, {
-              outcome: 'error'
+              outcome: 'error',
+              actionButtons: startupErrorActionButtons(error, t)
             })
             message.error(readable)
             if (currentSessionId.value === agentSessionId) {

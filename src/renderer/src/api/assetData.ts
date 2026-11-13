@@ -203,7 +203,7 @@ export const assetDataAPI = {
     // 失败时主进程也会带回 data（里面有 errorCode），但对调用方只有成功结果有用
     return unwrapResult(
       res as { success: boolean; data: NonNullable<typeof res.data>; error?: string },
-      '工程整包上传失败'
+      '项目整包上传失败'
     )
   },
   /** 取回工程整包：下载到 destDir，zip 自动解开；进度同样走文件夹导入那套事件 */
@@ -218,7 +218,7 @@ export const assetDataAPI = {
     const res = await window.api.asset.pullProjectArchive(params)
     return unwrapResult(
       res as { success: boolean; data: NonNullable<typeof res.data>; error?: string },
-      '取回工程整包失败'
+      '取回项目整包失败'
     )
   },
   async reimportFolder(folderKey: string): Promise<{

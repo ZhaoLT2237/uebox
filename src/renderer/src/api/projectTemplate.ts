@@ -48,7 +48,7 @@ export const projectTemplateAPI = {
   }): Promise<string | undefined> => {
     const result = ensure(
       await window.api.projectTemplate.createFromTemplate(params),
-      '从模板创建工程失败'
+      '从模板创建项目失败'
     )
     return result.uprojectPath
   },

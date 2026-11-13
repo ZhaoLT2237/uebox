@@ -122,4 +122,42 @@ describe('LibraryCard', () => {
     bare.element.dispatchEvent(plain)
     expect(plain.defaultPrevented).toBe(false)
   })
+
+  it('「⋯」菜单打开后按 Esc 收起并交出焦点，再次按下又能打开', async () => {
+    const wrapper = mount(LibraryCard, {
+      props: { name: 'BP_Door' },
+      slots: { menu: '<div class="menu-item">编辑</div>' },
+      attachTo: document.body
+    })
+    const menu = wrapper.find('.card-menu')
+    const trigger = wrapper.find<HTMLButtonElement>('.menu-trigger')
+    trigger.element.focus()
+    expect(document.activeElement).toBe(trigger.element)
+
+    await trigger.trigger('keydown', { key: 'Escape' })
+
+    expect(menu.classes()).toContain('is-dismissed')
+    expect(document.activeElement).not.toBe(trigger.element)
+
+    await trigger.trigger('pointerdown')
+    expect(menu.classes()).not.toContain('is-dismissed')
+    wrapper.unmount()
+  })
+
+  it('鼠标悬停打开的菜单按 Esc 也会收起，移开后恢复', async () => {
+    const wrapper = mount(LibraryCard, {
+      props: { name: 'BP_Door' },
+      slots: { menu: '<div class="menu-item">编辑</div>' },
+      attachTo: document.body
+    })
+    const menu = wrapper.find('.card-menu')
+    await menu.trigger('mouseenter')
+
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))
+    expect(menu.classes()).toContain('is-dismissed')
+
+    await menu.trigger('mouseleave')
+    expect(menu.classes()).not.toContain('is-dismissed')
+    wrapper.unmount()
+  })
 })

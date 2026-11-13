@@ -548,7 +548,7 @@
         <template #content>
           <div class="tag-selector-dropdown">
             <TagSelector
-              v-model="tagsProxy"
+              :model-value="includeTagsProxy"
               v-model:include="includeTagsProxy"
               v-model:exclude="excludeTagsProxy"
               v-model:match-mode="tagMatchModeProxy"
@@ -683,7 +683,6 @@ const props = defineProps<{
   assetTypes?: string[] | undefined
   sizeRange?: string | undefined
   dateRange?: dayjs.Dayjs[] | null
-  tags: string[]
   includeTags?: string[]
   excludeTags?: string[]
   tagMatchMode?: 'any' | 'all'
@@ -704,7 +703,6 @@ const emit = defineEmits<{
   (e: 'update:assetTypes', val: string[]): void
   (e: 'update:sizeRange', val?: string): void
   (e: 'update:dateRange', val: dayjs.Dayjs[] | null): void
-  (e: 'update:tags', val: string[]): void
   (e: 'update:includeTags', val: string[]): void
   (e: 'update:excludeTags', val: string[]): void
   (e: 'update:tagMatchMode', val: 'any' | 'all'): void
@@ -812,11 +810,6 @@ const sizeRangeProxy = computed({
 const dateRangeProxy = computed<dayjs.Dayjs[] | null | undefined>({
   get: () => props.dateRange,
   set: (val) => emit('update:dateRange', val ?? null)
-})
-
-const tagsProxy = computed({
-  get: () => props.tags,
-  set: (val) => emit('update:tags', val)
 })
 
 const includeTagsProxy = computed({
@@ -1408,13 +1401,14 @@ const toggleAssetType = (classNameCn: string): void => {
   border-bottom: 1px solid var(--color-border-subtle);
 }
 
-// 工具栏行
+// 工具栏行：窄（详情面板开着）时换行，靠右的筛选项不被挤出视野
 .toolbar-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  padding: 8px 16px;
-  height: 44px;
+  padding: 6px 16px;
+  min-height: 44px;
 }
 
 // 筛选下拉按钮

@@ -172,6 +172,8 @@ export function describeSessions(sessions: VoiceSessionRef[]): string {
   return `可以派活的对话有 ${lines.length} 条：\n${lines.join('\n')}`
 }
 
+export type RealtimeVoiceErrorCode = 'unconfigured'
+
 export interface RealtimeVoiceState {
   muted: Ref<boolean>
   canInterruptByVoice: Ref<boolean>
@@ -196,6 +198,10 @@ export interface RealtimeVoiceState {
    */
   inputLevel: Ref<number>
   error: Ref<string | null>
+  /** 错误的类别。`unconfigured` = 没配实时语音模型，重试没用，界面改给「打开模型设置」 */
+  errorCode: Ref<RealtimeVoiceErrorCode | null>
+  /** 收起这条错误（关闭按钮、切换对话） */
+  clearError: () => void
   start: () => Promise<void>
   stop: () => Promise<void>
   /** 不挂断通话，键盘输入作为这通电话的下一轮。 */
@@ -606,6 +612,7 @@ export function useRealtimeVoice(options: RealtimeVoiceOptions): RealtimeVoiceSt
   const outputLevel = ref(0)
   const inputLevel = ref(0)
   const error = ref<string | null>(null)
+  const errorCode = ref<RealtimeVoiceErrorCode | null>(null)
   /** 它此刻在出声吗。界面据此决定「打断」按不按得动 */
   const speaking = ref(false)
 
@@ -1756,7 +1763,7 @@ export function useRealtimeVoice(options: RealtimeVoiceOptions): RealtimeVoiceSt
 
   async function start(): Promise<void> {
     if (active.value || connecting.value) return
-    error.value = null
+    clearError()
     userText.value = ''
     assistantText.value = ''
     // 上一路会话可能停在「正在丢弃残片」的状态。不清的话新会话开头是哑的
@@ -1835,6 +1842,7 @@ export function useRealtimeVoice(options: RealtimeVoiceOptions): RealtimeVoiceSt
       if (generation !== currentGeneration) return
       if (!session.ok) {
         error.value = session.error
+        errorCode.value = session.code ?? null
         await stop()
         return
       }
@@ -1926,6 +1934,11 @@ export function useRealtimeVoice(options: RealtimeVoiceOptions): RealtimeVoiceSt
       error.value = err instanceof Error ? err.message : String(err)
       await stop()
     }
+  }
+
+  function clearError(): void {
+    error.value = null
+    errorCode.value = null
   }
 
   async function stop(): Promise<void> {
@@ -2033,6 +2046,8 @@ export function useRealtimeVoice(options: RealtimeVoiceOptions): RealtimeVoiceSt
     outputLevel,
     inputLevel,
     error,
+    errorCode,
+    clearError,
     speaking,
     start,
     stop,

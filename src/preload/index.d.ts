@@ -2413,7 +2413,8 @@ declare global {
         brain?: { providerId: string; modelId: string }
       }) => Promise<
         | { ok: true; inputSampleRate: number; outputSampleRate: number; connectionId: number }
-        | { ok: false; error: string }
+        /** `code: 'unconfigured'`：没配实时语音模型。`error` 是主进程原文 */
+        | { ok: false; error: string; code?: 'unconfigured' }
       >
       /**
        * 只转写、不回答的听写会话。

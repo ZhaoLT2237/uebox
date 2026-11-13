@@ -47,3 +47,20 @@ describe('AddSourceModal 的社区版边界', () => {
     expect(labels).toContain('微信公众号')
   })
 })
+
+describe('AddSourceModal 弹窗行为', () => {
+  it('按 Esc 关闭', async () => {
+    const wrapper = mountModal()
+    await wrapper.find('.app-modal-root').trigger('keydown', { key: 'Escape' })
+
+    expect(wrapper.emitted('update:open')?.[0]).toEqual([false])
+    expect(wrapper.emitted('close')).toBeTruthy()
+  })
+
+  it('不再显示说明段和长格式清单', () => {
+    const wrapper = mountModal()
+
+    expect(wrapper.find('.modal-desc').exists()).toBe(false)
+    expect(wrapper.find('.supported-types').exists()).toBe(false)
+  })
+})

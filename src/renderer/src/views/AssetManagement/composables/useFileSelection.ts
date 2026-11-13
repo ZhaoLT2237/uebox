@@ -30,6 +30,7 @@ interface FileSelection {
   setFavoriteToggleCallback: (callback: (ids: string[]) => void) => void
   setInlineRenameCallback: (callback: (id: string) => void) => void
   setLocateInFolderCallback: (callback: () => void) => void
+  setNewFolderCallback: (callback: () => void) => void
   destroyDragSelect: () => void
   isMouseOnSelectedFile: Ref<boolean>
   getIsMouseOnSelectedFile: (target?: HTMLElement | EventTarget | null) => boolean
@@ -597,7 +598,22 @@ export function useFileSelection(
           onLocateInFolder?.()
         }
         break
+      // 新建文件夹：Ctrl+Shift+N，和系统文件管理器一致；右键菜单上标的就是这一个
+      case 'n':
+      case 'N':
+        if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
+          event.preventDefault()
+          onNewFolder?.()
+        }
+        break
     }
+  }
+
+  // 新建文件夹的回调（Ctrl+Shift+N）
+  let onNewFolder: (() => void) | undefined
+
+  const setNewFolderCallback = (callback: () => void): void => {
+    onNewFolder = callback
   }
 
   // 删除选中文件的回调
@@ -839,6 +855,7 @@ export function useFileSelection(
     setFavoriteToggleCallback,
     setInlineRenameCallback,
     setLocateInFolderCallback,
+    setNewFolderCallback,
     destroyDragSelect,
     isMouseOnSelectedFile,
     getIsMouseOnSelectedFile,

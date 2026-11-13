@@ -25,6 +25,13 @@ function mountTopNav(props: Record<string, unknown> = {}): ReturnType<typeof mou
 }
 
 describe('TopNav exports', () => {
+  it('「更多」是带名字的按钮', () => {
+    const more = mountTopNav().get('.more-btn')
+    expect(more.element.tagName).toBe('BUTTON')
+    expect(more.attributes('aria-label')).toBe('更多')
+    expect(more.attributes('title')).toBe('更多')
+  })
+
   it('点击“导出图片”会触发图片导出', async () => {
     const wrapper = mountTopNav()
     const exportImage = wrapper.findAll('.menu-item').find((item) => item.text() === '导出图片')

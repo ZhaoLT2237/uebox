@@ -467,6 +467,14 @@ function yieldSessionTo(senderId: number): void {
   }
 }
 
+/** 没配实时语音（也凑不齐拼装通话）。界面据此给「打开模型设置」而不是「重试」 */
+export class RealtimeVoiceUnconfiguredError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'RealtimeVoiceUnconfiguredError'
+  }
+}
+
 /**
  * 取「实时语音」角色绑的那个 Provider 与模型。
  *
@@ -497,8 +505,8 @@ async function resolveRealtimeBinding(brain?: ModelBinding): Promise<{
     if (missingForCascade(settings).length === 0) {
       return { apiKey: '', baseUrl: '', model: '', cascade: await createCascadeDeps(brain) }
     }
-    throw new Error(
-      '还没有配置「实时语音」模型。请到 设置 → 模型 → 默认模型，' +
+    throw new RealtimeVoiceUnconfiguredError(
+      '还没有配置「实时语音」模型。请到 偏好设置 → 模型 → 默认模型，' +
         '把「实时语音」绑给一个实时模型（OpenAI 的 gpt-realtime，或豆包实时语音）；' +
         '或者配好「语音识别」和「语音合成」，通话改由对话模型应答。'
     )
@@ -506,7 +514,9 @@ async function resolveRealtimeBinding(brain?: ModelBinding): Promise<{
 
   const provider = settings.providers.find((item) => item.id === binding.providerId)
   if (!provider) {
-    throw new Error('实时语音服务商已被删除。请到 设置 → 模型 重新选择默认模型。')
+    throw new RealtimeVoiceUnconfiguredError(
+      '实时语音服务商已被删除。请到 偏好设置 → 模型 重新选择默认模型。'
+    )
   }
 
   return {
@@ -757,7 +767,13 @@ export function registerRealtimeVoiceIPC(): void {
         }, 1_000)
         return { ok: true, ...audio, connectionId: generation }
       } catch (error) {
-        return { ok: false, error: error instanceof Error ? error.message : String(error) }
+        return {
+          ok: false,
+          error: error instanceof Error ? error.message : String(error),
+          ...(error instanceof RealtimeVoiceUnconfiguredError
+            ? { code: 'unconfigured' as const }
+            : {})
+        }
       }
     }
   )

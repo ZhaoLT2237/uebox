@@ -8,7 +8,8 @@ import {
   createAgentControlHandlers,
   describeStartupError,
   describeSteerRejection,
-  isAgentNetworkError
+  isAgentNetworkError,
+  startupErrorActionButtons
 } from './agentControlHandlers'
 import { AGENT_RESUME_ACTION, OPEN_MODEL_SETTINGS_ACTION } from './agentHandlerShared'
 import type { AgentModeHandlersDeps } from './agentHandlerShared'
@@ -73,6 +74,16 @@ describe('describeStartupError', () => {
   it('中英两侧都配了文案', () => {
     expect(typeof zhCN.assistant.agentMode.sessionBusy).toBe('string')
     expect(typeof enUS.assistant.agentMode.sessionBusy).toBe('string')
+  })
+
+  it('没配模型：文案指向「偏好设置 → 模型」，并挂「打开模型设置」按钮', () => {
+    const error = { message: '尚无可用的 AI 模型', code: 'MODEL_NOT_CONFIGURED' }
+    expect(describeStartupError(error, t, '兜底')).toContain('偏好设置 → 模型')
+    expect(typeof enUS.assistant.agentMode.modelNotConfigured).toBe('string')
+    expect(startupErrorActionButtons(error, t)).toEqual([
+      { label: '打开模型设置', action: OPEN_MODEL_SETTINGS_ACTION }
+    ])
+    expect(startupErrorActionButtons({ code: 'SESSION_BUSY' }, t)).toBeUndefined()
   })
 
   it('不认识的码退回原文 —— 难看但不丢信息', () => {
@@ -178,7 +189,7 @@ describe('describeSteerRejection', () => {
       'restored',
       t
     )
-    expect(text).toContain('另一个工程')
+    expect(text).toContain('另一个项目')
     expect(text).toContain('GameB')
     expect(text).not.toContain('「」')
   })
@@ -196,15 +207,15 @@ describe('describeSteerRejection', () => {
 
     const restored = describeSteerRejection(result, 'restored', t)
     expect(restored).toContain('GameA')
-    expect(restored).toContain('未连接工程')
+    expect(restored).toContain('未连接项目')
     expect(restored).toContain('放回输入框')
-    expect(restored).not.toContain('另一个工程')
+    expect(restored).not.toContain('另一个项目')
 
     const queued = describeSteerRejection(result, 'queued', t)
     expect(queued).toContain('GameA')
-    expect(queued).toContain('未连接工程')
+    expect(queued).toContain('未连接项目')
     expect(queued).not.toContain('放回输入框')
-    expect(queued).not.toContain('另一个工程')
+    expect(queued).not.toContain('另一个项目')
   })
 
   it('不认识的码、没文案时都返回 undefined —— 调用方退回 steerFailed', () => {

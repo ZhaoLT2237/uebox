@@ -38,3 +38,26 @@ export const resolveErrorText = (error: unknown, fallback: string): string => {
   }
   return String(error) || fallback
 }
+
+/** 默认库建库时写进数据的名字：旧版是「默认保管库」，现在是「默认资产库」 */
+const DEFAULT_VAULT_STORED_NAMES = new Set(['默认保管库', '默认资产库'])
+
+/**
+ * 库的显示名。默认库只要还叫建库时的名字（含旧名「默认保管库」），就按当前语言显示；
+ * 用户自己改过名的照原样显示。库里存的名字不动。
+ */
+export const vaultDisplayName = (
+  vault: { name?: string | null; isSystem?: boolean; systemKey?: string | null } | null | undefined,
+  t: (key: string) => string
+): string => {
+  if (!vault) return ''
+  const name = vault.name || ''
+  if (
+    vault.isSystem &&
+    vault.systemKey === 'default' &&
+    (!name || DEFAULT_VAULT_STORED_NAMES.has(name))
+  ) {
+    return t('assetLib.vault.default')
+  }
+  return name
+}

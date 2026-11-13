@@ -189,7 +189,7 @@ describe('steerAgent 的被拒文案', () => {
     await api.steerAgent('加一句', { targetSessionId: 'agent-1', ifRejected: 'restored' })
 
     const text = String(messageCalls.info.mock.calls.at(-1)?.[0])
-    expect(text).toContain('另一个工程')
+    expect(text).toContain('另一个项目')
     expect(text).not.toContain('「」')
   })
 

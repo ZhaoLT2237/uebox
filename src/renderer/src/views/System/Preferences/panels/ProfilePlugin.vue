@@ -153,9 +153,14 @@ async function repairEngineResidue(): Promise<void> {
               <template v-else-if="bridgeOnline === null">
                 {{ $t('profile.plugin.bridgeUnknown') }}
               </template>
-              <template v-else-if="bridgeOnline">
-                {{ $t('profile.plugin.bridgeListening', { port: bridge?.port }) }}
-              </template>
+              <span
+                v-else-if="bridgeOnline"
+                :title="
+                  bridge?.port ? $t('profile.plugin.bridgePort', { port: bridge.port }) : undefined
+                "
+              >
+                {{ $t('profile.plugin.bridgeListening') }}
+              </span>
               <template v-else>{{ $t('profile.plugin.bridgeOffline') }}</template>
             </div>
           </div>

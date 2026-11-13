@@ -58,4 +58,24 @@ describe('NotebookList', () => {
     // 本地能力不受影响
     expect(wrapper.find('.notebook-list-page').exists()).toBe(true)
   })
+
+  it('新建按钮用 AppButton 主按钮，不再是没有样式的原生按钮', async () => {
+    const router = createTestRouter()
+    await router.push('/notebooks')
+    await router.isReady()
+
+    const wrapper = shallowMount(NotebookList, {
+      global: {
+        plugins: [pinia, router, i18n],
+        stubs: { teleport: true, AppModal: true, 'a-input': true, 'a-dropdown': true }
+      }
+    })
+    await flushPromises()
+
+    expect(wrapper.find('button.btn-primary-create').exists()).toBe(false)
+    const create = wrapper
+      .findAllComponents({ name: 'AppButton' })
+      .find((button) => button.props('variant') === 'primary')
+    expect(create).toBeTruthy()
+  })
 })

@@ -23,6 +23,7 @@ import {
 } from '@renderer/views/BlueprintLibrary/types/blueprint'
 import { ensureFFmpeg } from '@renderer/utils/ffmpegGuard'
 import { buildBlueprintEditorRoute } from '@renderer/views/BlueprintLibrary/utils/blueprintTabRoute'
+import { closeLibraryEditorTabs } from '@renderer/views/library-common/utils/closeEditorTabs'
 import LibraryFormModal from '@renderer/views/library-common/components/LibraryFormModal.vue'
 import { LibraryBrowser } from '@renderer/views/library-common/browser'
 import type { BrowserItem, BrowserScope } from '@renderer/views/library-common/browser'
@@ -208,8 +209,10 @@ function handleDelete(bp: Blueprint): void {
     danger: true,
     cancelText: t('blueprintGallery.delete.cancelText'),
     centered: true,
-    onOk: () => {
+    onOk: async () => {
       store.deleteBlueprint(bp.id)
+      // 删掉的蓝图不该还留着一个打开的编辑器标签页
+      await closeLibraryEditorTabs({ router, routeName: 'BlueprintEditor', id: bp.id })
       message.success(t('blueprintGallery.delete.successMessage'))
     }
   })
@@ -581,6 +584,9 @@ const vFocus = {
 
       <!-- 删除 / 改名 / 换封面是蓝图自己的事，浏览器只把条目递出来 -->
       <template #card-menu="{ item }">
+        <div class="menu-item" @click.stop="handleOpen(item.id)">
+          {{ $t('blueprintGallery.menu.open') }}
+        </div>
         <div class="menu-item" @click.stop="handleChangeCover(item.source as Blueprint)">
           {{ $t('blueprintGallery.menu.changeCover') }}
         </div>

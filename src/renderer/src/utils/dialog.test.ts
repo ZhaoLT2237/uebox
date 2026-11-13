@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
-import { Modal } from 'ant-design-vue'
+import { ConfigProvider, Modal } from 'ant-design-vue'
 
 import { confirmDialog, errorDialog, infoDialog, successDialog, warningDialog } from './dialog'
 
@@ -33,6 +33,16 @@ describe('dialog 对 antd Modal 的封装', () => {
     expect(spies.warning).toHaveBeenCalledOnce()
     expect(spies.info).toHaveBeenCalledOnce()
     expect(spies.success).toHaveBeenCalledOnce()
+  })
+
+  // 「取消」不显示成「取 消」：命令式弹窗读的是 antd 全局配置，打开弹窗时要已经关掉
+  it('打开弹窗时关掉两字中文按钮的自动加空格', async () => {
+    vi.resetModules()
+    const config = vi.spyOn(ConfigProvider, 'config')
+    vi.spyOn(Modal, 'confirm').mockReturnValue({ destroy: vi.fn() } as never)
+    const fresh = await import('./dialog')
+    fresh.confirmDialog({ title: '确认' })
+    expect(config).toHaveBeenCalledWith({ autoInsertSpaceInButton: false })
   })
 
   // antd 里同一件事有 okType 和 okButtonProps 两种写法，对外统一成 danger

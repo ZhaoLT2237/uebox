@@ -180,6 +180,66 @@ describe('ChatSessionList 行内操作', () => {
   })
 })
 
+describe('ChatSessionList 归档提示与重命名', () => {
+  it('归档后提示「已归档」，点撤销放回原处（含置顶）', async () => {
+    const { message } = await import('@renderer/utils/messageManager')
+    const success = vi.spyOn(message, 'success')
+    const store = useChatSessionsStore()
+    store.ensureSession('s1', '一个会话')
+    store.togglePinned('s1')
+
+    const wrapper = mountList()
+    await wrapper.vm.$nextTick()
+    await wrapper.find('.chat-item').findAll('.chat-icon-btn')[1].trigger('click')
+
+    expect(store.sessionById('s1')?.archived).toBe(true)
+    const config = success.mock.calls.at(-1)![0] as {
+      content: string
+      action: { label: string; onClick: () => void }
+    }
+    expect(config.content).toBe('已归档')
+    expect(config.action.label).toBe('撤销')
+
+    config.action.onClick()
+    expect(store.sessionById('s1')?.archived).toBe(false)
+    expect(store.sessionById('s1')?.pinned).toBe(true)
+    success.mockRestore()
+  })
+
+  it('右键重命名：输入框获得焦点并全选原名', async () => {
+    const store = useChatSessionsStore()
+    store.ensureSession('s1', '一个会话')
+
+    const { Input } = await import('ant-design-vue')
+    const wrapper = mount(ChatSessionList, {
+      attachTo: document.body,
+      props: { collapsed: false, activeChatSid: '' },
+      global: {
+        components: { 'a-input': Input },
+        stubs: { SidebarSectionHeader: { template: '<div><slot /><slot name="actions" /></div>' } }
+      }
+    }) as VueWrapper
+    mounted.push(wrapper)
+    await wrapper.vm.$nextTick()
+    await wrapper.find('.chat-item').trigger('contextmenu')
+    await wrapper.vm.$nextTick()
+
+    const rename = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')].find((el) =>
+      el.textContent?.includes('重命名')
+    )
+    expect(rename).toBeTruthy()
+    rename!.click()
+
+    await vi.waitFor(() => {
+      const input = document.activeElement as HTMLInputElement
+      expect(input?.tagName).toBe('INPUT')
+      expect(input.value).toBe('一个会话')
+      expect(input.selectionStart).toBe(0)
+      expect(input.selectionEnd).toBe('一个会话'.length)
+    })
+  })
+})
+
 /** 审批卡在等用户表态的对话，侧栏按「等你处理」显示，和等用户回答一样 */
 describe('ChatSessionList 待审批状态', () => {
   it('队列里有这条对话的审批时显示为 waiting', async () => {

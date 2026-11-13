@@ -459,7 +459,6 @@ onUnmounted(() => {
     <div v-if="showImageModelGate" class="gate-body">
       <div class="gate-card">
         <h2 class="gate-title">{{ t('aigcImagePanel.gate.title') }}</h2>
-        <p class="gate-desc">{{ t('aigcImagePanel.access.noImageModel') }}</p>
         <button class="gate-action" type="button" @click="goToModelSettings">
           <PhGear />
           <span>{{ t('aigcImagePanel.gate.action') }}</span>
@@ -552,13 +551,6 @@ onUnmounted(() => {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
-}
-
-.gate-desc {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  line-height: 1.7;
-  color: var(--color-text-secondary);
 }
 
 .gate-action {

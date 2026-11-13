@@ -39,6 +39,7 @@ export default {
   },
   // 侧边栏工具定制：常驻名单与「更多」分组
   sidebarTools: {
+    title: '侧边栏',
     more: '更多',
     customize: '自定义',
     done: '完成',
@@ -50,11 +51,13 @@ export default {
     projects: '项目',
     archive: '归档对话',
     unarchive: '取消归档',
+    archivedToast: '已归档',
+    undo: '撤销',
     newChat: '新对话',
     projectSessionCount: '{count} 个对话',
-    newChatInProject: '在此工程下新建对话',
+    newChatInProject: '在此项目下新建对话',
     unassigned: '对话',
-    unassignedHint: '没有关联 UE 工程的对话',
+    unassignedHint: '没有关联 UE 项目的对话',
     connected: '已连接',
     taskDone: '任务已完成，未查看',
     running: '正在运行',
@@ -66,7 +69,7 @@ export default {
       '从侧边栏移除「{name}」？其中的 {count} 条对话不会被删除，将移至「对话」区。',
     renameProjectTitle: '重命名项目',
     openInExplorer: '在资源管理器中打开',
-    openInExplorerFailed: '打开工程目录失败',
+    openInExplorerFailed: '打开项目目录失败',
     archiveProjectChats: '归档对话',
     archiveProjectTitle: '归档此项目的对话',
     archiveProjectContent:
@@ -75,13 +78,13 @@ export default {
       title: '添加项目',
       typeLabel: '项目类型',
       folder: '本地文件夹',
-      folderDesc: '从本机选择 UE 工程目录',
+      folderDesc: '从本机选择 UE 项目目录',
       imported: '已导入的项目',
-      importedDesc: '从资产库已导入的工程中选择',
+      importedDesc: '从项目库中选择',
       importedEmpty: '暂无已导入的项目',
       searchPlaceholder: '搜索项目名称或路径',
       searchEmpty: '未找到匹配项目',
-      pickFolderTitle: '选择 UE 工程目录',
+      pickFolderTitle: '选择 UE 项目目录',
       pickFolderFailed: '打开文件夹选择框失败',
       next: '下一步',
       back: '上一步',
@@ -90,7 +93,7 @@ export default {
     empty: '暂无对话',
     loadMore: '显示更多',
     organize: '整理侧边栏',
-    groupByProject: '按 UE 工程',
+    groupByProject: '按 UE 项目',
     groupFlat: '在一个列表中',
     sortBy: '对话排序方式',
     sortRecent: '最近更新',
@@ -107,10 +110,10 @@ export default {
     smartNameFailed: '命名失败。请手动输入名称，或检查轻量任务模型配置',
     /** 这条对话已经有一次起名在途（多半是「自动生成新标题」那一路）。等一下再点就有 */
     smartNameBusy: '正在命名，请稍后重试',
-    moveToProject: '归入工程',
+    moveToProject: '归入项目',
     removeFromProject: '移出项目',
-    newProjectGroup: '新建工程分组…',
-    projectNamePlaceholder: '请输入 UE 工程名',
+    newProjectGroup: '新建项目分组…',
+    projectNamePlaceholder: '请输入 UE 项目名',
     delete: '删除',
     deleteTitle: '确认删除',
     deleteContent: '确定要删除对话「{title}」吗？此操作不可撤销。',
@@ -127,7 +130,6 @@ export default {
   // 归档对话：偏好设置 → AI 设置里的弹窗，侧边栏不再有「已归档」区
   archivedChats: {
     title: '归档对话',
-    description: '已归档的对话不在侧边栏显示，取消归档后恢复到列表。',
     count: '{count} 条已归档',
     empty: '暂无归档的对话',
     open: '打开',
@@ -302,7 +304,7 @@ export default {
     engine: {
       title: '虚幻引擎内置工具集',
       // 用户没做任何配置就多出一块东西，必须说清楚它从哪来
-      description: '已自动接入所连接工程中虚幻引擎 5.8 的官方 MCP 工具。',
+      description: '已自动接入所连接项目中虚幻引擎 5.8 的官方 MCP 工具。',
       hint: '如需更改连接，请在下方添加相同标识的配置。',
       readOnly: '自动发现',
       // 「3 个工具」看起来像没接全 —— 这是真实被问过的一句「怎么只有三个工具」
@@ -319,11 +321,11 @@ export default {
       shortNote:
         '向 Codex、Claude Code 开放虚幻盒子助手的全部工具。仅限本机连接，需令牌，默认可写。',
       securityNote:
-        '外部客户端可使用与虚幻盒子助手相同的全部工具，包括读写本机文件和执行命令。虚幻盒子不弹出审批窗口，是否拦截由客户端自身的审批设置决定。令牌一旦泄露，持有者即可修改你的工程和本机文件。',
+        '外部客户端可使用与虚幻盒子助手相同的全部工具，包括读写本机文件和执行命令。虚幻盒子不弹出审批窗口，是否拦截由客户端自身的审批设置决定。令牌一旦泄露，持有者即可修改你的项目和本机文件。',
       // 服务停着的时候要用将来时。主开关明明是关的，却读到一句「会直接执行」，
       // 三处状态互相打架，用户只会以为自己开着一个危险的东西
       securityNoteIdle:
-        '开启后，外部客户端将可使用与虚幻盒子助手相同的全部工具，包括读写本机文件和执行命令。虚幻盒子不弹出审批窗口，是否拦截由客户端自身的审批设置决定。令牌一旦泄露，持有者即可修改你的工程和本机文件。',
+        '开启后，外部客户端将可使用与虚幻盒子助手相同的全部工具，包括读写本机文件和执行命令。虚幻盒子不弹出审批窗口，是否拦截由客户端自身的审批设置决定。令牌一旦泄露，持有者即可修改你的项目和本机文件。',
       includeMutating: '外部客户端的权限',
       // 当前档位要直接说出来，别让用户从开关的明暗去推
       scopeReadOnly: '当前只读。打开后允许外部客户端创建、修改和删除。',
@@ -414,12 +416,11 @@ export default {
   aiProvider: {
     title: '服务商',
     banner: {
-      notConfigured: '添加服务商，并选择「对话」默认模型后即可使用 AI。',
+      notConfigured: '添加服务商，并选择「主模型」后即可使用 AI。',
       noEncryption: '无法安全保存密钥，请通过环境变量提供密钥。'
     },
     sources: {
-      title: '服务商',
-      desc: '配置服务商、API 密钥和模型。'
+      title: '服务商'
     },
     list: {
       modelCount: '{count} 个模型',
@@ -668,7 +669,6 @@ export default {
     },
     roles: {
       title: '默认模型',
-      desc: '按用途指定模型。',
       unset: '未设置',
       // 行内只留「选之前要知道的」，长文收进 More（一个 ? 图标的 tooltip）
       moreLabel: '查看详细说明',
@@ -943,6 +943,7 @@ export default {
     copy: '复制',
     pin: '固定',
     unpin: '取消固定',
+    pinned: '已固定',
     newChat: '新对话',
     openInNewWindow: '在新窗口打开'
   },
@@ -1272,7 +1273,7 @@ export default {
       selectFolder: '请先选择一个文件夹',
       addAsset: '添加资产',
       emptyFiltered: '没有符合条件的资产',
-      emptyTrash: '回收站为空',
+      emptyTrash: '最近删除为空',
       emptyFavorites: '暂无收藏的资产',
       clearFilters: '清除筛选',
       rootFolder: '全部',
@@ -1299,8 +1300,8 @@ export default {
       addToFav: '添加到收藏',
       removeFromFav: '移除收藏',
       addTags: '添加标签',
-      importToProject: '导入项目',
-      pullProjectArchive: '取回工程整包…',
+      importToProject: '导入到项目',
+      pullProjectArchive: '取回项目整包…',
       importPluginToProject: '导入插件到项目',
       delete: '删除',
       refresh: '刷新',
@@ -1363,6 +1364,7 @@ export default {
       cancelBtn: '取消操作',
       mainTitle: '管理<br />资产标签。',
       mainTitle2: '管理资产标签',
+      addToAssets: '为 {count} 个资产添加标签',
       createNew: '创建新标签...',
       mainSubtitle: '管理并整理您的资产库标签，提升搜索效率',
       tagCatAsset: '自动识别的资产类型',
@@ -1484,7 +1486,7 @@ export default {
       importedCount: '已导入 {count} 个项目',
       pickUproject: '选择 .uproject 文件',
       pickUprojectDir: '选择包含 .uproject 的目录',
-      alreadyRunning: '工程已在运行',
+      alreadyRunning: '项目已在运行',
       launch: '启动',
       assetImported: '资产导入成功：{path}',
       dropToImport: '释放以导入资产',
@@ -1525,7 +1527,7 @@ export default {
       dependencyGraph: '服务器库暂未接入依赖图，请查看上方的依赖列表',
       tagManagement: '服务器暂无标签注册表',
       sortByType: '服务器暂不支持按类型排序',
-      nativeDrag: '文件仍在服务器上：请先右键选择"导入到工程"',
+      nativeDrag: '文件仍在服务器上：请先右键选择"导入到项目"',
       richNotes: '服务器库只支持一句话备注',
       filterUnsupported: '服务器暂不支持此筛选',
       annotations: '仅有写权限的成员可修改标签和备注',
@@ -1599,23 +1601,23 @@ export default {
       editFailed: '修改未保存：{reason}'
     },
     download: {
-      title: '导入 {count} 个资产到工程',
+      title: '导入 {count} 个资产到项目',
       lead: '通过 Lore 获取文件，并连同依赖复制到目标位置（Content/… 对应 /Game/…）。',
       more: '还有 {count} 个',
       target: '目标位置',
       targets: {
-        project: 'UE 工程',
+        project: 'UE 项目',
         folder: '文件夹'
       },
-      pickProject: '选择工程',
-      noProjects: '工程库中暂无工程。',
+      pickProject: '选择项目',
+      noProjects: '项目库中暂无项目。',
       pickFolder: '选择文件夹',
       noFolder: '未选择',
       withDependencies: '包含依赖',
       closure: '连同依赖共 {count} 个资产，约 {size}。',
       closureMissing: '另有 {count} 个依赖不在库中。',
       closureIncomplete: '依赖层级较深，可能有更深层的依赖未计入。',
-      hint: '文件以副本形式复制，在工程中修改不会影响服务器。',
+      hint: '文件以副本形式复制，在项目中修改不会影响服务器。',
       start: '开始'
     },
     import: {
@@ -1631,7 +1633,7 @@ export default {
       start: '开始导入'
     },
     jobs: {
-      download: '从服务器库导入到工程',
+      download: '从服务器库导入到项目',
       import: '导入到服务器库',
       phase: {
         preparing: '准备中',
@@ -1833,15 +1835,15 @@ export default {
         empty: '暂无项目',
         emptyDesc: '拖拽 .uproject 文件或项目目录到此处导入',
         // 搜不到 ≠ 一个都没导入：后者才该讲怎么导入
-        loadFailedTitle: '读取工程列表失败',
-        loadFailedDesc: '这不表示没有工程，仅本次读取失败。',
+        loadFailedTitle: '读取项目列表失败',
+        loadFailedDesc: '这不表示没有项目，仅本次读取失败。',
         retry: '重试',
-        noSearchResults: '未找到匹配「{keyword}」的工程',
-        noSearchResultsDesc: '清空上方搜索框即可查看全部工程。',
+        noSearchResults: '未找到匹配「{keyword}」的项目',
+        noSearchResultsDesc: '清空上方搜索框即可查看全部项目。',
         import: '导入项目',
         create: '创建项目',
-        createFromTemplate: '用模板新建工程',
-        importExisting: '导入已有工程',
+        createFromTemplate: '用模板新建项目',
+        importExisting: '导入已有项目',
         refresh: '刷新',
         open: '打开项目',
         openAction: '打开',
@@ -1856,19 +1858,20 @@ export default {
         scanComplete: '已导入 {count} 个项目',
         scanFailed: '扫描目录失败',
         noProjectFound: '未找到 .uproject',
-        multiProjectTip: '目录中包含 {count} 个工程，请使用资产库页面导入',
-        multiProjectConfirmTitle: '批量导入工程',
-        multiProjectConfirmContent: '该目录中包含 {count} 个工程，确定要全部导入吗？',
-        bulkImportSuccess: '导入成功，共 {count} 个工程',
+        multiProjectTip: '目录中包含 {count} 个项目，请使用资产库页面导入',
+        multiProjectConfirmTitle: '批量导入项目',
+        multiProjectConfirmContent: '该目录中包含 {count} 个项目，确定要全部导入吗？',
+        bulkImportSuccess: '导入成功，共 {count} 个项目',
         importError: '导入异常',
         dropHint: '释放以导入项目',
-        invalidDrop: '未找到 UE 工程，请拖入工程目录或 .uproject 文件',
+        invalidDrop: '未找到 UE 项目，请拖入项目目录或 .uproject 文件',
         searchPlaceholder: '搜索我的项目',
         engineFilter: '按引擎版本筛选',
         allEngineVersions: '全部版本',
         unknownEngineVersion: '版本未知',
-        noVersionResults: '暂无「{version}」的工程',
-        noVersionResultsDesc: '请选择其他版本，或选择「全部版本」查看所有工程。',
+        noVersionResults: '暂无「{version}」的项目',
+        noVersionResultsInGroup: '「{group}」中没有 {version} 的项目',
+        clearFilters: '清除筛选',
         opening: '正在打开项目...',
         unnamedCollection: '未命名分组',
         unnamedProject: '未命名项目',
@@ -1876,7 +1879,7 @@ export default {
           open: '打开项目',
           rename: '重命名',
           openLocation: '打开目录',
-          openSln: '打开 C++ 工程',
+          openSln: '打开 C++ 项目',
           changeCover: '自定义封面',
           restoreAutoCover: '恢复自动封面',
           ualinkInstall: '安装桥接插件',
@@ -1886,15 +1889,15 @@ export default {
           remove: '移除项目',
           removeFromCollection: '移出分组',
           removeFromNamedCollection: '移出分组「{name}」',
-          import: '导入工程',
-          create: '新建工程',
+          import: '导入项目',
+          create: '新建项目',
           createCollection: '创建分组',
           refresh: '刷新'
         },
         ualinkPrompt: {
-          title: '为导入的工程安装连接插件？',
+          title: '为导入的项目安装连接插件？',
           content:
-            '连接插件装在工程的 Plugins 目录下，不改动引擎。不安装则 AI 无法操作该工程。安装后可在工程右键菜单中移除，也可在「设置 → 插件」中关闭自动安装。此提示只出现一次。',
+            '连接插件装在项目的 Plugins 目录下，不改动引擎。不安装则 AI 无法操作该项目。安装后可在项目右键菜单中移除，也可在「设置 → 插件」中关闭自动安装。此提示只出现一次。',
           install: '安装',
           skip: '暂不安装',
           installed: '连接插件已安装'
@@ -1910,11 +1913,11 @@ export default {
           installFailed: 'UnrealAgentLink 安装失败'
         },
         pluginFailure: {
-          dialogTitle: '工程已导入，但 AI 无法连接该引擎',
+          dialogTitle: '项目已导入，但 AI 无法连接该引擎',
           title: '原因：{reason}。UnrealAgentLink 未安装成功，AI 无法访问引擎内容。',
           askAi: '交给 AI 排查',
           dismiss: '知道了',
-          pathUnknown: '（虚幻盒子未获取到工程文件路径）',
+          pathUnknown: '（虚幻盒子未获取到项目文件路径）',
           askAiFailed: '无法提交给 AI：{reason}',
           /*
            * 交给 AI 的那条消息。
@@ -1923,12 +1926,12 @@ export default {
            * 而用户不认得。查什么也要写清楚：只说「装不上」的话，模型会反过来问用户
            * 一串他答不上来的问题（见 hooks/usePluginInstallNotice.ts 的文件头）。
            */
-          aiPrompt: `UnrealAgentLink 插件没能装进工程「{project}」，帮我查一下是什么问题，能修的话直接修。
+          aiPrompt: `UnrealAgentLink 插件没能装进项目「{project}」，帮我查一下是什么问题，能修的话直接修。
 
-工程文件：{path}
+项目文件：{path}
 盒子报的原因：{reason}
 
-可以从这几处看起：这个 .uproject 能不能正常读出来、里面的 EngineAssociation 写的是哪个版本；工程目录下的 Plugins/UnrealAgentLink/ 在不在、里面有没有 UnrealAgentLink.uplugin；这台机器上装没装对应版本的引擎。查清楚之后用一句话告诉我是什么问题。`,
+可以从这几处看起：这个 .uproject 能不能正常读出来、里面的 EngineAssociation 写的是哪个版本；项目目录下的 Plugins/UnrealAgentLink/ 在不在、里面有没有 UnrealAgentLink.uplugin；这台机器上装没装对应版本的引擎。查清楚之后用一句话告诉我是什么问题。`,
           noEngineAssociation: '该 .uproject 未指定引擎版本',
           filesMissing: '缺少该引擎版本的随包插件',
           uprojectUnreadable: '无法读取该 .uproject，文件可能已损坏'
@@ -1947,12 +1950,12 @@ export default {
           noUproject: '未找到 .uproject：{path}',
           dirOk: '已导入 {count} 个项目',
           dirError: '目录导入异常：{reason}',
-          pickAtLeastOne: '请至少选择一个工程',
-          partial: '成功导入 {count} 个工程',
-          allDone: '工程均已导入',
-          allFailed: '所有工程导入失败',
+          pickAtLeastOne: '请至少选择一个项目',
+          partial: '成功导入 {count} 个项目',
+          allDone: '项目均已导入',
+          allFailed: '所有项目导入失败',
           cancelled: '已取消导入',
-          nothingFound: '未找到 UE 工程，请拖入工程目录或 .uproject 文件',
+          nothingFound: '未找到 UE 项目，请拖入项目目录或 .uproject 文件',
           // 拖拽覆盖层上那句话。它在 dragenter 时就定下来，所以必须在这边翻
           dropCounted: '释放以导入：{count} 个项目/文件',
           dropPlain: '释放以导入',
@@ -1965,8 +1968,8 @@ export default {
            */
           summaryOk: '成功导入 {count} 个',
           summarySkipped: '{count} 个已存在',
-          alreadyInLibrary: '{count} 个工程已在库中',
-          existingJoinedCollection: '{count} 个工程已在库中，已加入「{name}」',
+          alreadyInLibrary: '{count} 个项目已在库中',
+          existingJoinedCollection: '{count} 个项目已在库中，已加入「{name}」',
           summaryFailed: '{count} 个失败',
           /** 各段之间的分隔符。中文用顿号，英文用逗号加空格 */
           summarySeparator: '，',
@@ -1982,12 +1985,12 @@ export default {
         // 所以按「N 个工程 + 第一条原因」汇总，具体哪几个在日志里
         pluginUpgradeFailure: {
           title:
-            '{count} 个工程的 UnrealAgentLink 更新失败（{project}：{reason}），这些工程仍在使用旧版插件。'
+            '{count} 个项目的 UnrealAgentLink 更新失败（{project}：{reason}），这些项目仍在使用旧版插件。'
         },
         messages: {
           slnNotFound: '未找到 sln 文件',
           openFailed: '打开失败',
-          openSlnError: '打开 C++ 工程异常',
+          openSlnError: '打开 C++ 项目异常',
           pathNotFound: '未找到项目路径',
           openLocationError: '打开所在目录异常',
           pinSuccess: '已置顶',
@@ -1999,9 +2002,9 @@ export default {
           removeFromCollectionSuccess: '已移出分组',
           removeFromCollectionFailed: '移出分组失败',
           uprojectNotFound: '未找到 .uproject 文件',
-          projectMissingTitle: '找不到该工程',
+          projectMissingTitle: '找不到该项目',
           projectMissingContent:
-            '找不到工程文件，无法打开：{path}\n该文件可能已被删除或移动。是否从列表中移除此记录？',
+            '找不到项目文件，无法打开：{path}\n该文件可能已被删除或移动。是否从列表中移除此记录？',
           projectMissingRemove: '从列表移除',
           coverUpdated: '封面已更换，将不再自动更新',
           autoCoverRestored: '已恢复自动封面',
@@ -2010,7 +2013,7 @@ export default {
           selectCoverTitle: '选择封面图片',
           imageFile: '图片文件',
           readImageFailed: '读取图片失败',
-          importFailed: '导入工程失败',
+          importFailed: '导入项目失败',
           refreshSuccess: '项目列表已刷新',
           cleanupNone: '未发现失效项目记录',
           cleanupConfirmTitle: '发现 {count} 个失效项目记录',
@@ -2027,14 +2030,14 @@ export default {
         collection: {
           renameFailed: '重命名分组失败',
           filterAll: '全部',
-          filterHint: '仅显示「{name}」中的工程',
+          filterHint: '仅显示「{name}」中的项目',
           filterUngrouped: '未分组',
-          filterUngroupedHint: '仅显示未归入任何分组的工程',
-          emptyFilter: '此分组中暂无工程',
-          emptyFilterDesc: '将工程卡片拖到分组按钮上即可加入。',
+          filterUngroupedHint: '仅显示未归入任何分组的项目',
+          emptyFilter: '此分组中暂无项目',
+          emptyFilterDesc: '将项目卡片拖到分组按钮上即可加入。',
           dissolve: '解散分组',
           dissolveTitle: '解散分组「{name}」？',
-          dissolveContent: '分组将被移除，其中的工程将移至「未分组」，不会删除任何工程。',
+          dissolveContent: '分组将被移除，其中的项目将移至「未分组」，不会删除任何项目。',
           dissolveSuccess: '分组已解散',
           dissolveFailed: '解散分组失败'
         },
@@ -2073,20 +2076,20 @@ export default {
         },
         // 从模板创建工程
         createFromTemplateModal: {
-          title: '创建新工程',
+          title: '创建新项目',
           searchPlaceholder: '搜索模板...',
           addCustomTemplate: '添加自定义模板',
           selectTemplate: '选择模板',
-          projectName: '工程名称',
-          projectNamePlaceholder: '请输入工程名称',
+          projectName: '项目名称',
+          projectNamePlaceholder: '请输入项目名称',
           saveLocation: '保存位置',
           saveLocationPlaceholder: '请选择保存位置',
           pickFolder: '选择文件夹',
           createBtn: '创建',
           cancelBtn: '取消',
-          creating: '正在创建工程...',
-          createSuccess: '工程创建成功',
-          createFailed: '工程创建失败',
+          creating: '正在创建项目...',
+          createSuccess: '项目创建成功',
+          createFailed: '项目创建失败',
           loadingTemplates: '加载模板中...',
           loadFailed: '加载模板列表失败',
           loadError: '加载模板列表异常',
@@ -2094,14 +2097,14 @@ export default {
           addTemplateTitle: '添加自定义模板',
           addTemplateNameLabel: '模板名称',
           addTemplateNamePlaceholder: '请输入模板名称',
-          addTemplateSourceLabel: '源工程路径',
-          addTemplateSourcePlaceholder: '请选择源工程路径',
-          addTemplatePickProject: '选择工程',
+          addTemplateSourceLabel: '源项目路径',
+          addTemplateSourcePlaceholder: '请选择源项目路径',
+          addTemplatePickProject: '选择项目',
           addTemplateSuccess: '模板添加成功',
           addTemplateFailed: '模板添加失败',
           templateNameRequired: '请输入模板名称',
-          sourcePathRequired: '请选择源工程路径',
-          projectNameRequired: '请输入工程名称',
+          sourcePathRequired: '请选择源项目路径',
+          projectNameRequired: '请输入项目名称',
           saveLocationRequired: '请选择保存位置',
           templateNotSelected: '请先选择模板',
           // 用途分类
@@ -2125,7 +2128,7 @@ export default {
           sortSize: '按大小',
           sortAdded: '最近添加',
           emptyNoMatch: '未找到匹配的模板',
-          downloadHint: '下载到本地模板库后即可创建工程',
+          downloadHint: '下载到本地模板库后即可创建项目',
           // 全新安装的第一屏
           onboardTitle: '暂无模板',
           onboardDesc:
@@ -2174,32 +2177,32 @@ export default {
           // 详情面板
           noDescription: '暂无描述',
           configTitle: '选择模板',
-          createBtnLabel: '创建工程',
+          createBtnLabel: '创建项目',
           creatingBtnLabel: '创建中...',
           importCustomTemplateText: '添加我的模板'
         },
         // 导入本机已有工程
         importProjectModal: {
-          title: '导入已有工程',
-          subtitle: '从本地引擎最近打开的工程中选择，选中即可加入工程库',
-          subtitleIntoCollection: '从本地引擎最近打开的工程中选择，导入后加入「{name}」分组',
+          title: '导入已有项目',
+          subtitle: '从本地引擎最近打开的项目中选择，选中即可加入项目库',
+          subtitleIntoCollection: '从本地引擎最近打开的项目中选择，导入后加入「{name}」分组',
           pickFile: '选择 .uproject 文件',
-          dropHint: '列表中没有？可手动选择文件，或将 .uproject 直接拖入工程库',
-          searchPlaceholder: '搜索工程名称...',
+          dropHint: '列表中没有？可手动选择文件，或将 .uproject 直接拖入项目库',
+          searchPlaceholder: '搜索项目名称...',
           allVersions: '全部版本',
           importAll: '全部导入（{count}）',
           importingAll: '正在导入…',
-          scanning: '正在扫描本地引擎工程...',
-          empty: '未发现本地工程',
-          emptyDesc: '本地引擎中没有最近打开的工程，请先通过 Epic Launcher 打开工程后重试',
+          scanning: '正在扫描本地引擎项目...',
+          empty: '未发现本地项目',
+          emptyDesc: '本地引擎中没有最近打开的项目，请先通过 Epic Launcher 打开项目后重试',
           imported: '已导入',
           clickToImport: '点击导入',
           clickToJoin: '点击加入「{name}」分组',
           joinCollection: '加入分组',
-          importSuccess: '工程「{name}」已导入',
+          importSuccess: '项目「{name}」已导入',
           importFailed: '导入失败',
-          importError: '导入工程失败',
-          importAllSuccess: '成功导入 {success} 个工程',
+          importError: '导入项目失败',
+          importAllSuccess: '成功导入 {success} 个项目',
           importAllPartial: '导入完成：成功 {success} 个，失败 {fail} 个',
           timeToday: '今天',
           timeYesterday: '昨天',
@@ -2263,14 +2266,14 @@ export default {
       // 引擎没连时**必须**说出来：这时候「没问题」只代表命名没问题
       engineOffline: '引擎未连接，仅完成命名检查',
       // 引擎没连上、但知道这条对话是哪个工程时，问要不要替用户打开
-      openProjectTitle: '工程未打开',
+      openProjectTitle: '项目未打开',
       openProjectContent:
         '保存状态、编译结果和断开的引用需在编辑器中检查。是否打开「{name}」，并在连接后继续审查？',
       openProjectOk: '打开并审查',
       openProjectCancel: '只查命名',
       openingProject: '正在打开「{name}」，连接后自动审查…',
-      openProjectFailed: '工程打开失败：{error}',
-      pluginNotInstalled: '工程已打开，但插件未安装，无法连接引擎：{error}',
+      openProjectFailed: '项目打开失败：{error}',
+      pluginNotInstalled: '项目已打开，但插件未安装，无法连接引擎：{error}',
       editorWaitTimeout: '等待编辑器连接超时，请在编辑器打开后重新审查',
       failed: '审查执行失败',
       fix: '交给 AI 修复',
@@ -2284,7 +2287,7 @@ export default {
           '修不了的直说原因，不要绕过去。'
       },
       codes: {
-        missing: '报告已创建，但工程中未找到',
+        missing: '报告已创建，但项目中未找到',
         'still-there': '报告已删除，但仍然存在',
         unsaved: '修改仅存在于编辑器内存中，尚未保存到磁盘',
         'compile-error': '蓝图编译出错，当前不可用',
@@ -2426,7 +2429,7 @@ export default {
         ue_content_move: '批量移动资产',
         ue_content_naming_audit: '命名规范检查',
         ue_content_dependencies: '查看资产依赖',
-        ue_content_migrate: '迁移资产到其他工程',
+        ue_content_migrate: '迁移资产到其他项目',
         ue_content_set_properties: '修改资产设置',
         mesh_optimize: '生成网格 LOD / 碰撞',
         ue_datatable_edit: '修改数据表',
@@ -2617,6 +2620,8 @@ export default {
       scrollToBottom: '滚动到底部',
       discardLaterTurns: '将删除此后的 {count} 轮对话。',
       discardContinue: '继续',
+      discardAndRegenerate: '删除并重新生成',
+      discardAndResend: '删除并重新发送',
       discardCancel: '取消',
       我的资产库有多少的资产: '我的资产库有多少的资产'
     },
@@ -2745,7 +2750,7 @@ export default {
       latestRequestLabel: '最新要求',
       noTasks: '任务板为空',
       evidence: '证据：',
-      readOnlyHint: '只读：只查看，不修改工程',
+      readOnlyHint: '只读：只查看，不修改项目',
       steps: '最近动作',
       stepTimes: '共 {n} 次',
       noSteps: '暂无动态',
@@ -2754,8 +2759,8 @@ export default {
       doneAgo: '{ago}完成',
       sections: '共 {n} 节',
       kindVerb: {
-        read: '查看工程内容',
-        write: '修改工程内容',
+        read: '查看项目内容',
+        write: '修改项目内容',
         run: '执行操作',
         look: '查看画面',
         play: '试玩',
@@ -2923,6 +2928,7 @@ export default {
       agentMode: 'Agent'
     },
     topNav: {
+      more: '更多',
       agentMode: '智能对话',
       clearChat: '清空对话',
       exportImage: '导出图片',
@@ -2998,7 +3004,7 @@ export default {
         team_deliver: '提交交付',
         team_hire: '添加队员',
         team_dismiss: '辞退队员',
-        team_snapshot: '保存工程快照',
+        team_snapshot: '保存项目快照',
         ue_list: '查看列表',
         ue_project_asset_ranking: '统计资产占用',
         ue_find_heavy_assets: '查找大体积资产',
@@ -3047,9 +3053,9 @@ export default {
         ue_get_selection: '查看选中对象',
         ue_get_current_level: '查看当前关卡',
         ue_get_levels: '查看关卡列表',
-        ue_get_project_info: '查看工程信息',
+        ue_get_project_info: '查看项目信息',
         ue_get_config: '读取编辑器设置',
-        ue_content_search: '搜索工程资产',
+        ue_content_search: '搜索项目资产',
         ue_content_describe: '查看资产',
         ue_inspect_components: '查看组件',
         ue_light_census: '灯光普查',
@@ -3147,6 +3153,7 @@ export default {
       // 同一条对话已经有一轮在跑。不提 sessionId，也不提底下那个 IPC 通道叫什么 ——
       // 界面上「改方向」就是直接在输入框里继续打字
       sessionBusy: '此对话仍有一轮任务在运行。请等待其结束，或直接在输入框中输入调整指令。',
+      modelNotConfigured: '尚无可用的 AI 模型。请在「偏好设置 → 模型」中添加服务商并选择默认模型。',
       resume: '继续尝试',
       resumeProgress: '从断点继续执行…',
       resumeFailed: '无法从断点继续：{reason}',
@@ -3187,7 +3194,7 @@ export default {
       networkErrorDesc: '无法连接到模型服务。请检查网络、VPN、代理或模型来源地址。',
       usedSkills: '本轮使用的 Skills',
       userSkill: '用户 Skill',
-      projectSkill: '工程 Skill',
+      projectSkill: '项目 Skill',
       builtinSkill: '内置 Skill'
     },
     // 嵌入模式下右侧那块浏览器分屏
@@ -3237,7 +3244,7 @@ export default {
       types: {
         browserAction: '访问网页',
         destructive: '不可撤销',
-        mutating: '会改动工程'
+        mutating: '会改动项目'
       },
       // 工具名查得到人话就用人话（`assistant.changes.tools.*` 那张表），
       // 查不到退回工具名 —— 新工具忘了配文案时退化，而不是坏掉
@@ -3410,7 +3417,7 @@ export default {
 
       fileAccessScopeUeOnly: '仅虚幻相关',
       fileAccessScopeFull: '整台电脑',
-      fileAccessScopeUeOnlyHint: '仅限已安装引擎、已导入工程及素材库；受保护的敏感目录除外。',
+      fileAccessScopeUeOnlyHint: '仅限已安装引擎、已导入项目及素材库；受保护的敏感目录除外。',
       fileAccessScopeFullHint: '允许访问本机文件，不含受保护的敏感目录。',
       editorScreenshot: '允许编辑器截图',
       editorScreenshotDesc: '允许获取虚幻编辑器画面。',
@@ -3489,6 +3496,8 @@ export default {
       listNoteFull:
         '已开启 {on} / {total} 个，每次对话约增加 {tokens} token。已关闭的工具不提供给模型。',
       listNoteSearch: '常驻 {on} / {total} 个，每次对话约增加 {tokens} token；其余按需加载。',
+      listNoteFullNoCost: '已开启 {on} / {total} 个。已关闭的工具不提供给模型。',
+      listNoteSearchNoCost: '常驻 {on} / {total} 个，其余按需加载。',
       lockedHint: '不可撤销的工具无法关闭，此类工具由每一步的审批控制，而非本清单。',
       lockedToggleLabel: '{name}：不可撤销的工具不能关闭',
       categoryToggleLabel: '{name}：已开启 {on} / {total}',
@@ -3619,11 +3628,11 @@ export default {
         '上次整理于 {at}，新增 {added} 条、淘汰 {retired} 条。撤销后恢复到整理前的状态。',
       undone: '已撤销',
       undoFailed: '撤销失败：{reason}',
-      filter: { all: '全部', global: '通用', project: '工程' },
+      filter: { all: '全部', global: '通用', project: '项目' },
       showRetired: '显示已淘汰',
       loadFailed: '读取失败：{reason}',
       empty: '暂无经验。执行任务时遇到并已解决的问题将显示在此处。',
-      emptyProject: '此工程暂无经验。',
+      emptyProject: '此项目暂无经验。',
       layerGlobal: '通用',
       status: { trial: '试用中', proven: '已验证', retired: '已淘汰' },
       pinnedBadge: '固定',
@@ -3633,7 +3642,7 @@ export default {
         when: '触发条件',
         whenValue: '报错里含「{pattern}」',
         scope: '适用范围',
-        scopeGlobal: '所有工程',
+        scopeGlobal: '所有项目',
         scopeProject: '仅限 {name}',
         engines: '引擎版本',
         enginesOk: 'UE {versions} 成立',
@@ -3707,7 +3716,7 @@ export default {
         '四项合计 {total} Token。各项单价不同：缓存命中最低，写入缓存略高于新输入，具体以服务商计费为准。',
       changesTitle: '完成的改动',
       changesApplied: '已完成操作',
-      changesAppliedHint: '成功修改工程的操作数',
+      changesAppliedHint: '成功修改项目的操作数',
       changesTargets: '涉及资产',
       changesTargetsHint: '同一资产多次修改只计一次',
       changesPerTurn: '平均每轮',
@@ -3727,12 +3736,12 @@ export default {
         user: '自定义',
         unknown: '来源不详'
       },
-      projectsTitle: '按工程',
-      colProject: '工程',
+      projectsTitle: '按项目',
+      colProject: '项目',
       colTurns: '轮次',
       colTokens: 'Token（不含缓存）',
       colChanges: '改动',
-      noProject: '未关联工程',
+      noProject: '未关联项目',
       empty: '该时间段内无记录。'
     },
     // 知识库设置
@@ -3761,7 +3770,7 @@ export default {
       showDependenciesDesc: '在资产列表中显示自动收集的依赖资产（关闭后只显示手动导入的资产）',
       archiveImportAsk: '压缩包导入前询问',
       archiveImportAskDesc:
-        '将压缩包导入 UE 工程时，询问解压后导入还是原样复制（关闭后一律解压后导入）',
+        '将压缩包导入 UE 项目时，询问解压后导入还是原样复制（关闭后一律解压后导入）',
       showAssetVersion: '显示资产版本',
       showAssetVersionDesc: '鼠标悬停在资产卡片上时，在左上角显示保存该资产所用的引擎版本。',
       crossVaultSearch: '跨库搜索',
@@ -3858,7 +3867,7 @@ export default {
     },
     cli: {
       title: '命令行',
-      intro: '终端操作引擎前请打开目标工程。帮助：uebox --help',
+      intro: '终端操作引擎前请打开目标项目。帮助：uebox --help',
       loading: '正在检查…',
       unavailable: '未找到命令行程序，请重新安装应用。',
       location: '程序位置',
@@ -3882,8 +3891,8 @@ export default {
     project: {
       title: '项目',
       openBehavior: '打开行为',
-      hideWindowOnLaunch: '打开工程后隐藏主界面',
-      hideWindowOnLaunchDesc: '打开工程后收起至托盘，后台任务继续运行。'
+      hideWindowOnLaunch: '打开项目后隐藏主界面',
+      hideWindowOnLaunchDesc: '打开项目后收起至托盘，后台任务继续运行。'
     },
     plugin: {
       title: '插件',
@@ -3893,24 +3902,25 @@ export default {
       bridgeState: '引擎桥接',
       bridgeOn: '正常',
       bridgeOff: '未运行',
-      bridgeListening: '已在端口 {port} 上等待引擎接入。',
+      bridgeListening: '等待虚幻引擎连接。',
+      bridgePort: '端口 {port}',
       bridgeOffline: '桥接未运行，虚幻引擎无法连接。',
       // 还没问到状态时用这两条 —— 没核实过就不许报「没运行」
       bridgeChecking: '读取中',
       bridgeUnknown: '正在读取桥接状态…',
-      connectedProjects: '已连接的工程',
+      connectedProjects: '已连接的项目',
       connectedProjectsDesc:
-        '插件自动连接，断开后每 5 秒重试一次，无需手动连接。若工程已打开但数量始终为 0，通常是该工程未安装插件。',
+        '插件自动连接，断开后每 5 秒重试一次，无需手动连接。若项目已打开但数量始终为 0，通常是该项目未安装插件。',
       injectionBehavior: '安装方式',
       resources: '相关资源',
       autoEnableUnrealAgentLink: '自动安装连接插件',
-      autoEnableUnrealAgentLinkDesc: '打开工程时安装并启用连接插件。',
+      autoEnableUnrealAgentLinkDesc: '打开项目时安装并启用连接插件。',
       autoEnableUnrealAgentLinkEnabled: '自动安装插件已开启',
       autoEnableUnrealAgentLinkDisabled: '自动安装插件已关闭',
       crashRecovery: '崩溃恢复',
       autoRecoverEditorCrash: '允许 Agent 重开崩溃的编辑器',
       autoRecoverEditorCrashDesc:
-        'Agent 操作期间编辑器崩溃时，由 Agent 决定是否重开：关闭崩溃报告窗口，备份未保存的自动存档，然后重新打开工程。手动操作期间的崩溃不处理。5 分钟内再次崩溃则不再重开。',
+        'Agent 操作期间编辑器崩溃时，由 Agent 决定是否重开：关闭崩溃报告窗口，备份未保存的自动存档，然后重新打开项目。手动操作期间的崩溃不处理。5 分钟内再次崩溃则不再重开。',
       repairCleanup: '清理旧版插件',
       repairCleanupDesc: '清理引擎目录中的旧版连接插件；请先关闭虚幻编辑器。',
       repairCleanupAction: '清理旧版插件',
@@ -4149,7 +4159,7 @@ export default {
         // 这张表管两件事：从电脑导入时落到哪，以及 AI 整理时判断「放错了没有」。
         // 所以别再叫「从电脑导入的目录」—— 那个名字盖不住第二个用途
         title: '资产归属目录',
-        description: '设置各类资产的目标目录，供电脑导入和 AI 整理工程使用。',
+        description: '设置各类资产的目标目录，供电脑导入和 AI 整理项目使用。',
         add: '添加映射',
         remove: '删除',
         assetType: '资产类型',
@@ -4191,7 +4201,7 @@ export default {
         title: '整理时的改名规则',
         // 这一块以前没有界面。它现在的用途是「AI 整理工程时照着改名」，
         // 所以说明要写清楚「在哪生效、在哪不生效」，否则用户会以为导入也按它走
-        description: '设置额外的改名规则，仅在 AI 整理工程时使用，导入时不生效。',
+        description: '设置额外的改名规则，仅在 AI 整理项目时使用，导入时不生效。',
         add: '添加规则',
         remove: '删除',
         name: '规则名称',
@@ -4506,7 +4516,6 @@ export default {
       researchFailed: '深度研究失败',
       // 空状态
       emptyTitle: '工作台输出将保存在此处',
-      emptyDesc: '添加来源后，可生成信息图、思维导图、测验等。',
       // 菜单操作
       rename: '重命名',
       renameSuccess: '重命名成功',
@@ -4557,8 +4566,6 @@ export default {
       title: '添加来源',
       urlLabel: '网址',
       wechatLabel: '微信公众号文章链接',
-      description: '添加来源后，虚幻盒子可基于这些信息回答问题。',
-      examples: '（示例：UE 学习笔记、项目文档、会议记录等）',
       /*
        * 从工程里抓东西进知识库这一路的提示和来源标题。
        *
@@ -4611,9 +4618,7 @@ export default {
         title: '上传来源',
         dragHint: '拖放文件夹或',
         selectFile: '选择文件',
-        suffix: '，即可上传',
-        supportedTypes:
-          '支持的文件类型: PDF, Word（doc, docx）, Excel（xlsx, xls）, csv, txt, Markdown, 图片（jpg, jpeg, png, gif, bmp, webp, ico, tif, tiff, heic, heif, jp2）, 视频（mp4, avi, mov, mkv, wmv, flv, webm, m4v, 3gp）, 音频（mp3, wav, flac, ogg, m4a, aac, wma, opus, aiff, ape）'
+        suffix: '，即可上传'
       },
       ue: {
         title: 'UE 项目',
@@ -4836,8 +4841,7 @@ export default {
   },
   serverManagement: {
     header: {
-      title: '资产节点管理',
-      subtitle: '管理 standalone 节点连接、Vault 与平台授权'
+      title: '资产节点管理'
     },
     status: {
       connected: '已连接',
@@ -4872,7 +4876,7 @@ export default {
       addRootTitle: '新增资产路径（分组层）',
       rootButton: '资产路径',
       createButton: '新建资产库',
-      rootNamePlaceholder: '显示名称（如 工程库，留空取目录名）',
+      rootNamePlaceholder: '显示名称（如 项目库，留空取目录名）',
       rootPathPlaceholder: '服务器路径（必填，如 /volume1/UE资产库/Project）',
       creating: '创建中...',
       create: '创建',
@@ -5295,6 +5299,7 @@ export default {
       typeLabel: '集合'
     },
     menu: {
+      open: '打开',
       changeCover: '修改封面',
       recordCover: '录制封面',
       resetCover: '恢复默认封面',
@@ -5667,7 +5672,7 @@ export default {
     },
     removeConfirm: {
       title: '删除材质？',
-      content: '「{name}」将从材质库中删除，外部工程文件不受影响。',
+      content: '「{name}」将从材质库中删除，外部项目文件不受影响。',
       okText: '删除'
     }
   },
@@ -5989,6 +5994,8 @@ export default {
       unmute: '恢复收音',
       muted: '已暂停收音，后台任务继续运行',
       retry: '重试连接',
+      unconfigured: '未配置实时语音模型',
+      openModelSettings: '打开模型设置',
       boundCall: '语音通话：{name}',
       interruptByVoice: '直接说话或点击即可打断',
       // 说清「一直听着」——用户得知道麦克风现在是开的
@@ -6026,7 +6033,6 @@ export default {
     },
     skillMenu: {
       title: '命令与技能',
-      hint: '↑↓ 选择 · Enter 调用',
       loading: '正在读取已安装技能…',
       loadFailed: '技能列表读取失败',
       retry: '重试',
@@ -6034,7 +6040,6 @@ export default {
       groupCommands: '命令',
       groupSkills: '技能',
       attach: '添加文件',
-      attachHint: '图片、文档、表格、音视频',
       plusTooltip: '添加文件、命令与技能',
       source: {
         user: '用户',
@@ -6081,14 +6086,16 @@ export default {
       label: '思考程度',
       processing: '思考中...',
       finished: '思考过程',
-      autoDesc: '使用模型默认设置',
-      offDesc: '关闭推理',
-      minimalDesc: '最低限度推理',
-      lowDesc: '低强度推理',
-      mediumDesc: '中等强度推理',
-      highDesc: '高强度推理',
-      xhighDesc: '超高强度推理',
-      maxDesc: '最高强度推理',
+      levels: {
+        auto: '自动',
+        off: '关闭',
+        minimal: '最低',
+        low: '低',
+        medium: '中',
+        high: '高',
+        xhigh: '极高',
+        max: '最高'
+      },
       clamped: '{model} 不支持 {chosen} 档位，本次按 {actual} 执行',
       fast: '快速',
       fastDesc: '响应更快，额度消耗约 2 倍'
@@ -6097,22 +6104,22 @@ export default {
       readOnlyLabel: '只读',
       readOnlyDesc: '仅查看和分析，无修改权限',
       askLabel: '请求批准',
-      askDesc: '修改工程和资产时始终询问',
+      askDesc: '修改项目和资产时始终询问',
       autoEditLabel: '自动批准',
       autoEditDesc: '仅风险操作需要批准',
       yoloLabel: '完全访问权限',
-      yoloDesc: '可不受限制地修改工程、资产和本地文件',
+      yoloDesc: '可不受限制地修改项目、资产和本地文件',
       // 开启完全访问权限前的二次确认。参考 Codex 的做法：
       // 这一步不是走流程，是让用户真的看清自己在放开什么
       confirmTitle: '开启完全访问权限？',
-      confirmIntro: '虚幻盒子将无需批准即可对工程和本机执行以下操作，包括但不限于：',
-      confirmProject: '虚幻工程',
+      confirmIntro: '虚幻盒子将无需批准即可对项目和本机执行以下操作，包括但不限于：',
+      confirmProject: '虚幻项目',
       confirmProjectDesc: '创建、修改、删除关卡中的 Actor、蓝图、材质与资产',
       confirmFile: '文件和资产库',
       confirmFileDesc: '读取、写入、移动或删除资产库中的文件',
       confirmCommand: '引擎命令与脚本',
       confirmCommandDesc: '执行控制台命令、运行 Python 脚本、启用或停用插件',
-      confirmRisk: '可能导致资产被误删或工程被损坏。此设置可随时改回。',
+      confirmRisk: '可能导致资产被误删或项目被损坏。此设置可随时改回。',
       confirmOk: '确认',
       confirmCancel: '取消'
     },
@@ -6140,10 +6147,10 @@ export default {
     steerProjectMismatchQueued:
       '这条插话是在「{snapshotProject}」下发的，正在进行的这一轮在「{runProject}」上。这一轮结束后，它会按「{snapshotProject}」发出',
     steerNoProjectRestored:
-      '这条插话是在「{snapshotProject}」下发的，正在进行的这一轮未连接工程，没有送进去，内容已放回输入框',
+      '这条插话是在「{snapshotProject}」下发的，正在进行的这一轮未连接项目，没有送进去，内容已放回输入框',
     steerNoProjectQueued:
-      '这条插话是在「{snapshotProject}」下发的，正在进行的这一轮未连接工程。这一轮结束后，它会按「{snapshotProject}」发出',
-    steerOtherProject: '另一个工程',
+      '这条插话是在「{snapshotProject}」下发的，正在进行的这一轮未连接项目。这一轮结束后，它会按「{snapshotProject}」发出',
+    steerOtherProject: '另一个项目',
     queueAction: '排队',
     queueCancel: '取消此条',
     queueSteerNow: '现在插话',
@@ -6295,24 +6302,24 @@ export default {
     allEngineVersions: '全部 UE 版本',
     unknownEngineVersion: '版本未知',
 
-    targetNotConnected: '该工程尚未在 UE 中打开。此类文件需经 UE 转换后才能导入。',
+    targetNotConnected: '该项目尚未在 UE 中打开。此类文件需经 UE 转换后才能导入。',
     // 模型、贴图这类文件要靠 UE 转换：选中的工程没开着时，按钮直接替用户打开再接着导
     notOpened: '未打开',
-    openAndImport: '打开工程并导入',
+    openAndImport: '打开项目并导入',
     waitingForEditorButton: '等待 UE 启动…',
-    needsEditorNote: '{format} 需经 UE 转换，将先在 UE 中打开该工程',
+    needsEditorNote: '{format} 需经 UE 转换，将先在 UE 中打开该项目',
     waitingForEditor: '正在打开「{name}」，UE 启动完成后将自动开始导入。',
-    editorWaitTimeout: 'UE 长时间未连接到虚幻盒子。请确认工程已在 UE 中打开，然后重试。',
+    editorWaitTimeout: 'UE 长时间未连接到虚幻盒子。请确认项目已在 UE 中打开，然后重试。',
     alreadyRunningNotConnected:
-      '该工程已在 UE 中打开，但未连接到虚幻盒子，通常是因为 UnrealAgentLink 插件未启用。请启用插件并重启编辑器后重试。',
-    openProjectFailed: '打开工程失败：{error}',
-    uprojectMissing: '未找到该工程的 .uproject 文件，文件可能已被移动或删除。',
-    pluginNotInstalled: 'UnrealAgentLink 插件未安装，该工程无法连接到虚幻盒子：{error}',
-    addProject: '添加工程',
+      '该项目已在 UE 中打开，但未连接到虚幻盒子，通常是因为 UnrealAgentLink 插件未启用。请启用插件并重启编辑器后重试。',
+    openProjectFailed: '打开项目失败：{error}',
+    uprojectMissing: '未找到该项目的 .uproject 文件，文件可能已被移动或删除。',
+    pluginNotInstalled: 'UnrealAgentLink 插件未安装，该项目无法连接到虚幻盒子：{error}',
+    addProject: '添加项目',
     selected: '已选择',
     preparing: '准备中…',
-    loadingProjects: '正在读取工程…',
-    loadProjectsFailed: '读取工程列表失败',
+    loadingProjects: '正在读取项目…',
+    loadProjectsFailed: '读取项目列表失败',
     retry: '重试',
     sourceItems: '导入 {count} 项（文件夹包含其中的资产）',
     sourceName: '导入：{name}',
@@ -6329,14 +6336,14 @@ export default {
     compatibilityDetails:
       '{project} 为 UE {version}，以下 {count} 项需要更高版本：{assets}。仍然导入仅会原样复制文件，不做版本转换，在 UE 中通常无法打开。',
     blockedAssetsOverflow: '{assets}，等 {rest} 项',
-    chooseCompatibleProject: '更换工程',
+    chooseCompatibleProject: '更换项目',
     importCompatibleOnly: '仅导入其余项',
     forceImport: '仍然导入',
     forceImportAll: '仍然全部导入',
     missingPlugins: {
       title: '需启用 {count} 个插件',
       desc: '导入的资产依赖以下引擎插件，{project} 尚未启用。未启用时，蓝图编译将报告「无效类型」「找不到函数」等错误。',
-      restartHint: '将写入工程的 .uproject，重启虚幻编辑器后生效。',
+      restartHint: '将写入项目的 .uproject，重启虚幻编辑器后生效。',
       enable: '启用插件',
       later: '暂不启用',
       done: '已启用 {count} 个插件，重启虚幻编辑器后生效',
@@ -6346,19 +6353,19 @@ export default {
       unavailableTitle: '本机缺少 {count} 项',
       unavailableDesc: '虚幻盒子无法自动启用以下项，安装前相关蓝图将无法打开：',
       fromProject: '来自「{project}」',
-      projectCode: '「{project}」的工程 C++ 代码',
-      projectCodeUnknown: '原工程的 C++ 代码',
-      onlyModuleName: '仅知模块名，可能来自第三方插件或原工程的 C++ 代码',
+      projectCode: '「{project}」的项目 C++ 代码',
+      projectCodeUnknown: '原项目的 C++ 代码',
+      onlyModuleName: '仅知模块名，可能来自第三方插件或原项目的 C++ 代码',
       openFab: '在 Fab 上查看',
-      unavailableHint: '安装插件后重启编辑器；原工程的 C++ 代码需连同源码一并复制并编译。',
+      unavailableHint: '安装插件后重启编辑器；原项目的 C++ 代码需连同源码一并复制并编译。',
       gotIt: '知道了'
     },
 
-    title: '导入到工程',
+    title: '导入到项目',
     archive: {
       title: '检测到压缩包',
       question: '选择「{name}」的导入方式',
-      extractOption: '解压后导入：内容解压至工程 Content 目录，可直接在 UE 中查看',
+      extractOption: '解压后导入：内容解压至项目 Content 目录，可直接在 UE 中查看',
       copyOption: '原样复制：将压缩包复制到 Content/Imported，需自行解压',
       extractAction: '解压后导入',
       copyAction: '原样复制',
@@ -6382,12 +6389,12 @@ export default {
     },
     unnamedProject: '未命名项目',
     connected: '已连接',
-    emptyNoMatch: '没有匹配的工程',
-    emptyNoProjects: '暂无工程，请点击右上角「添加工程」',
-    emptyNoProjectsInGroup: '该分组中暂无工程',
+    emptyNoMatch: '没有匹配的项目',
+    emptyNoProjects: '暂无项目，请点击右上角「添加项目」',
+    emptyNoProjectsInGroup: '该分组中暂无项目',
     cancel: '取消',
     confirm: '确认',
-    importPathTooltip: '资产在工程中的导入路径，例如 Imported',
+    importPathTooltip: '资产在项目中的导入路径，例如 Imported',
     importPathLabel: '导入路径',
     normalizedImport: '规范化导入',
     fileTypes: {
@@ -6415,7 +6422,7 @@ export default {
     keepNative: '保留原格式',
     normalizedImportOnlyUAsset: '规范化导入仅支持 .uasset / .umap 文件',
     normalizedImportTooltip: '将资产规范化导入到 {path}',
-    taskName: '导入 {count} 个资产到工程',
+    taskName: '导入 {count} 个资产到项目',
     unknownProject: '未知项目',
     stagePreparing: '正在准备导入…',
     importFailed: '导入失败',
@@ -6423,9 +6430,9 @@ export default {
     copyingFiles: '{base} · 已写入 {files}/{totalFiles} 个文件（{bytes}/{totalBytes}）',
     stageCancelling: '正在中止，等待当前文件写入完成…',
     doneCancelled: '已中止：成功 {success}，已存在 {existing}',
-    projectPathNotFound: '未找到工程路径',
+    projectPathNotFound: '未找到项目路径',
     copyFailed: '复制失败：{name}',
-    copiedToProject: '已复制 {count} 个文件到工程',
+    copiedToProject: '已复制 {count} 个文件到项目',
     copyFailedCount: '{count} 个文件复制失败',
     copyError: '复制文件失败：{error}',
     ueNotConnectedFile: 'UE 未连接，无法导入 {name}',
@@ -6440,14 +6447,14 @@ export default {
     ueNotConnected: 'UE 未连接',
     ueNotConnectedImportFailed: 'UE 未连接，无法导入',
     copyingUnrealAssets: '正在复制虚幻资产…',
-    assetExists: '资产已存在于工程中',
+    assetExists: '资产已存在于项目中',
     doneCopied: '已复制 {copied}/{total} 个文件',
     importException: '导入异常',
-    selectProjectFirst: '请先选择工程',
+    selectProjectFirst: '请先选择项目',
     noImportableAssets: '没有可导入的资产',
     needUEConnection: {
       title: '需要连接 UE',
-      content: '规范化导入需要连接 UE 引擎，请先在工程中启用虚幻盒子插件并打开工程。',
+      content: '规范化导入需要连接 UE 引擎，请先在项目中启用虚幻盒子插件并打开项目。',
       okText: '知道了'
     },
     folderKeyNotFound: '未找到文件夹标识',
@@ -6464,7 +6471,7 @@ export default {
     pluginFolderEmpty: '插件文件夹为空',
     assetPathNotFound: '未找到资产路径',
     pluginDirNotFound: '未找到插件目录',
-    sourceOrProjectPathNotFound: '未找到插件源目录或工程路径',
+    sourceOrProjectPathNotFound: '未找到插件源目录或项目路径',
     pluginImported: '插件 {name} 已导入到 {path}',
     pluginImportFailed: '插件导入失败：{error}',
     unknownError: '未知错误',
@@ -6710,11 +6717,12 @@ export default {
     uploadFailed: '{name} 上传失败'
   },
   assistantTopNav: {
-    noConnectedProjects: '当前没有已连接工程',
+    noConnectedProjects: '当前没有已连接项目',
     // 右上角的对话工程标签
     sessionProject: {
       none: '未归属项目',
-      pick: '归入项目'
+      pick: '归入项目',
+      current: '当前项目'
     },
     // 顶栏状态监控（工程胶囊左边那个心跳按钮）
     statusMonitor: {
@@ -6728,7 +6736,7 @@ export default {
       updatedAt: '更新于 {time}',
       loading: '正在读取…',
       loadFailed: '读取编辑器状态失败，请稍后点击刷新重试。',
-      pluginOutdated: '工程里的 UnrealAgentLink 插件版本较旧，更新插件并重启编辑器后可用。',
+      pluginOutdated: '项目里的 UnrealAgentLink 插件版本较旧，更新插件并重启编辑器后可用。',
       pending: '暂无数据',
       unsupported: '此版本不提供',
       unit: {
@@ -6771,8 +6779,8 @@ export default {
     footerNote: 'NotebookLM 提供的内容未必准确，因此请仔细核查回答内容。'
   },
   projectSelectModal: {
-    title: '发现多个工程',
-    description: '在目录 "{path}" 中发现了 {count} 个工程，请选择要导入的工程：',
+    title: '发现多个项目',
+    description: '在目录 "{path}" 中发现了 {count} 个项目，请选择要导入的项目：',
     selectAll: '全选',
     cancel: '取消',
     importSelected: '导入选中 ({count})'
@@ -6981,13 +6989,23 @@ export default {
       title: '删除确认',
       okText: '删除',
       cancelText: '取消',
-      content: '将删除 {filesCount} 个文件和 {foldersCount} 个文件夹',
+      content: {
+        named: '将删除「{name}」。',
+        files: '将删除 {count} 个文件。',
+        folders: '将删除 {count} 个文件夹。',
+        mixed: '将删除 {filesCount} 个文件和 {foldersCount} 个文件夹。'
+      },
       recoverable: '将移至「最近删除」，之后可恢复。',
       dontAskAgain: '不再提示',
       network: {
         title: '删除共享库中的内容？',
-        content:
-          '将删除 {filesCount} 个文件和 {foldersCount} 个文件夹，同时删除共享盘上对应的目录。',
+        content: {
+          named: '将删除「{name}」，同时删除共享盘上对应的目录。',
+          files: '将删除 {count} 个文件，同时删除共享盘上对应的目录。',
+          folders: '将删除 {count} 个文件夹，同时删除共享盘上对应的目录。',
+          mixed:
+            '将删除 {filesCount} 个文件和 {foldersCount} 个文件夹，同时删除共享盘上对应的目录。'
+        },
         irreversible: '团队所有成员都将失去这些内容。共享库没有「最近删除」，删除后无法恢复。'
       }
     },
@@ -7421,7 +7439,7 @@ export default {
   snippetCapture: {
     title: '从引擎保存片段',
     prompt:
-      '将当前 UE 工程中的一段蓝图逻辑保存到蓝图库。' +
+      '将当前 UE 项目中的一段蓝图逻辑保存到蓝图库。' +
       '先用 blueprint_get_graph 读取我指定的图表并列出节点，' +
       '待我确认要保存的节点和名称后，再用 blueprint_library_save 保存。' +
       '如无法保存，请完整列出受阻的节点及原因，不要只报告失败。',
@@ -7430,7 +7448,7 @@ export default {
   snippetDetail: {
     back: '返回',
     formBadge: '片段',
-    applyToProject: '应用到当前工程',
+    applyToProject: '应用到当前项目',
     nodes: '节点',
     connections: '连线',
     openPorts: '悬空端口',
@@ -7438,14 +7456,14 @@ export default {
     source: '来自',
     openPortsTitle: '存在悬空端口',
     openPortsHint:
-      '这些引脚原本连接到选区外部，在片段中处于断开状态。应用到工程后，需在 UE 中手动连接。',
+      '这些引脚原本连接到选区外部，在片段中处于断开状态。应用到项目后，需在 UE 中手动连接。',
     noCanvasTitle: '为何不显示节点图',
     noCanvasHint:
       '片段保存的是 UE 导出文本，库中的渲染器可以读取，但该渲染器是编辑器，拖动节点即会修改内容，而片段无处保存这些修改，看似可编辑，修改实际会全部丢失。需先为其增加真正的只读模式才能接入。如需了解该片段的内容，可询问右侧助手，助手已获取该片段的全部内容。',
     applyPrompt:
-      '将蓝图库中的片段「{name}」（entry_id: {id}）应用到当前工程。' +
+      '将蓝图库中的片段「{name}」（entry_id: {id}）应用到当前项目。' +
       '先用 library_search 确认该条目，再询问我要写入哪个蓝图的哪张空图，然后用 blueprint_library_apply 写入。',
-    applyFailed: '应用到工程失败：{reason}'
+    applyFailed: '应用到项目失败：{reason}'
   },
   blueprintEditor: {
     topbar: {
@@ -7773,13 +7791,13 @@ export default {
         writing: '写入本地数据库',
         uploading: '上传中',
         detecting: '检测文件类型',
-        scanProject: '扫描工程目录',
+        scanProject: '扫描项目目录',
         packUpload: '打包上传（MB）',
         downloadArchive: '下载整包（MB）',
         extractArchive: '解压'
       },
-      selectProjectArchiveTitle: '选择要整包上传的工程目录',
-      selectPullDestTitle: '选择工程存放目录',
+      selectProjectArchiveTitle: '选择要整包上传的项目目录',
+      selectPullDestTitle: '选择项目存放目录',
       projectArchivePulling: '正在取回整包',
       projectArchivePulled: '{name} 已取回并解压到 {path}（{files} 个文件，下载 {rate} MB/s）',
       projectArchiveDownloadedOnly: '{name} 已下载到 {path}，请使用解压软件解压',
@@ -7802,7 +7820,7 @@ export default {
     importFolder: '导入文件夹',
     importFile: '导入文件',
     importProjectArchive:
-      '工程整包上传（打包为一个 zip 上传到服务器，数千个文件的工程可在几分钟内完成）',
+      '项目整包上传（打包为一个 zip 上传到服务器，数千个文件的项目可在几分钟内完成）',
     upgrade: {
       checking: '正在检查网络库升级条件…',
       checkingStatus: '检查中…',
@@ -8017,18 +8035,18 @@ export default {
   importResultModal: {
     title: '导入到「{name}」不完整',
     headlinePlanErrors: '{count} 个资产未能开始导入',
-    headlineOrphans: '{count} 个依赖文件未能写入工程',
+    headlineOrphans: '{count} 个依赖文件未能写入项目',
     headlineUnattributed: '{count} 个缺失依赖无法确定引用方',
     noDetail: '本次导入不完整，但没有更多详细信息。',
     separator: '，',
     listSeparator: '、',
     sectionPlanErrors: '未能开始导入的资产',
     headlineMissing: '缺失 {count} 个依赖',
-    headlineFiles: '{count} 个文件未写入工程',
+    headlineFiles: '{count} 个文件未写入项目',
     headlineUnconfirmed: '{count} 个资产无法确认是否完整导入',
     headlineConflicts: '{count} 处目标路径冲突',
     sectionMissing: '缺失的依赖',
-    sectionFiles: '未能写入工程的文件',
+    sectionFiles: '未能写入项目的文件',
     sectionUnconfirmed: '无法确认是否完整导入',
     sectionConflicts: '目标路径冲突',
     unconfirmedNote: '这些资产的依赖过多，未能全部检查；且本批次中确实存在问题，因此不能视为正常。',
@@ -8048,7 +8066,7 @@ export default {
     retry: '重试导入',
     retrySucceeded: '已全部导入',
     retrying: '正在重试导入…',
-    retryPartial: '.uasset 部分已全部导入；外部文件（FBX/贴图等）需在工程打开时才能重试',
+    retryPartial: '.uasset 部分已全部导入；外部文件（FBX/贴图等）需在项目打开时才能重试',
     retryStillFailing: '仍未全部导入，详情已更新',
     close: '关闭'
   },
@@ -8077,9 +8095,9 @@ export default {
           prompt: '检查{subject}是否存在性能或健壮性问题：每帧开销、空引用、可简化之处。'
         },
         apply: {
-          title: '应用到当前工程',
+          title: '应用到当前项目',
           desc: '写入空图，编译并保存',
-          prompt: '将{subject}应用到当前工程。先说明要写入哪个蓝图的哪张图，经我确认后再执行。'
+          prompt: '将{subject}应用到当前项目。先说明要写入哪个蓝图的哪张图，经我确认后再执行。'
         }
       },
       material: {
@@ -8534,7 +8552,7 @@ export default {
     inviteCopied: '已复制邀请链接',
     remove: {
       title: '从列表移除 {name}？',
-      body: '只从盒子的列表里移除。你电脑上的工程和签出不受影响。',
+      body: '只从盒子的列表里移除。你电脑上的项目和签出不受影响。',
       action: '移除'
     },
     cancel: '取消',
@@ -8544,7 +8562,7 @@ export default {
     pathsMore: '{name} 等 {n} 个',
     join: {
       cardTitle: '加入团队',
-      cardDesc: '用公司账号登录，打开团队的工程和资产库',
+      cardDesc: '用公司账号登录，打开团队的项目和资产库',
       title: '加入团队',
       link: '邀请链接',
       linkPlaceholder: '粘贴管理员发给你的链接',
@@ -8558,7 +8576,7 @@ export default {
         disabled: '你的账号已停用，找 IT',
         badLink: '这个链接打不开，找管理员要个新的'
       },
-      noProjects: '你还没被加进任何工程',
+      noProjects: '你还没被加进任何项目',
       sendAccount: '把账号发给 IT：{account}',
       copyAccount: '复制账号',
       accountCopied: '已复制账号'
@@ -8571,7 +8589,7 @@ export default {
       frozen: '冻结中：{note} · 提交要等管理员通过',
       waiting: ' · 在等 {n} 个',
       unfreeze: '解冻',
-      notLocal: '这个工程还不在你电脑上。',
+      notLocal: '这个项目还不在你电脑上。',
       syncToLocal: '同步到本机',
       ready: '好了。',
       openInUe: '在 UE 里打开'
@@ -8586,16 +8604,16 @@ export default {
       sizeHere: '约 {size} · 还剩 {free}',
       freeHere: '还剩 {free}',
       notEnoughHere: '空间不够，还差 {need}。',
-      haveIt: '电脑上已经有这个工程？',
+      haveIt: '电脑上已经有这个项目？',
       pickIt: '选它',
       existing: '只下载不一样的文件。和团队不一样的换成团队的，你的先留一份。',
       start: '开始',
       done: '好了。'
     },
     putIn: {
-      empty: '工程还是空的。',
-      emptyWait: '工程还是空的，等管理员放进来。',
-      action: '放入电脑上的工程',
+      empty: '项目还是空的。',
+      emptyWait: '项目还是空的，等管理员放进来。',
+      action: '放入电脑上的项目',
       title: '放入 {name}',
       from: '从',
       pick: '选择 .uproject 所在的文件夹',
@@ -8651,8 +8669,8 @@ export default {
       pending: '这个文件夹里有 {n} 个改动还没提交，先在 UE 里提交。'
     },
     reasons: {
-      cloudDrives: '网盘是本地库的导入来源。团队工程的文件在 UE 里提交。',
-      import: '往工程里加文件：放进你电脑上的工程，在 UE 里提交',
+      cloudDrives: '网盘是本地库的导入来源。团队项目的文件在 UE 里提交。',
+      import: '往项目里加文件：放进你电脑上的项目，在 UE 里提交',
       offline: '连不上团队'
     },
     grid: {
@@ -8956,5 +8974,36 @@ export default {
       approve: '通过 交付 {name}',
       reference: '发给 {name}'
     }
+  },
+  skillDescriptions: {
+    'agent-complaint': '把刚结束任务里遇到的阻碍整理成开发者可处理的缺陷报告',
+    'ai-3d-asset-production': '用 AI 生图、DCC 与引擎能力制作新的 3D 资产',
+    'asset-library': '搜索和整理虚幻盒子资产库中的资产、备注与标签',
+    'blender-ue-pipeline': '连接 Blender，精修 UE 静态网格体或建筑模型后导回引擎',
+    'deep-research': '检索公开网页与知识库，撰写带引用的调研报告',
+    'game-jam': '陪同完成限时 Game Jam，从立项到提交作品',
+    'image-generation': '按要求生成或修改图片',
+    'knowledge-base-and-projects': '管理知识库来源、项目库与模板项目，向项目导入资产',
+    'local-files': '读写本机文件、搜索内容、运行程序',
+    'sound-effects': '生成可直接导入 UE 的 WAV 游戏音效',
+    'task-to-video': '把当前任务与结果做成可编辑的教程或宣传视频',
+    'ue-actor-placement': '在当前关卡中放置、查询、移动、修改和删除 Actor',
+    'ue-ai-render-from-blockout': '从白模截取视口，生成 AI 概念效果图',
+    'ue-animation-retargeting': '在骨架之间重定向动画并预览结果',
+    'ue-blueprint-graph-editing': '编写和修改蓝图图表中的节点、连线与默认值',
+    'ue-content-import-organize': '导入外部文件，查找、重命名、移动资产并追踪引用',
+    'ue-cpp-workflow': '编写、编译 C++ 代码并热重载到编辑器',
+    'ue-editor-inspection': '查看视口、项目设置、关卡构成并修改引擎配置',
+    'ue-geometry-editing': '用 Geometry Script 编辑网格体几何',
+    'ue-landscape': '创建地形并配置运行时虚拟纹理',
+    'ue-level-organize': '把关卡中的 Actor 归入大纲视图文件夹',
+    'ue-material-authoring': '创建和修改材质图表、材质实例，并排查材质问题',
+    'ue-material-substrate': '编写 Substrate 材质（UE 5.4+）',
+    'ue-pcg-scattering': '搭建和调试 PCG 图表，在地形上散布网格体',
+    'ue-project-audit': '审计项目体积、性能与资产问题，输出整改报告',
+    'ue-sequencer': '在关卡序列中编写镜头运动关键帧',
+    'ue-skill-creator': '把验证过的做法沉淀为技能，或修正有误的技能',
+    'ue-system-diagnostics': '运行控制台命令与 Python，查看性能数据和崩溃报告，管理插件',
+    'ue-widget-umg-layout': '创建和编辑 UMG 控件蓝图'
   }
 }

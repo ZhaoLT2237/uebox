@@ -175,6 +175,14 @@ const enabledCost = computed(() => {
   return { count: on.length, tokens: on.reduce((sum, tool) => sum + tool.tokens, 0) }
 })
 
+/** 一个 token 都不增加时不写「约增加 0 token」 */
+const listNoteKey = computed(() => {
+  const base = toolSearchEnabled.value
+    ? 'profile.tools.listNoteSearch'
+    : 'profile.tools.listNoteFull'
+  return enabledCost.value.tokens > 0 ? base : `${base}NoCost`
+})
+
 /** 1200 → 1.2k。四位数的精确值在这儿没有意义，还更难一眼读出量级 */
 function formatTokens(tokens: number): string {
   return tokens >= 1000 ? `${(tokens / 1000).toFixed(1)}k` : String(tokens)
@@ -319,7 +327,7 @@ onMounted(refresh)
            带上数字：关掉东西换来了多少，不给数就只能凭感觉 -->
       <p v-if="!loading && !loadError" class="section-note">
         {{
-          $t(toolSearchEnabled ? 'profile.tools.listNoteSearch' : 'profile.tools.listNoteFull', {
+          $t(listNoteKey, {
             on: enabledCost.count,
             total: tools.length,
             tokens: formatTokens(enabledCost.tokens)

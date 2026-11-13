@@ -1,6 +1,6 @@
 <template>
   <div class="voice-status-panel">
-    <span role="status" aria-live="polite">{{ voice.error.value || statusText }}</span>
+    <span role="status" aria-live="polite">{{ displayText }}</span>
     <template v-if="voice.active.value">
       <AppButton variant="text" size="small" @click="emit('open-call')">
         {{ t('assistantInputComposer.voice.boundCall', { name: boundTitle }) }}
@@ -23,14 +23,17 @@
     <AppButton v-if="voice.connecting.value" variant="text" size="small" @click="voice.stop()">
       {{ t('assistantInputComposer.voice.cancelConnection') }}
     </AppButton>
-    <AppButton
-      v-if="voice.error.value && !voice.connecting.value && !voice.active.value"
-      variant="text"
-      size="small"
-      @click="emit('retry')"
-    >
-      {{ t('assistantInputComposer.voice.retry') }}
-    </AppButton>
+    <template v-if="voice.error.value && !voice.connecting.value && !voice.active.value">
+      <AppButton v-if="unconfigured" variant="text" size="small" @click="openModelSettings">
+        {{ t('assistantInputComposer.voice.openModelSettings') }}
+      </AppButton>
+      <AppButton v-else variant="text" size="small" @click="emit('retry')">
+        {{ t('assistantInputComposer.voice.retry') }}
+      </AppButton>
+      <AppButton variant="text" size="small" @click="voice.clearError()">
+        {{ t('common.close') }}
+      </AppButton>
+    </template>
   </div>
 </template>
 
@@ -42,10 +45,12 @@
  * 这样高度算进 `--composer-height`，不会盖住铺满整页的消息区最后几行。
  */
 import AppButton from '@renderer/components/AppButton.vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import type { RealtimeVoiceState } from '../composables/useRealtimeVoice'
 
-defineProps<{
+const props = defineProps<{
   voice: RealtimeVoiceState
   statusText: string
   boundTitle: string
@@ -57,6 +62,21 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const router = useRouter()
+
+/** 没配实时语音：重试没用，只说一句并给设置入口。主进程原文不铺到界面上 */
+const unconfigured = computed(() => props.voice.errorCode.value === 'unconfigured')
+const displayText = computed(() => {
+  if (!props.voice.error.value) return props.statusText
+  return unconfigured.value
+    ? t('assistantInputComposer.voice.unconfigured')
+    : props.voice.error.value
+})
+
+function openModelSettings(): void {
+  props.voice.clearError()
+  void router.push({ path: '/preferences', query: { tab: 'models' } })
+}
 </script>
 
 <style scoped>

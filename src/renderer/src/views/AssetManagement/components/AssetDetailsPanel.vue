@@ -648,7 +648,7 @@
         <div class="meta-grid-container">
           <div class="meta-row">
             <label class="meta-label">{{ $t('assetLib.details.path') }}</label>
-            <div class="meta-value path-value" :title="folder.path">{{ folder.path }}</div>
+            <div class="meta-value path-value" :title="folderPathText">{{ folderPathText }}</div>
           </div>
           <div class="meta-row">
             <label class="meta-label">{{ $t('assetLib.details.modified') }}</label>
@@ -779,7 +779,7 @@ import AppModal from '@renderer/components/AppModal.vue'
 import AppTooltip from '@renderer/components/AppTooltip.vue'
 import AppButton from '@renderer/components/AppButton.vue'
 import AppTag from '@renderer/components/AppTag.vue'
-import { displayFolderName } from '../utils/folderDisplayName'
+import { displayFolderName, displayFolderPath } from '../utils/folderDisplayName'
 import { ref, watch, computed, inject, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -856,6 +856,9 @@ const emit = defineEmits(['close', 'updatePoster', 'folder-updated', 'locate-in-
 
 const { t } = useI18n()
 const router = useRouter()
+const folderPathText = computed(() =>
+  displayFolderPath(props.folder?.path, t('assetLib.fileList.rootFolder'))
+)
 const selectedAsset = inject('selectedAsset', null) as any
 const showEditIcon = ref(false)
 const isDragOver = ref(false)

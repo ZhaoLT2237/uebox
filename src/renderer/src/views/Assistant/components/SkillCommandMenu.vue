@@ -10,7 +10,6 @@
     <!-- 面板里任何地方按下都不抢输入框焦点：「+」打开的面板靠输入框失焦收起，拖滚动条也不能把它拖没了 -->
     <div class="skill-menu-header">
       <span class="skill-menu-title">{{ t('assistantInputComposer.skillMenu.title') }}</span>
-      <span class="skill-menu-hint">{{ t('assistantInputComposer.skillMenu.hint') }}</span>
     </div>
 
     <!--
@@ -31,17 +30,12 @@
           class="skill-command-item attach-item"
           :class="{ selected: selectedIndex === 0 }"
           :aria-selected="selectedIndex === 0"
-          @mouseenter="selectedIndex = 0"
+          @mousemove="hoverAt(0, $event)"
           @mousedown.prevent
           @click="selectAt(0)"
         >
           <PhPaperclip class="attach-icon" />
           <span class="attach-name">{{ t('assistantInputComposer.skillMenu.attach') }}</span>
-          <span class="skill-command-meta">
-            <span class="skill-description">{{
-              t('assistantInputComposer.skillMenu.attachHint')
-            }}</span>
-          </span>
         </button>
       </div>
 
@@ -63,7 +57,7 @@
           class="skill-command-item"
           :class="{ selected: offset + index === selectedIndex }"
           :aria-selected="offset + index === selectedIndex"
-          @mouseenter="selectedIndex = offset + index"
+          @mousemove="hoverAt(offset + index, $event)"
           @mousedown.prevent
           @click="selectAt(offset + index)"
         >
@@ -110,7 +104,7 @@
           class="skill-command-item"
           :class="{ selected: skillStart + index === selectedIndex }"
           :aria-selected="skillStart + index === selectedIndex"
-          @mouseenter="selectedIndex = skillStart + index"
+          @mousemove="hoverAt(skillStart + index, $event)"
           @mousedown.prevent
           @click="selectAt(skillStart + index)"
         >
@@ -120,7 +114,7 @@
           <span class="skill-command-meta">
             <span class="skill-source">{{ sourceLabel(skill.source) }}</span>
             <span aria-hidden="true">·</span>
-            <span class="skill-description">{{ skill.description }}</span>
+            <span class="skill-description">{{ describeSkill(skill) }}</span>
           </span>
         </button>
       </div>
@@ -130,6 +124,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import { skillDescription } from '@renderer/utils/skillDescription'
 import { useI18n } from 'vue-i18n'
 import { PhPaperclip } from '@phosphor-icons/vue'
 import type { AgentV3SkillSummary } from '@/api/agentV3'
@@ -163,7 +158,9 @@ const emit = defineEmits<{
   (event: 'close'): void
 }>()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
+const describeSkill = (skill: Parameters<typeof skillDescription>[0]): string =>
+  skillDescription(skill, te, t)
 const menuRef = ref<HTMLElement | null>(null)
 const selectedIndex = ref(0)
 const filteredCommands = computed(() =>
@@ -197,6 +194,18 @@ watch(selectedIndex, async () => {
 
 function sourceLabel(source: AgentV3SkillSummary['source']): string {
   return t(`assistantInputComposer.skillMenu.source.${source}`)
+}
+
+/**
+ * 鼠标真的动了才跟着改高亮。用 mouseenter 的话，方向键滚动列表时静止的鼠标
+ * 底下换了一条，浏览器补发的 mouseenter 会把键盘刚选中的那条抢回去。
+ * 滚动后浏览器也可能补发坐标不变的 mousemove，按坐标再过滤一次。
+ */
+let lastPointer: { x: number; y: number } | null = null
+function hoverAt(index: number, event: MouseEvent): void {
+  if (lastPointer && lastPointer.x === event.clientX && lastPointer.y === event.clientY) return
+  lastPointer = { x: event.clientX, y: event.clientY }
+  selectedIndex.value = index
 }
 
 function moveSelection(delta: number): void {
@@ -290,7 +299,6 @@ defineExpose({ onKeydown })
   font-weight: var(--font-weight-semibold);
 }
 
-.skill-menu-hint,
 .skill-command-meta,
 .skill-menu-state {
   color: var(--color-text-muted);

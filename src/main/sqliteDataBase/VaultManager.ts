@@ -42,8 +42,13 @@ export const SYSTEM_VAULT_KEYS = {
   AIGC: 'aigc'
 } as const
 export type SystemVaultKey = (typeof SYSTEM_VAULT_KEYS)[keyof typeof SYSTEM_VAULT_KEYS]
-export const DEFAULT_VAULT_NAME = '默认保管库'
+// 只用于新建默认库；老用户库里存的「默认保管库」不改，界面显示时由渲染进程按当前语言换掉
+export const DEFAULT_VAULT_NAME = '默认资产库'
 export const AIGC_VAULT_NAME = 'AIGC 资产库'
+/** 系统库改名前写进数据的旧名：还没带 system_key 的老库靠它认回来，不另建一个 */
+const LEGACY_SYSTEM_VAULT_NAMES: Partial<Record<SystemVaultKey, string[]>> = {
+  [SYSTEM_VAULT_KEYS.DEFAULT]: ['默认保管库']
+}
 
 export interface VaultInfo {
   id: string
@@ -325,8 +330,10 @@ export class VaultManager {
       return existingSystemVault
     }
 
-    const existingNameVault = this.getVaultByName(config.name)
-    if (existingNameVault && existingNameVault.vaultType !== VaultType.NETWORK) {
+    const existingNameVault = [config.name, ...(LEGACY_SYSTEM_VAULT_NAMES[config.systemKey] ?? [])]
+      .map((name) => this.getVaultByName(name))
+      .find((vault) => vault && vault.vaultType !== VaultType.NETWORK)
+    if (existingNameVault) {
       this.promoteVaultToSystem(existingNameVault.id, config)
       const promotedVault = this.getVaultById(existingNameVault.id)
       if (promotedVault) {

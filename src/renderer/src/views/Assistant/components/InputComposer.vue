@@ -455,11 +455,9 @@
                 >
                   <span class="thinking-level-name">
                     {{ opt.label }}
-                    <!-- 厂商给这一档起了别名时，把档位原名跟在后面 —— 用户在
-                       官方文档或别的客户端里看到的是原名 -->
-                    <span v-if="opt.original" class="thinking-alias">({{ opt.original }})</span>
+                    <!-- 厂商给这一档起了别名时跟在后面，和厂商文档对得上 -->
+                    <span v-if="opt.alias" class="thinking-alias">({{ opt.alias }})</span>
                   </span>
-                  <span class="mode-option-desc">{{ opt.desc }}</span>
                   <div v-if="thinkingLevel === opt.value" class="mode-option-check">
                     <PhCheck />
                   </div>
@@ -471,8 +469,8 @@
                 <div v-if="thinkingClamped" class="mode-dropdown-note">
                   {{
                     t('assistantInputComposer.thinking.clamped', {
-                      chosen: thinkingLevel,
-                      actual: effectiveThinkingLevel,
+                      chosen: thinkingLevelName(thinkingLevel),
+                      actual: thinkingLevelName(effectiveThinkingLevel),
                       model: thinkingSupport?.modelId ?? ''
                     })
                   }}
@@ -809,7 +807,6 @@ import { aiProviderAPI } from '@/api/aiProvider'
 import {
   buildThinkingOptions,
   resolveEffectiveLevel,
-  thinkingDisplayLabel,
   type ModelThinkingSupport
 } from '../composables/thinkingLevels'
 import { buildAgentModelCatalog, type AgentModelOption } from '../composables/agentModelSelection'
@@ -1092,6 +1089,23 @@ function cancelTeamMode(): void {
   content.value = objective
 }
 
+/** 去掉输入框前面的模式标签。有标签可去时返回 true */
+function removeModeTag(): boolean {
+  if (isGoalMode.value) {
+    cancelGoalMode()
+    return true
+  }
+  if (isTeamMode.value) {
+    cancelTeamMode()
+    return true
+  }
+  if (isImageGenerationMode.value) {
+    emit('cancel-image-generation')
+    return true
+  }
+  return false
+}
+
 const isAgentMode = computed(() => !!props.isAgentMode)
 const notebookMode = computed(() => !!props.notebookMode)
 const byokConfigured = computed(() => !!aiConfigStore.getEnabledOpenAICompatibleByok())
@@ -1313,15 +1327,12 @@ async function selectAgentModel(option: AgentModelOption): Promise<void> {
  */
 const thinkingSupport = ref<ModelThinkingSupport | null>(null)
 
-/**
- * 档位名不翻译，只翻译右边那句说明 —— 档位是模型自己的词汇，
- * 用户在厂商文档和别的客户端里看到的就是 low / high / xhigh 这些词。
- */
-const describeThinkingLevel = (level: AgentV3ThinkingLevel): string =>
-  t(`assistantInputComposer.thinking.${level}Desc`)
+/** 档位名跟界面语言走，见 ThinkingOption.label */
+const thinkingLevelName = (level: AgentV3ThinkingLevel): string =>
+  t(`assistantInputComposer.thinking.levels.${level}`)
 
 const thinkingOptions = computed(() =>
-  buildThinkingOptions(thinkingSupport.value, describeThinkingLevel)
+  buildThinkingOptions(thinkingSupport.value, thinkingLevelName)
 )
 
 const showThinkingDropdown = ref(false)
@@ -1338,9 +1349,7 @@ const fastModeOn = computed(
 const thinkingClamped = computed(() => effectiveThinkingLevel.value !== thinkingLevel.value)
 
 /** 触发器上那个词。显示实际会用的那一档，不是用户存的那一档 */
-const currentThinkingLabel = computed(() =>
-  thinkingDisplayLabel(effectiveThinkingLevel.value, thinkingSupport.value)
-)
+const currentThinkingLabel = computed(() => thinkingLevelName(effectiveThinkingLevel.value))
 
 /**
  * 触发器的 title / aria-label。
@@ -1961,6 +1970,22 @@ function togglePlusMenu(): void {
   void loadSkills()
   focus()
 }
+
+/**
+ * 面板开着时焦点可能不在输入框里（点过面板外的按钮、窗口切回来），
+ * 输入框那条 Esc 就收不到。在 document 上兜一层；输入框已经处理过的
+ * （preventDefault 了）不再重复处理。
+ */
+function closeSkillMenuOnEscape(event: KeyboardEvent): void {
+  if (event.key !== 'Escape' || event.defaultPrevented) return
+  event.preventDefault()
+  closeSkillMenu()
+}
+watch(skillMenuVisible, (visible) => {
+  if (visible) document.addEventListener('keydown', closeSkillMenuOnEscape)
+  else document.removeEventListener('keydown', closeSkillMenuOnEscape)
+})
+onUnmounted(() => document.removeEventListener('keydown', closeSkillMenuOnEscape))
 
 function handleMenuAttach(): void {
   closeSkillMenu()
@@ -2803,10 +2828,7 @@ function handleSend(event?: Event): void {
   if (!isImageGenerationMode.value && !props.isGenerating && !agentModelCatalog.value?.selected) {
     // 原生点击的冒泡可能晚于 nextTick，直接阻止本次点击关闭刚打开的设置入口。
     event?.stopPropagation()
-    showAgentModelDropdown.value = true
-    syncAgentModelDropdownHeight()
-    message.info(t('assistantInputComposer.model.required'))
-    void loadAgentModels()
+    promptAgentModelRequired()
     return
   }
 
@@ -3112,7 +3134,27 @@ function submitText(text: string): void {
   window.setTimeout(() => handleSend(), 0)
 }
 
-defineExpose({ restoreText, submitText })
+/** 没选模型时的拦截：打开模型选择并提示。发送和重新生成、编辑重发共用 */
+function promptAgentModelRequired(): void {
+  showAgentModelDropdown.value = true
+  syncAgentModelDropdownHeight()
+  message.info(t('assistantInputComposer.model.required'))
+  void loadAgentModels()
+}
+
+/**
+ * 重新生成、编辑重发之前问一句模型可用没有。没有就和发送一样拦下来，
+ * 调用方据此在删消息之前就退出。
+ *
+ * 打开面板推迟到这次点击冒泡完：面板挂着 click-outside，同一下点击会把它当场关掉。
+ */
+function requireAgentModel(): boolean {
+  if (agentModelCatalog.value?.selected) return true
+  window.setTimeout(promptAgentModelRequired, 0)
+  return false
+}
+
+defineExpose({ restoreText, submitText, requireAgentModel })
 
 /** 排着的消息。父组件没传就是空 —— 模板里不用到处判空 */
 const queuedFollowUps = computed(() => props.queuedFollowUps ?? [])
@@ -3151,6 +3193,12 @@ function handleKeydown(e: KeyboardEvent): void {
       e.preventDefault()
       handleStop()
     }
+    return
+  }
+
+  // 输入框空着再按退格：删掉前面的模式标签（目标、工作室、生图），和删一个字符一样顺手
+  if (e.key === 'Backspace' && composerContent.value === '' && removeModeTag()) {
+    e.preventDefault()
     return
   }
 

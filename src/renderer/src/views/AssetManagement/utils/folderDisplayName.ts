@@ -8,3 +8,11 @@ export function displayFolderName(name: string | null | undefined, allLabel: str
   const value = String(name ?? '')
   return value === ROOT_FOLDER_KEY ? allLabel : value
 }
+
+/** 文件夹路径的显示形式：根目录段 'ALL' 换成「全部」，例如 `/ALL/贴图` → `/全部/贴图` */
+export function displayFolderPath(path: string | null | undefined, allLabel: string): string {
+  return String(path ?? '')
+    .split('/')
+    .map((segment) => displayFolderName(segment, allLabel))
+    .join('/')
+}

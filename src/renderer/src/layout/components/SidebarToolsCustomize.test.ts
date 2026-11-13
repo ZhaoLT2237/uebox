@@ -89,10 +89,10 @@ async function clickDone(wrapper: ReturnType<typeof mount>): Promise<void> {
 }
 
 describe('SidebarToolsCustomize', () => {
-  it('不显示标题和提示，只在右下角显示「完成」主按钮', () => {
+  it('标题为「侧边栏」，不显示提示，只在右下角显示「完成」主按钮', () => {
     const wrapper = mountModal()
 
-    expect(wrapper.find('header').exists()).toBe(false)
+    expect(wrapper.find('header').text()).toBe('侧边栏')
     expect(wrapper.find('.customize-hint').exists()).toBe(false)
     expect(wrapper.find('footer button.customize-done').text()).toBe('完成')
     expect(wrapper.find('footer button.customize-done').classes()).toContain('app-button--primary')

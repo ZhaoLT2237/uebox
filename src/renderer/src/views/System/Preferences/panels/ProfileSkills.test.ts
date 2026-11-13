@@ -19,7 +19,7 @@ const writeSkill = vi.fn()
 const setSkillDisabled = vi.fn()
 const deleteSkills = vi.fn()
 
-vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }))
+vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key, te: () => false }) }))
 vi.mock('@renderer/utils/messageManager', () => ({
   message: { success: vi.fn(), error: vi.fn() }
 }))

@@ -54,7 +54,7 @@ function handleSelect(item: SuggestionItem): void {
 .suggestion-card {
   background: var(--color-bg-raised);
   border-radius: 16px;
-  border: none;
+  border: 1px solid var(--color-border-subtle);
   :deep(.app-card__body) {
     padding: 16px 18px;
   }

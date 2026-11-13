@@ -355,3 +355,43 @@ describe('SensitiveActionConfirm 跨对话的审批', () => {
     })
   })
 })
+
+describe('SensitiveActionConfirm 参数与高风险样式', () => {
+  afterEach(() => {
+    usePendingApprovalsStore().settle('call-1')
+  })
+
+  it('脚本参数显示原文，不是 JSON 转义串', () => {
+    usePendingApprovalsStore().enqueue({
+      sessionId: 's1',
+      toolCallId: 'call-1',
+      toolName: 'run_python',
+      namespace: 'editor',
+      risk: 'mutating',
+      args: { script: 'import unreal\nprint("hi")' },
+      allowAlways: true
+    })
+    const wrapper = mountConfirm()
+
+    const code = wrapper.get('.action-details pre code').element.textContent
+    expect(code).toBe('import unreal\nprint("hi")')
+    // 单个字段不显示字段名
+    expect(wrapper.find('.detail-key').exists()).toBe(false)
+    // 不是高风险：确认按钮不是危险样式
+    expect(wrapper.get('.btn-confirm').classes()).not.toContain('app-button--danger')
+  })
+
+  it('不可撤销：确认执行是危险样式，焦点默认在拒绝上', async () => {
+    enqueue('call-1')
+    const wrapper = track(
+      mount(SensitiveActionConfirm, {
+        attachTo: document.body,
+        global: { stubs: { teleport: true } }
+      })
+    )
+    await flushPromises()
+
+    expect(wrapper.get('.btn-confirm').classes()).toContain('app-button--danger')
+    expect(document.activeElement).toBe(wrapper.get('.btn-reject').element)
+  })
+})

@@ -429,7 +429,6 @@ async function handleRoleChange(role: ModelRole, value: string | undefined): Pro
     <!-- 一、服务商 -->
     <div class="settings-subsection">
       <div class="subsection-title">{{ $t('aiProvider.sources.title') }}</div>
-      <div class="setting-desc">{{ $t('aiProvider.sources.desc') }}</div>
 
       <div class="source-grid">
         <!-- 占位两张：Provider 通常两三个，多一张少一张真卡片到位时都会跳一下 -->
@@ -497,7 +496,6 @@ async function handleRoleChange(role: ModelRole, value: string | undefined): Pro
     <!-- 二、角色绑定 -->
     <div class="settings-subsection">
       <div class="subsection-title">{{ $t('aiProvider.roles.title') }}</div>
-      <div class="setting-desc">{{ $t('aiProvider.roles.desc') }}</div>
 
       <div class="role-list">
         <div v-for="role in visibleRoles" :key="role" class="setting-item">

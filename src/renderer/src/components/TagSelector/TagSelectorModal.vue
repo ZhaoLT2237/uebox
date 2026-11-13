@@ -13,6 +13,7 @@
       <TagSelectorList
         v-if="innerOpen"
         v-model:selected-ids="selectedIds"
+        :title="title"
         @close="handleCancel"
         @confirm="handleOk"
       />
@@ -28,7 +29,7 @@ import TagSelectorList from '@renderer/components/TagSelector/TagSelectorList.vu
 // 保留原有 SimpleTag 定义（如有需要可移除）
 // interface SimpleTag { id: number; name: string; color?: string }
 
-const props = defineProps<{ open: boolean; initialSelectedTagIds?: number[] }>()
+const props = defineProps<{ open: boolean; initialSelectedTagIds?: number[]; title?: string }>()
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void
   (e: 'confirm', value: number[]): void

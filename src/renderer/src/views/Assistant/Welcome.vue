@@ -947,6 +947,15 @@ const showVoiceStatus = computed(
   () => voice.connecting.value || voice.active.value || Boolean(voice.error.value)
 )
 
+/** 没连上的那条语音报错只属于点麦克风那一刻：换了对话或离开页面就收起 */
+function dismissIdleVoiceError(): void {
+  if (voice.error.value && !voice.active.value && !voice.connecting.value) voice.clearError()
+}
+watch(sid, (next, prev) => {
+  if (prev && next !== prev) dismissIdleVoiceError()
+})
+onDeactivated(dismissIdleVoiceError)
+
 function openVoiceCall(): void {
   router.push({ name: 'AssistantWelcome', query: { sid: voiceChatSid() } })
 }
@@ -1737,6 +1746,11 @@ function isImageGenerationMessage(content: string): boolean {
  * 停不干净（卡在审批框、工具没退出）就别发，如实说一声让他稍后再试 ——
  * 硬发下去撞到的还是那句话，只是这次是我们自己撞上去的。
  */
+/** 输入框认为 Agent 模型可用。没挂输入框时不拦，交给后面的报错 */
+function agentModelReady(): boolean {
+  return composerRef.value?.requireAgentModel?.() ?? true
+}
+
 async function ensureIdleBeforeResend(): Promise<boolean> {
   if (!isGenerating.value) return true
 
@@ -1755,6 +1769,12 @@ async function ensureIdleBeforeResend(): Promise<boolean> {
  * @param payload 气泡信息
  */
 async function handleBubbleRetry(payload: { id: string; content: string }): Promise<void> {
+  // 没配模型时和发送一样拦在输入框，必须在问、删任何消息之前：先删后报错等于白丢一轮。
+  // 生图重画不走 Agent 模型，不拦。
+  if (!isImageGenerationMessage(String(payload.content || '').trim()) && !agentModelReady()) {
+    return
+  }
+
   // 不是最后一轮：后面几轮会一起删掉，先问
   const retryIndex = messages.value.findIndex((m) => m.id === payload.id)
   const laterRetryTurns = retryIndex < 0 ? 0 : countLaterTurns(messages.value, retryIndex)
@@ -1762,6 +1782,7 @@ async function handleBubbleRetry(payload: { id: string; content: string }): Prom
     const choice = await askDiscardLaterTurns({
       title: t('assistant.chat.regenerate'),
       count: laterRetryTurns,
+      okText: t('assistant.chat.discardAndRegenerate'),
       t
     })
     if (choice === 'cancel') return
@@ -1869,7 +1890,12 @@ function handleBubbleSuggest(payload: { id: string; text: string }): void {
     chatLogRef.value.setUserScrolledAway(false)
   }
 
-  handleSend({ content: q, images: [] })
+  // 走输入框的发送：没选模型时由它拦下，和用户自己敲回车一样
+  if (composerRef.value) {
+    composerRef.value.submitText(q)
+  } else {
+    handleSend({ content: q, images: [] })
+  }
 
   // 强制滚动到底部并保持贴底
   nextTick(() => {
@@ -2068,12 +2094,19 @@ async function handleUserConfirmEdit(payload: {
 }): Promise<void> {
   const { id: messageId, newContent, originalContent } = payload
 
+  // 同 handleBubbleRetry：没配模型先拦下，编辑内容原样留着
+  if (!agentModelReady()) {
+    payload.reopen?.()
+    return
+  }
+
   const editIndex = messages.value.findIndex((m) => m.id === messageId)
   const laterEditTurns = editIndex < 0 ? 0 : countLaterTurns(messages.value, editIndex)
   if (laterEditTurns > 0) {
     const choice = await askDiscardLaterTurns({
       title: t('assistant.chat.editMessage'),
       count: laterEditTurns,
+      okText: t('assistant.chat.discardAndResend'),
       t
     })
     if (choice !== 'continue') {
@@ -2326,6 +2359,7 @@ function handleClearSession(): void {
     content: t('assistant.chat.clearConfirmContent'),
     okText: t('common.clear'),
     cancelText: t('common.cancel'),
+    danger: true,
     onOk: async () => {
       // 先停掉还在跑的那一轮：不停的话它的输出会接着写进刚清空的对话
       await stopAgentAndDropQueue()

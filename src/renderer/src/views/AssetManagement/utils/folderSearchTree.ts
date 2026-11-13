@@ -90,3 +90,12 @@ export function buildFolderSearchTree(folders: AssetFolder[]): {
     expandedKeys: [...expandedKeys]
   }
 }
+
+/** 列表里的文件夹搜索结果去掉当前文件夹本身（搜索 SQL 会把它一起返回） */
+export function excludeCurrentFolder<T>(folders: T[], currentFolderKey: string | undefined): T[] {
+  if (!currentFolderKey) return folders
+  return folders.filter((folder) => {
+    const { folderKey, id } = folder as { folderKey?: unknown; id?: unknown }
+    return (folderKey ?? id) !== currentFolderKey
+  })
+}

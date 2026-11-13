@@ -198,6 +198,19 @@ describe('工具清单', () => {
     wrapper.unmount()
   })
 
+  it('一个 token 都不增加时不写「约增加 0 token」', async () => {
+    getSettings.mockResolvedValue({
+      agentToolSearchEnabled: true,
+      agentDisabledTools: [],
+      agentResidentTools: { read_local_file: false }
+    })
+    const wrapper = panel()
+    await flushPromises()
+    expect(wrapper.text()).toContain('profile.tools.listNoteSearchNoCost:{"on":0,"total":6')
+    expect(wrapper.text()).not.toContain('profile.tools.listNoteSearch:')
+    wrapper.unmount()
+  })
+
   it('展开大类才看得到小类', async () => {
     const wrapper = panel()
     await flushPromises()

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildFolderSearchTree } from './folderSearchTree'
+import { buildFolderSearchTree, excludeCurrentFolder } from './folderSearchTree'
 
 const folder = (
   folderKey: string,
@@ -36,5 +36,17 @@ describe('buildFolderSearchTree', () => {
     expect(result.treeData[0].key).toBe('ALL')
     expect(result.treeData[0].children?.[0].key).toBe('music')
     expect(result.expandedKeys).toEqual(['ALL'])
+  })
+})
+
+describe('excludeCurrentFolder', () => {
+  it('列表里的文件夹搜索结果不含当前文件夹本身', () => {
+    const rows = [
+      folder('tex', '贴图', 'ALL'),
+      folder('tex-a', 'A', 'tex'),
+      folder('tex-b', 'B', 'tex')
+    ]
+    expect(excludeCurrentFolder(rows, 'tex').map((f) => f.folderKey)).toEqual(['tex-a', 'tex-b'])
+    expect(excludeCurrentFolder(rows, undefined)).toHaveLength(3)
   })
 })

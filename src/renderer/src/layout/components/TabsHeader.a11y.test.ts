@@ -21,4 +21,11 @@ describe('TabsHeader 的按钮读屏可识别', () => {
     )
     expect(source).toMatch(/\.tab-close\s*\{[^}]*width:\s*24px;[^}]*height:\s*24px;/s)
   })
+
+  it('固定的标签页显示图钉、不显示关闭叉，关闭判断统一走 isTabUserClosable', () => {
+    expect(source).toMatch(/<PhPushPin\s+v-if="tab\.fixed"[\s\S]*?class="tab-pin"/)
+    expect(source).toMatch(/v-else-if="isTabUserClosable\(tab\)"[\s\S]*?class="tab-close"/)
+    expect(source).toContain('if (!tab || !isTabUserClosable(tab)) return')
+    expect(source).toContain('disabled: !isTabUserClosable(tab)')
+  })
 })

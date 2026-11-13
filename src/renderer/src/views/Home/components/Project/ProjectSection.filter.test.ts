@@ -335,3 +335,47 @@ describe('project section group filter', () => {
     expect(visible.value).toEqual([])
   })
 })
+
+/**
+ * 分组和版本叠在一起筛空时，空状态要同时说出两个条件，并给一键「清除筛选」。
+ */
+describe('empty state when group and version are both picked', () => {
+  const template = parse(
+    readFileSync('src/renderer/src/views/Home/components/Project/ProjectSection.vue', 'utf8')
+  ).descriptor.template!.content
+
+  it('names both the group and the version, and drops the old hint text', () => {
+    expect(template).toContain('v-else-if="engineFilter && activeFilterKey !== FILTER_ALL"')
+    expect(template).toContain("t('page.home.project.noVersionResultsInGroup'")
+    expect(template).not.toContain('noVersionResultsDesc')
+  })
+
+  it('resolves the picked group to its chip label', () => {
+    const activeFilterKey = ref('__ungrouped__')
+    const filterChips = ref([
+      { key: '__all__', label: '全部' },
+      { key: '__ungrouped__', label: '未分组' }
+    ])
+    const label = new Function(
+      'computed',
+      'filterChips',
+      'activeFilterKey',
+      extract('activeFilterLabel') + '; return activeFilterLabel;'
+    )(computed, filterChips, activeFilterKey)
+    expect(label.value).toBe('未分组')
+  })
+
+  it('clears both filters at once', () => {
+    const activeFilterKey = ref('__ungrouped__')
+    const engineFilter = ref('5.4')
+    const clear = new Function(
+      'activeFilterKey',
+      'engineFilter',
+      'FILTER_ALL',
+      extract('clearProjectFilters') + '; return clearProjectFilters;'
+    )(activeFilterKey, engineFilter, '__all__')
+    clear()
+    expect(activeFilterKey.value).toBe('__all__')
+    expect(engineFilter.value).toBe('')
+  })
+})

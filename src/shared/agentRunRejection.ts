@@ -6,8 +6,12 @@
  * `src/renderer/src/views/Assistant/composables/agentControlHandlers.ts`。
  */
 
-/** `agent-v3:execute` / `agent-v3:continue`：这条对话还有一轮在跑 */
-export type AgentStartRejectionCode = 'SESSION_BUSY'
+/**
+ * `agent-v3:execute` / `agent-v3:continue`：
+ * - `SESSION_BUSY` 这条对话还有一轮在跑
+ * - `MODEL_NOT_CONFIGURED` 没有可用的对话模型，界面据此挂「打开模型设置」
+ */
+export type AgentStartRejectionCode = 'SESSION_BUSY' | 'MODEL_NOT_CONFIGURED'
 
 /** `agent-v3:steer`：这一轮已经结束 / 插话抓的工程和正在跑的这一轮对不上 */
 export type SteerRejectionCode = 'NOT_RUNNING' | 'PROJECT_MISMATCH'

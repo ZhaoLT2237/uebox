@@ -152,3 +152,46 @@ describe('SessionProjectChip 切换项目归属', () => {
     expect(chatStore.sessionById('sid-title')?.title).toBe('未命名对话')
   })
 })
+
+describe('SessionProjectChip 下拉', () => {
+  it('当前归属的项目打勾，其他项不打', () => {
+    const chatStore = useChatSessionsStore()
+    const sidebarStore = useChatSidebarStore()
+    chatStore.ensureSession('sid-cur', '会话')
+    chatStore.setProject('sid-cur', { projectName: 'Alpha' })
+    sidebarStore.addManualProject({ projectName: 'Beta' })
+
+    const items = mountChip('sid-cur').findAll('.menu-item')
+    const alpha = items.find((item) => item.text().includes('Alpha'))!
+    const beta = items.find((item) => item.text().includes('Beta'))!
+    expect(alpha.find('.option-check').exists()).toBe(true)
+    expect(beta.find('.option-check').exists()).toBe(false)
+  })
+
+  it('下拉打开时不显示提示气泡', async () => {
+    const chatStore = useChatSessionsStore()
+    chatStore.ensureSession('sid-tip', '会话')
+    chatStore.setProject('sid-tip', { projectName: 'Alpha' })
+    const wrapper = mount(SessionProjectChip, {
+      props: { chatSid: 'sid-tip' },
+      global: {
+        stubs: {
+          AppDropdown: {
+            props: ['open'],
+            emits: ['update:open'],
+            template:
+              '<div class="dd" @click="$emit(\'update:open\', true)"><slot /><slot name="overlay" /></div>'
+          },
+          AppTooltip: tooltipStub,
+          AppMenu: menuStub,
+          AppMenuItemGroup: menuStub,
+          AppMenuItem: menuItemStub,
+          AppMenuDivider: true
+        }
+      }
+    })
+    expect(wrapper.get('.tooltip-stub').attributes('data-tip')).toContain('Alpha')
+    await wrapper.get('.dd').trigger('click')
+    expect(wrapper.get('.tooltip-stub').attributes('data-tip')).toBe('')
+  })
+})

@@ -3,7 +3,6 @@ import {
   THINKING_LADDER,
   buildThinkingOptions,
   resolveEffectiveLevel,
-  thinkingDisplayLabel,
   type ModelThinkingSupport
 } from './thinkingLevels'
 
@@ -13,7 +12,7 @@ import {
  * 两件事任何一件错了，用户看到的都是「这个开关时灵时不灵」。
  */
 
-const describeLevel = (level: AgentV3ThinkingLevel): string => `${level}-说明`
+const describeLevel = (level: AgentV3ThinkingLevel): string => `${level}-名`
 
 function support(
   levels: AgentV3ThinkingLevel[],
@@ -60,55 +59,27 @@ describe('buildThinkingOptions', () => {
     expect(options.map((opt) => opt.value)).toEqual([...THINKING_LADDER])
   })
 
-  /**
-   * 档位名**不做本地化包装**：显示的就是模型声明的那个词。
-   * 之前那版把它翻成「快速思考」「深度思考」，结果是用户在厂商文档里
-   * 看到的 xhigh 在界面上找不着。
-   */
-  it('档位名就是档位原名，不翻译', () => {
+  /** 显示名由调用方按界面语言给（中文界面「低」「高」），不再直接摆 low / high 原词 */
+  it('显示名来自调用方给的本地化名字', () => {
     const options = buildThinkingOptions(support(['off', 'high', 'max']), describeLevel)
 
-    expect(options.map((opt) => opt.label)).toEqual(['auto', 'off', 'high', 'max'])
-    expect(options.map((opt) => opt.desc)).toEqual([
-      'auto-说明',
-      'off-说明',
-      'high-说明',
-      'max-说明'
-    ])
+    expect(options.map((opt) => opt.label)).toEqual(['auto-名', 'off-名', 'high-名', 'max-名'])
   })
 
-  it('厂商给档位起了别名就显示别名，原名放进 original', () => {
+  it('厂商给档位起了别名，别名进 alias', () => {
     const options = buildThinkingOptions(support(['high'], { high: 'think-harder' }), describeLevel)
     const high = options.find((opt) => opt.value === 'high')!
 
-    expect(high.label).toBe('think-harder')
-    expect(high.original).toBe('high')
+    expect(high.label).toBe('high-名')
+    expect(high.alias).toBe('think-harder')
   })
 
-  it('别名与原名一样时不显示两遍', () => {
-    const options = buildThinkingOptions(support(['high'], { high: 'high' }), describeLevel)
-    const high = options.find((opt) => opt.value === 'high')!
+  it('别名与原名一样或为空时不带 alias', () => {
+    const same = buildThinkingOptions(support(['high'], { high: 'high' }), describeLevel)
+    const empty = buildThinkingOptions(support(['high'], { high: null }), describeLevel)
 
-    expect(high.label).toBe('high')
-    expect(high.original).toBeUndefined()
-  })
-})
-
-describe('thinkingDisplayLabel', () => {
-  it('触发器上显示档位原名', () => {
-    expect(thinkingDisplayLabel('high', support(['high']))).toBe('high')
-    expect(thinkingDisplayLabel('auto', support(['high']))).toBe('auto')
-  })
-
-  it('厂商有别名就显示别名', () => {
-    expect(thinkingDisplayLabel('high', support(['high'], { high: 'think-harder' }))).toBe(
-      'think-harder'
-    )
-  })
-
-  // levelMap 里写 null 表示这一档不可用，不能把 null 当成显示名
-  it('别名为空时回落到原名', () => {
-    expect(thinkingDisplayLabel('high', support(['high'], { high: null }))).toBe('high')
+    expect(same.find((opt) => opt.value === 'high')!.alias).toBeUndefined()
+    expect(empty.find((opt) => opt.value === 'high')!.alias).toBeUndefined()
   })
 })
 

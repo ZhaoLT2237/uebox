@@ -1,5 +1,13 @@
 <template>
   <div class="asset-file-list">
+    <div v-if="selectedIds.length >= 2" class="selection-bar">
+      <span class="selection-count">
+        {{ t('libraryBrowser.selectedCount', { count: selectedIds.length }) }}
+      </span>
+      <AppButton size="small" @click="clearSelection()">
+        {{ t('libraryBrowser.clearSelection') }}
+      </AppButton>
+    </div>
     <div
       ref="containerRef"
       class="file-content"
@@ -587,6 +595,11 @@
     <TagSelectorModal
       v-model:open="tagSelectorVisible"
       :initial-selected-tag-ids="currentAssetTagIds"
+      :title="
+        tagSelectorAssetKeys.length > 1
+          ? t('assetLib.tagSelector.addToAssets', { count: tagSelectorAssetKeys.length })
+          : undefined
+      "
       @confirm="handleAddTagsConfirm"
     />
 
@@ -633,17 +646,7 @@
     >
       <div class="delete-confirm-content">
         <p>
-          {{
-            t(
-              isNetworkVaultDelete
-                ? 'assetFileList.deleteConfirm.network.content'
-                : 'assetFileList.deleteConfirm.content',
-              {
-                filesCount: deleteConfirmData.filesCount,
-                foldersCount: deleteConfirmData.foldersCount
-              }
-            )
-          }}
+          {{ deleteConfirmText }}
         </p>
         <!-- 共享库删掉就没了，本地库进「最近删除」还能恢复 —— 这两句不能说反 -->
         <p v-if="isNetworkVaultDelete" style="color: var(--color-danger-text)">
@@ -780,6 +783,7 @@ import { getActiveLibrarySource } from '../data/activeLibrarySource'
 import type { LibraryFavoritesApi } from '../data/AssetLibrarySource'
 import { useFavoriteStore } from '@renderer/store/modules/favoriteStore'
 import TagSelectorModal from '@renderer/components/TagSelector/TagSelectorModal.vue'
+import { deleteConfirmMessage } from '../utils/deleteConfirmText'
 import { useVaultStore, VaultType } from '@renderer/store/modules/vaultStore'
 import {
   buildThumbnailUrl,
@@ -3077,6 +3081,7 @@ const {
   setFavoriteToggleCallback,
   setInlineRenameCallback,
   setLocateInFolderCallback,
+  setNewFolderCallback,
   pauseDragSelect,
   resumeDragSelect
 } = useFileSelection({
@@ -3666,7 +3671,7 @@ const currentContextMenuItems = computed(() => {
   if (isHttpServerVault.value && isArchiveAsset(currentRightClickAsset.value)) {
     menuItems.splice(1, 0, {
       key: 'pull-project-archive',
-      label: t('assetLib.contextMenu.pullProjectArchive', '取回工程整包…'),
+      label: t('assetLib.contextMenu.pullProjectArchive', '取回项目整包…'),
       icon: PhFileZip
     })
   }
@@ -4133,9 +4138,28 @@ const handleRightClick = (event: MouseEvent, file: any) => {
   event.stopPropagation()
 
   currentRightClickAsset.value = file
+  selectForContextMenu(file)
   // 服务器库在空白处 / 文件夹上没有可做的事：不弹一个空菜单
   if (currentContextMenuItems.value.length === 0) return
   contextMenuRef.value?.show(event.clientX, event.clientY)
+}
+
+/**
+ * 右键点在选中集合外：选中改为这一项，详情面板跟着换成它（和系统文件管理器一致）。
+ * 点在集合内则不动选中，菜单动作仍处理整个集合（见 menuActionSources）。
+ */
+const selectForContextMenu = (file: AssetDataRow | FolderItem): void => {
+  const fileId = getItemId(file)
+  if (!fileId) return
+  const selected = getSelectedIds()
+  if (selected.length > 1 && selected.includes(fileId)) return
+  // 按下时（pointerdown）可能已经单选了它，这里照样同步一次详情面板
+  if (!(selected.length === 1 && selected[0] === fileId)) {
+    clearSelection()
+    setSelected(fileId, true)
+  }
+  if ((file as FolderItem).type === 'folder') emit('folder-select', file as FolderItem)
+  else emit('file-click', file as AssetDataRow)
 }
 
 // 处理空白区域右键点击
@@ -5520,8 +5544,33 @@ const deleteConfirmData = reactive({
   assetKeys: [] as string[],
   folderKeys: [] as string[],
   filesCount: 0,
-  foldersCount: 0
+  foldersCount: 0,
+  /** 只删一项时它的名字，确认框里直接写出来 */
+  name: ''
 })
+
+const deleteConfirmText = computed((): string => {
+  const { kind, params } = deleteConfirmMessage({
+    filesCount: deleteConfirmData.filesCount,
+    foldersCount: deleteConfirmData.foldersCount,
+    name: deleteConfirmData.name || undefined
+  })
+  const base = isNetworkVaultDelete.value
+    ? 'assetFileList.deleteConfirm.network.content'
+    : 'assetFileList.deleteConfirm.content'
+  return t(`${base}.${kind}`, params)
+})
+
+/** 按删除用的 key 找回列表里那一项的名字（只删一项时用） */
+const findDeleteTargetName = (assetKeys: string[], folderKeys: string[]): string => {
+  if (assetKeys.length + folderKeys.length !== 1) return ''
+  type Row = { type?: string; id?: unknown; assetKey?: unknown; name?: string; assetName?: string }
+  const rows = props.files as unknown as Row[]
+  const row = assetKeys.length
+    ? rows.find((f) => f.type !== 'folder' && String(f.assetKey || f.id) === assetKeys[0])
+    : rows.find((f) => f.type === 'folder' && String(f.id) === folderKeys[0])
+  return row?.name || row?.assetName || ''
+}
 
 const handleDeleteConfirmOk = async () => {
   if (deleteDontAskAgain.value) {
@@ -5571,6 +5620,7 @@ const processDeleteRequest = (assetKeys: string[], folderKeys: string[]) => {
   deleteConfirmData.folderKeys = folderKeys
   deleteConfirmData.filesCount = assetKeys.length
   deleteConfirmData.foldersCount = folderKeys.length
+  deleteConfirmData.name = findDeleteTargetName(assetKeys, folderKeys)
   deleteDontAskAgain.value = false
   deleteConfirmVisible.value = true
 }
@@ -5919,6 +5969,12 @@ onMounted(async () => {
   // 设置在文件夹视图中显示回调（Ctrl+B）
   setLocateInFolderCallback(() => {
     emit('locate-in-folder')
+  })
+
+  // 新建文件夹（Ctrl+Shift+N）：和空白处右键菜单的「新建文件夹」同一个入口、同样的可用条件
+  setNewFolderCallback(() => {
+    if (!libraryCaps.value.canEditStructure || isTrashView.value) return
+    handleAddFolder()
   })
 
   // 监听 Spotlight 资产选中事件
@@ -6675,6 +6731,21 @@ async function handleAssetDragEnd(event: DragEvent): Promise<void> {
   width: 100%;
   display: flex;
   flex-direction: column;
+
+  // 多选（2 项及以上）时的数量条，和资料库浏览器的选中条同一种写法
+  .selection-bar {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 10px;
+    align-items: center;
+    padding: var(--space-2) var(--space-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .selection-count {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
 
   /* 自定义文件夹封面样式 */
   .custom-folder-cover {

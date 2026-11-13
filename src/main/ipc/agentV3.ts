@@ -131,6 +131,7 @@ import { createTrackRecord } from '../agent-v3/core/team/trackRecord'
 import { loadModelDossiers, recheckModel } from '../agent-v3/core/team/modelDossier'
 import { teamModelCandidates, type TeamStateView } from '../../shared/agentTeam'
 import { readSettings as readAiSettings } from '../ai/store'
+import { ModelNotConfiguredError } from '../ai/resolveModel'
 import { setProviderUsageProbe } from '../ai/providerUsage'
 import { DEFAULT_GOAL_MAX_ROUNDS, normalizeGoalMaxRounds } from '../../shared/goalRounds'
 import { buildCrashNotice, type EditorWatchEvent } from '../agent-v3/core/team/editorWatch'
@@ -2069,6 +2070,17 @@ export function registerAgentV3IPC(): void {
     }
   )
 
+  /**
+   * 启动失败里认得出的那几类给个码，文案和「打开模型设置」按钮归渲染层。
+   * 识图缺配的说法不同（「当前模型不支持识图」），不归这个码，照旧显示原文。
+   */
+  function startupRejectionCode(error: unknown): { code?: AgentStartRejectionCode } {
+    if (error instanceof ModelNotConfiguredError && error.role !== 'vision') {
+      return { code: 'MODEL_NOT_CONFIGURED' }
+    }
+    return {}
+  }
+
   ipcMain.handle('agent-v3:execute', async (event, args: AgentV3ExecuteArgs) => {
     /*
      * 占位先抢下来，再干别的。
@@ -2615,7 +2627,7 @@ export function registerAgentV3IPC(): void {
       // （这里曾经还往 V2 的 `agent:error` 发一份，说是「存量界面靠它收尾」——
       // 那条通道连 preload 白名单都没进，渲染层想订阅都会被挡下，发了等于扔进真空。）
       notifyAgentRun({ type: 'error', sessionId, message })
-      return { success: false, error: message }
+      return { success: false, error: message, ...startupRejectionCode(error) }
     } finally {
       stopEditorWatch(sessionId)
       activeAgents.release(sessionId)
@@ -2961,7 +2973,7 @@ export function registerAgentV3IPC(): void {
       console.error(`[AgentV3] 会话 ${sessionId} 续跑失败:`, error)
       // 同 execute：一次失败只报一次，走返回值
       notifyAgentRun({ type: 'error', sessionId, message })
-      return { success: false, error: message }
+      return { success: false, error: message, ...startupRejectionCode(error) }
     }
   }
 

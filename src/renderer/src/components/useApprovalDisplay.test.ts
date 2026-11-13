@@ -87,7 +87,7 @@ describe('useApprovalDisplay', () => {
     enqueue({ toolName: 'ue_spawn_actor', risk: 'mutating' })
     const current = display().current
 
-    expect(current.value?.typeLabel).toBe('会改动工程')
+    expect(current.value?.typeLabel).toBe('会改动项目')
     expect(current.value?.description).toContain('创建 Actor')
   })
 

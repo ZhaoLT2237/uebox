@@ -2,7 +2,7 @@
   <div class="modal-container">
     <!-- 头部区域 -->
     <div class="modal-header">
-      <h2 class="main-title">{{ t('assetLib.tagSelector.mainTitle2') }}</h2>
+      <h2 class="main-title">{{ title || t('assetLib.tagSelector.mainTitle2') }}</h2>
       <AppButton
         variant="text"
         size="small"
@@ -154,7 +154,7 @@ interface CategoryItem {
   icon: Component
 }
 
-const props = defineProps<{ selectedIds: number[] }>()
+const props = defineProps<{ selectedIds: number[]; title?: string }>()
 const emit = defineEmits<{
   (e: 'update:selectedIds', value: number[]): void
   (e: 'close'): void

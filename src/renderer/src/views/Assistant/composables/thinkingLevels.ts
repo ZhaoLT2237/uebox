@@ -42,27 +42,13 @@ export interface ModelThinkingSupport {
 export interface ThinkingOption {
   value: AgentV3ThinkingLevel
   /**
-   * 显示名，就是**档位本身的名字**（low / high / max…），不做本地化包装。
-   *
-   * 不翻译成「快速思考」「深度思考」是有意的：档位是模型声明的原始词汇，
-   * 用户在厂商文档、官方客户端、pi 里看到的都是这几个词。翻一遍只会让
-   * 「我在文档里看到的 xhigh 去哪了」这种问题冒出来。说明放在右边那一列。
-   *
-   * 厂商给某一档起了别名时显示别名，原名进 `original`。
+   * 显示名，跟界面语言走：中文界面「自动 / 关闭 / 低 / 高…」，英文界面
+   * 「Auto / Off / Low / High…」。原先直接显示 low / xhigh 这些原词，中文界面里
+   * 夹着一列英文，旁边再用中文把同一件事说一遍，等于每档写两遍。
    */
   label: string
-  /** 用了厂商别名时，档位的原名。界面显示在括号里 */
-  original?: string
-  desc: string
-}
-
-/** 触发器上显示的当前档位。与选项里的 label 同一套规则 */
-export function thinkingDisplayLabel(
-  level: AgentV3ThinkingLevel,
-  support: ModelThinkingSupport | null
-): string {
-  if (level === 'auto') return level
-  return support?.levelMap[level] || level
+  /** 厂商给这一档起的别名（与档位原名不同时才有）。界面显示在括号里，对得上厂商文档 */
+  alias?: string
 }
 
 /**
@@ -75,17 +61,15 @@ export function thinkingDisplayLabel(
  */
 export function buildThinkingOptions(
   support: ModelThinkingSupport | null,
-  describe: (level: AgentV3ThinkingLevel) => string
+  nameOf: (level: AgentV3ThinkingLevel) => string
 ): ThinkingOption[] {
   return THINKING_LADDER.filter(
     (level) => level === 'auto' || !support || support.levels.includes(level)
   ).map((level) => {
-    const desc = describe(level)
+    const label = nameOf(level)
     const alias = level === 'auto' ? null : support?.levelMap[level]
-    // 别名与原名相同就不用显示两遍
-    return alias && alias !== level
-      ? { value: level, label: alias, original: level, desc }
-      : { value: level, label: level, desc }
+    // 别名与原名相同就不必再写一遍
+    return alias && alias !== level ? { value: level, label, alias } : { value: level, label }
   })
 }
 

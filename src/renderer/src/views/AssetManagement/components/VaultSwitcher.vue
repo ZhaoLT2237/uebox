@@ -24,7 +24,7 @@
         </div>
         <div class="vault-details">
           <div class="vault-name-row">
-            <div class="vault-name">{{ currentVault?.name || '' }}</div>
+            <div class="vault-name">{{ vaultDisplayName(currentVault, t) }}</div>
           </div>
         </div>
       </div>
@@ -106,7 +106,7 @@
               </template>
               <template v-else>
                 <div class="vault-name-row">
-                  <div class="vault-name">{{ vault.name }}</div>
+                  <div class="vault-name">{{ vaultDisplayName(vault, t) }}</div>
                 </div>
                 <div class="vault-path">{{ vault.networkPath || vault.path }}</div>
               </template>
@@ -524,6 +524,7 @@ import { ref, onMounted, computed, nextTick, onUnmounted } from 'vue'
 import { message } from '@renderer/utils/messageManager'
 import { confirmDialog } from '@renderer/utils/dialog'
 import { useI18n } from 'vue-i18n'
+import { vaultDisplayName } from '../utils/assetVaultHelpers'
 import { Input } from 'ant-design-vue'
 import {
   PhBookOpen,

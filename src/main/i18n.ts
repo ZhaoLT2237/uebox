@@ -59,7 +59,7 @@ const STRINGS: Record<Lang, Record<string, string>> = {
     'tray.quitConfirmCancel': '取消',
     'tray.openFailedTitle': '无法打开项目',
     'tray.openFailedBody': '{name}：{error}',
-    'tray.openFailedMissing': '「{name}」的工程文件不存在',
+    'tray.openFailedMissing': '「{name}」的项目文件不存在',
     'tray.alreadyRunningTitle': '项目已打开',
     'tray.alreadyRunningBody': '「{name}」已在虚幻编辑器中打开',
     'tray.pluginFailedTitle': '项目已打开，AI 连接失败',

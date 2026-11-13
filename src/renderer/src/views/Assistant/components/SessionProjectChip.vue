@@ -5,9 +5,9 @@ import AppMenuDivider from '@renderer/components/AppMenuDivider.vue'
 import AppMenuItem from '@renderer/components/AppMenuItem.vue'
 import AppMenuItemGroup from '@renderer/components/AppMenuItemGroup.vue'
 import AppTooltip from '@renderer/components/AppTooltip.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useConnectedProjects } from '@renderer/composables/useBridgeStatus'
-import { PhCaretDown, PhFolder, PhFolderOpen } from '@phosphor-icons/vue'
+import { PhCaretDown, PhCheck, PhFolder, PhFolderOpen } from '@phosphor-icons/vue'
 import { useI18n } from 'vue-i18n'
 import { useChatSessionsStore } from '@renderer/store/modules/chatSessions'
 import { useChatSidebarStore } from '@renderer/store/modules/chatSidebarStore'
@@ -119,7 +119,25 @@ const projectOptions = computed<ProjectChoice[]>(() =>
   )
 )
 
+/** 下拉里对应当前归属的那一项。认法同 matchedConnected：有路径只认路径 */
+const currentOptionKey = computed<string>(() => {
+  const project = sessionProject.value
+  if (!project?.projectName) return ''
+  const path = projectPathKey(project.projectPath)
+  const name = project.projectName.trim().toLowerCase()
+  const match = projectOptions.value.find((option) =>
+    path
+      ? projectPathKey(option.project.projectPath) === path
+      : option.project.projectName.trim().toLowerCase() === name
+  )
+  return match?.key ?? ''
+})
+
+/** 下拉开着时不显示提示气泡，不然它正好盖住下拉的第一项 */
+const dropdownOpen = ref(false)
+
 const tooltip = computed<string>(() => {
+  if (dropdownOpen.value) return ''
   if (!projectName.value) return t('assistantTopNav.sessionProject.none')
 
   const parts = [projectName.value]
@@ -154,7 +172,12 @@ function clearProject(): void {
 </script>
 
 <template>
-  <AppDropdown v-if="props.chatSid" :trigger="['click']" :placement="props.placement">
+  <AppDropdown
+    v-if="props.chatSid"
+    v-model:open="dropdownOpen"
+    :trigger="['click']"
+    :placement="props.placement"
+  >
     <AppTooltip placement="bottom" :title="tooltip">
       <span
         class="session-project-chip"
@@ -173,7 +196,7 @@ function clearProject(): void {
     </AppTooltip>
 
     <template #overlay>
-      <AppMenu>
+      <AppMenu :selected-keys="currentOptionKey ? [currentOptionKey] : []">
         <AppMenuItemGroup :title="t('assistantTopNav.sessionProject.pick')">
           <AppMenuItem
             v-for="option in projectOptions"
@@ -186,6 +209,11 @@ function clearProject(): void {
               <template v-if="option.connected"> · {{ t('chatSidebar.connected') }} </template>
             </span>
             <span v-if="option.detail" class="option-detail">{{ option.detail }}</span>
+            <PhCheck
+              v-if="option.key === currentOptionKey"
+              class="option-check"
+              :aria-label="t('assistantTopNav.sessionProject.current')"
+            />
           </AppMenuItem>
           <AppMenuItem v-if="projectOptions.length === 0" disabled>
             {{ t('assistantTopNav.noConnectedProjects') }}
@@ -246,6 +274,12 @@ function clearProject(): void {
   text-overflow: ellipsis;
   // 没有 min-width:0 的话，flex 项不肯缩到内容以下，省略号根本不会出现
   min-width: 0;
+}
+
+.option-check {
+  margin-left: var(--space-2);
+  vertical-align: middle;
+  color: var(--color-accent-text);
 }
 
 .option-detail {

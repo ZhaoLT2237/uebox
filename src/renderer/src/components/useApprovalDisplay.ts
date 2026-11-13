@@ -46,6 +46,8 @@ export interface DisplayApproval {
    * 放在这里而不是各视图里，是因为「这一步有多危险」不该有两套判断（见文件头）。
    */
   typeLabel: string
+  /** 不可撤销（risk = destructive）。确认按钮按危险样式画，焦点默认给「拒绝」 */
+  destructive: boolean
   description: string
   details?: Record<string, unknown>
   /**
@@ -146,6 +148,7 @@ export function useApprovalDisplay(): ApprovalDisplay {
         : request.risk === 'destructive'
           ? t('assistant.sensitiveAction.types.destructive')
           : t('assistant.sensitiveAction.types.mutating'),
+      destructive: !browser && request.risk === 'destructive',
       description: browser
         ? describeBrowserAction(request.toolName, request.args)
         : request.risk === 'destructive'

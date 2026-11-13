@@ -15,6 +15,7 @@
  * 右键卡片打开的是同一份「⋯」菜单；没有菜单的卡片右键不拦。
  */
 import { ref } from 'vue'
+import { useMenuEscape } from '../composables/useMenuEscape'
 
 withDefaults(
   defineProps<{
@@ -35,8 +36,11 @@ const menuTrigger = ref<HTMLButtonElement | null>(null)
 function openMenu(event: MouseEvent): void {
   if (!menuTrigger.value) return
   event.preventDefault()
+  menuTrigger.value.parentElement?.classList.remove('is-dismissed')
   menuTrigger.value.focus()
 }
+
+const { onMenuEnter, onMenuLeave, onMenuKeydown } = useMenuEscape()
 </script>
 
 <template>
@@ -54,7 +58,14 @@ function openMenu(event: MouseEvent): void {
       <slot name="cover" />
 
       <!-- 菜单挂在卡片上而不是封面里：封面 overflow:hidden，下拉会被裁掉 -->
-      <div v-if="$slots.menu" class="card-menu" @click.stop>
+      <div
+        v-if="$slots.menu"
+        class="card-menu"
+        @click.stop
+        @keydown="onMenuKeydown"
+        @mouseenter="onMenuEnter"
+        @mouseleave="onMenuLeave"
+      >
         <button ref="menuTrigger" class="menu-trigger" @click.stop>⋯</button>
         <div class="menu-dropdown">
           <slot name="menu" />
@@ -191,6 +202,11 @@ function openMenu(event: MouseEvent): void {
 .card-menu:hover .menu-dropdown,
 .card-menu:focus-within .menu-dropdown {
   display: block;
+}
+
+// 按过 Esc（见 useMenuEscape）
+.card-menu.is-dismissed .menu-dropdown {
+  display: none;
 }
 
 // ===== 信息区 =====

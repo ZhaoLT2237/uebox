@@ -20,6 +20,14 @@ export interface TabItem {
  */
 export const DEFAULT_TAB_KEY = '/'
 
+/**
+ * 用户能否手动关掉这个标签页（× 按钮、中键、右键「关闭」）。
+ * 固定的标签页要先取消固定；程序侧关闭（删除对话、拖出独立窗口）不受此限。
+ */
+export function isTabUserClosable(tab: Pick<TabItem, 'fixed' | 'isCanDelete'>): boolean {
+  return tab.isCanDelete !== false && !tab.fixed
+}
+
 export const useTabsStore = defineStore(
   'tabs',
   () => {

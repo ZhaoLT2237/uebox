@@ -738,10 +738,7 @@ onMounted(() => {
     <div class="page-header">
       <div class="header-left">
         <PhHardDrives class="header-icon" />
-        <div>
-          <h1 class="page-title">{{ $t('serverManagement.header.title') }}</h1>
-          <p class="page-subtitle">{{ $t('serverManagement.header.subtitle') }}</p>
-        </div>
+        <h1 class="page-title">{{ $t('serverManagement.header.title') }}</h1>
       </div>
       <div class="connection-badge" :class="connectionStatus">
         <component :is="statusConfig.icon" :spin="connectionStatus === 'connecting'" />
@@ -1212,12 +1209,6 @@ onMounted(() => {
     font-weight: 600;
     color: var(--color-text-primary);
     letter-spacing: -0.01em;
-  }
-
-  .page-subtitle {
-    margin: 2px 0 0;
-    font-size: 13px;
-    color: var(--color-text-muted);
   }
 }
 

@@ -100,6 +100,26 @@ describe('AddProjectModal imported project picker', () => {
     expect(wrapper.findAll('.add-project-cover-fallback')).toHaveLength(2)
   })
 
+  it('greys out and checks projects already in the sidebar, and refuses to add them again', async () => {
+    const wrapper = mount(AddProjectModal, {
+      props: { open: true, existingProjectNames: ['ualinkdev55'] },
+      global: { stubs: { AppModal: modalStub, 'a-button': buttonStub, 'a-spin': spinStub } }
+    })
+    await wrapper.findAll('.add-project-card')[1].trigger('click')
+    await wrapper.get('.add-project-footer button').trigger('click')
+    await flushPromises()
+
+    const [existing, other] = wrapper.findAll('.add-project-row')
+    expect(existing.classes()).toContain('existing')
+    expect(existing.attributes('disabled')).toBeDefined()
+    expect(existing.find('.add-project-check').exists()).toBe(true)
+    expect(other.classes()).not.toContain('existing')
+
+    await existing.trigger('click')
+    expect(existing.classes()).not.toContain('selected')
+    expect(wrapper.findAll('.add-project-footer button')[1].attributes('disabled')).toBeDefined()
+  })
+
   it('emits the selected project only after the user confirms it', async () => {
     const wrapper = await openImportedList()
 

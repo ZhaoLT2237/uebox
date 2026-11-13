@@ -80,6 +80,15 @@ describe('askDiscardLaterTurns', () => {
     expect([...buttons().keys()]).toEqual(['cancel', 'continue'])
   })
 
+  it('确认按钮文字可由调用方指定', () => {
+    void askDiscardLaterTurns({ title: 'x', count: 1, okText: '删除并重新生成', t })
+    const footer = lastOptions().footer()
+    const ok = (footer.children as VNode[]).find(
+      (c) => (c.props as Record<string, unknown>)['data-choice'] === 'continue'
+    )!
+    expect((ok.children as { default: () => string }).default()).toBe('删除并重新生成')
+  })
+
   it('点遮罩或 Esc 关掉弹窗算取消', async () => {
     const result = askDiscardLaterTurns({ title: 'x', count: 1, t })
     ;(lastOptions() as unknown as { afterClose: () => void }).afterClose()

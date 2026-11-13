@@ -113,6 +113,57 @@ describe('输入框首次发送与恢复', () => {
     wrapper.unmount()
   })
 
+  it('重新生成、编辑重发前的模型检查：没模型时拦下并打开模型选择，有模型时放行', async () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = await composer()
+      const vm = wrapper.vm as unknown as { requireAgentModel: () => boolean }
+      expect(vm.requireAgentModel()).toBe(false)
+      vi.runAllTimers()
+      await flushPromises()
+      expect(mocks.info).toHaveBeenCalled()
+      expect(wrapper.find('.agent-model-settings').exists()).toBe(true)
+      wrapper.unmount()
+
+      mocks.settings.mockResolvedValue(ready)
+      const readyWrapper = await composer()
+      expect(
+        (readyWrapper.vm as unknown as { requireAgentModel: () => boolean }).requireAgentModel()
+      ).toBe(true)
+      readyWrapper.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('输入框空着按退格：去掉目标模式标签', async () => {
+    const wrapper = await composer()
+    await wrapper.get('textarea').setValue('/goal ')
+    expect(wrapper.find('.goal-mode').exists()).toBe(true)
+    await wrapper.get('textarea').trigger('keydown', { key: 'Backspace' })
+    expect(wrapper.find('.goal-mode').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('输入框空着按退格：生图模式下请求退出生图', async () => {
+    const wrapper = await composer()
+    await wrapper.setProps({ isImageGenerationMode: true })
+    await wrapper.get('textarea').trigger('keydown', { key: 'Backspace' })
+    expect(wrapper.emitted('cancel-image-generation')).toHaveLength(1)
+    wrapper.unmount()
+  })
+
+  it('「+」面板开着、焦点不在输入框时，Esc 也能关掉', async () => {
+    const wrapper = await composer()
+    await wrapper.get('.plus-btn').trigger('click')
+    expect(wrapper.get('.plus-btn').attributes('aria-expanded')).toBe('true')
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    await flushPromises()
+    expect(wrapper.get('.plus-btn').attributes('aria-expanded')).toBe('false')
+    wrapper.unmount()
+  })
+
   it('没有模型仍可使用本地压缩命令，不被模型设置挡住', async () => {
     const wrapper = await composer()
     await wrapper.get('textarea').setValue('/compact')

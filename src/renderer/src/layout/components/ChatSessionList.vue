@@ -548,7 +548,32 @@ function togglePinned(id: string): void {
 }
 
 function toggleArchived(id: string): void {
-  chatStore.toggleArchived(id)
+  archiveSessions([id], !chatStore.sessionById(id)?.archived)
+}
+
+/**
+ * 归档后对话从列表里消失，不说一声像是被删了。提示里带「撤销」，点了原样放回。
+ * 一次只留一条：连着归档几条时，后一条顶掉前一条的提示（各自的撤销只管自己那批）。
+ */
+const ARCHIVED_TOAST_KEY = 'chat-sidebar-archived'
+function notifyArchived(ids: string[], pinnedIds: string[]): void {
+  if (ids.length === 0) return
+  message.success({
+    key: ARCHIVED_TOAST_KEY,
+    content: t('chatSidebar.archivedToast'),
+    duration: 5,
+    action: {
+      label: t('chatSidebar.undo'),
+      onClick: () => {
+        for (const id of ids) chatStore.setArchived(id, false)
+        // 归档时顺手取消了置顶（见 setArchived），撤销要一起放回去
+        for (const id of pinnedIds) {
+          if (!chatStore.sessionById(id)?.pinned) chatStore.togglePinned(id)
+        }
+        message.destroy(ARCHIVED_TOAST_KEY)
+      }
+    }
+  })
 }
 
 // ==================== 多选：Ctrl/Cmd 逐个加，Shift 拉范围 ====================
@@ -660,9 +685,16 @@ function targetsHaveProject(session: ChatSession): boolean {
 }
 
 function archiveSessions(ids: string[], archived: boolean): void {
+  // 只有这次真被归档的才进撤销名单，原本就在归档里的不能被撤销带出来
+  const changed = ids.filter((id) => {
+    const session = chatStore.sessionById(id)
+    return session && Boolean(session.archived) !== archived
+  })
+  const pinned = changed.filter((id) => chatStore.sessionById(id)?.pinned)
   for (const id of ids) {
     chatStore.setArchived(id, archived)
   }
+  if (archived) notifyArchived(changed, pinned)
 }
 
 /** 批量栏的归档：全部收进归档区，可逆，不弹确认 */
@@ -752,10 +784,18 @@ const renameModalOpen = ref(false)
 const renamingId = ref('')
 const renameTitle = ref('')
 
+const renameInputRef = ref<{ focus: () => void; select: () => void } | null>(null)
+
 function openRenameModal(session: ChatSession): void {
   renamingId.value = session.id
   renameTitle.value = session.title
   renameModalOpen.value = true
+  // 弹窗打开时先把焦点放在面板上（见 AppModal），排在它之后再聚焦输入框并全选，
+  // 用户直接打字就是新名字
+  window.setTimeout(() => {
+    renameInputRef.value?.focus()
+    renameInputRef.value?.select()
+  }, 0)
 }
 
 function confirmRename(): void {
@@ -1441,6 +1481,7 @@ function getChatInitial(title: string): string {
       @cancel="closeRenameModal"
     >
       <a-input
+        ref="renameInputRef"
         v-model:value="renameTitle"
         :placeholder="t('chatSidebar.renamePlaceholder')"
         @press-enter="confirmRename"
@@ -1487,7 +1528,11 @@ function getChatInitial(title: string): string {
       />
     </AppModal>
 
-    <AddProjectModal v-model:open="addProjectOpen" @confirm="handleAddProject" />
+    <AddProjectModal
+      v-model:open="addProjectOpen"
+      :existing-project-names="projectGroups.map((group) => group.projectName)"
+      @confirm="handleAddProject"
+    />
   </div>
 </template>
 

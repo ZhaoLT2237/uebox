@@ -36,6 +36,25 @@ describe('SkillCommandMenu', () => {
     expect(wrapper.emitted('close')).toHaveLength(1)
   })
 
+  it('鼠标不动时，滚动补发的鼠标事件抢不走方向键选中的那条', async () => {
+    const wrapper = mount(SkillCommandMenu, { props: { skills, query: 'skill' } })
+    const menu = wrapper.vm as unknown as ExposedMenu
+    const options = (): ReturnType<typeof wrapper.findAll> => wrapper.findAll('[role="option"]')
+
+    // 鼠标停在第一条上
+    await options()[0].trigger('mousemove', { clientX: 10, clientY: 10 })
+    menu.onKeydown(new KeyboardEvent('keydown', { key: 'ArrowDown' }))
+    await nextTick()
+    // 列表滚动后，静止的鼠标底下换了一条：mouseenter 和坐标不变的 mousemove 都不算数
+    await options()[0].trigger('mouseenter')
+    await options()[0].trigger('mousemove', { clientX: 10, clientY: 10 })
+    expect(options()[1].attributes('aria-selected')).toBe('true')
+
+    // 鼠标真的动了才跟着走
+    await options()[0].trigger('mousemove', { clientX: 12, clientY: 10 })
+    expect(options()[0].attributes('aria-selected')).toBe('true')
+  })
+
   /**
    * 命令在上、技能在下，而且**两组共用一个滚动区**。
    *
