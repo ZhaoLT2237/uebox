@@ -5652,6 +5652,20 @@ const processDeleteRequest = (assetKeys: string[], folderKeys: string[]) => {
 }
 
 /**
+ * 右键菜单动作的对象，和「导入到工程」同一条规矩：右键点在选中集合里，处理整个集合；
+ * 点在集合外，只处理右键那一项。原来只要有选中就处理选中项 —— 选着 A、C 右键 B 删除，
+ * 删掉的是 A、C。
+ */
+const menuActionSources = (): unknown[] => {
+  const clicked = currentRightClickAsset.value
+  const selected = (selectedItems.value ?? []) as unknown[]
+  if (!clicked) return selected
+  const clickedId = getItemId(clicked)
+  const inSelection = selected.some((item) => getItemId(item as typeof clicked) === clickedId)
+  return inSelection && selected.length > 0 ? selected : [clicked]
+}
+
+/**
  * 回收站里这一次动作的对象：优先整个选择集合，没选中才是右键那一项。
  *
  * 和右键删除（handleBatchDeleteSelected）用同一条规矩 —— 原来「恢复」只认
@@ -5659,12 +5673,7 @@ const processDeleteRequest = (assetKeys: string[], folderKeys: string[]) => {
  */
 const collectTrashTargets = (): { assetKeys: string[]; folderKeys: string[] } => {
   type TrashItem = { type?: string; assetKey?: string; id?: string; folderKey?: string }
-  const sources: TrashItem[] =
-    selectedItems.value && selectedItems.value.length > 0
-      ? (selectedItems.value as TrashItem[])
-      : currentRightClickAsset.value
-        ? [currentRightClickAsset.value as TrashItem]
-        : []
+  const sources = menuActionSources() as TrashItem[]
 
   const assetKeys = sources
     .filter((item) => item?.type !== 'folder')
@@ -5683,13 +5692,7 @@ const collectTrashTargets = (): { assetKeys: string[]; folderKeys: string[] } =>
 
 // 右键删除：优先删除当前选择集合，若无选择则删除右键项
 const handleBatchDeleteSelected = () => {
-  // 组装删除来源：优先选中项，其次右键项
-  const sources: any[] =
-    selectedItems.value && selectedItems.value.length > 0
-      ? (selectedItems.value as any[])
-      : currentRightClickAsset.value
-        ? [currentRightClickAsset.value as any]
-        : []
+  const sources = menuActionSources() as Array<{ type?: string; assetKey?: string; id?: string }>
 
   if (!sources.length) return
 

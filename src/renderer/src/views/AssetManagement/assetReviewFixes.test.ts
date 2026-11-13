@@ -52,6 +52,8 @@ describe('asset review fixes', () => {
       [
         'requestPermanentDelete',
         'processDeleteRequest',
+        'menuActionSources',
+        'getItemId',
         'collectTrashTargets',
         'handleContextMenuClick'
       ],
@@ -92,7 +94,7 @@ describe('asset review fixes', () => {
     const messages: string[] = []
     const { performRestoreInTrash, collectTrashTargets } = handlers(
       'components/AssetFileList.vue',
-      ['collectTrashTargets', 'performRestoreInTrash'],
+      ['menuActionSources', 'getItemId', 'collectTrashTargets', 'performRestoreInTrash'],
       {
         selectedItems: ref([
           { assetKey: 'a1' },
@@ -134,7 +136,7 @@ describe('asset review fixes', () => {
     const messages: string[] = []
     const { performRestoreInTrash } = handlers(
       'components/AssetFileList.vue',
-      ['collectTrashTargets', 'performRestoreInTrash'],
+      ['menuActionSources', 'getItemId', 'collectTrashTargets', 'performRestoreInTrash'],
       {
         selectedItems: ref([]),
         currentRightClickAsset: ref(null),
@@ -329,4 +331,33 @@ describe('asset review fixes', () => {
       }
     }
   )
+})
+
+describe('context menu targets', () => {
+  const run = (clicked: unknown, selected: unknown[]): unknown[] => {
+    const { menuActionSources } = handlers(
+      'components/AssetFileList.vue',
+      ['menuActionSources', 'getItemId'],
+      {
+        currentRightClickAsset: ref(clicked),
+        selectedItems: ref(selected)
+      }
+    )
+    return menuActionSources() as unknown[]
+  }
+  const a = { assetKey: 'a' }
+  const b = { assetKey: 'b' }
+  const c = { assetKey: 'c' }
+
+  it('acts on the right-clicked item when it is outside the selection', () => {
+    expect(run(b, [a, c])).toEqual([b])
+  })
+
+  it('acts on the whole selection when the right-clicked item is in it', () => {
+    expect(run(a, [a, c])).toEqual([a, c])
+  })
+
+  it('falls back to the selection when nothing was right-clicked', () => {
+    expect(run(null, [a, c])).toEqual([a, c])
+  })
 })
