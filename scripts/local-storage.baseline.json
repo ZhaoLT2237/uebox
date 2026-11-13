@@ -51,10 +51,6 @@
     "category": "ui",
     "why": "缩略图显示尺寸。"
   },
-  "assetManagement.enableNetworkVault": {
-    "category": "ui",
-    "why": "是否启用网络保管库的开关。"
-  },
   "assetManagement.serverAddress": {
     "category": "ui",
     "why": "网络保管库服务端地址，是配置不是凭据。"

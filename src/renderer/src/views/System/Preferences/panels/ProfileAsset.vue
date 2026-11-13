@@ -17,11 +17,6 @@ import { message } from '@renderer/utils/messageManager'
 import { ASSET_CATEGORIES } from '@renderer/constants/assetCategories'
 import { useI18n } from '@renderer/hooks/useI18n'
 import {
-  ENABLE_NETWORK_VAULT_KEY,
-  readStoredNetworkVaultPreference,
-  resolveNetworkVaultEnabled
-} from '@renderer/views/AssetManagement/utils/networkVaultAccess'
-import {
   useShowAssetVersion,
   writeShowAssetVersion
 } from '@renderer/views/AssetManagement/utils/assetVersionBadge'
@@ -110,45 +105,6 @@ watch(archiveImportAsk, (val) => {
 // （远端 HTTP 库 2、局域网库 1、本地库 3，见 AssetManagement/index.vue）——
 // 填 10 就是拿 10 路并发去压一个代码里特意限到 1 的 SMB 共享。
 // 主进程那侧的 asset:setImportConcurrency / getImportConcurrency 也一并删了
-
-// ==============================
-// 局域网协作库实验性功能设置
-// ==============================
-const networkVaultPreference = ref(readStoredNetworkVaultPreference(localStorage))
-const enableNetworkVault = computed(() =>
-  resolveNetworkVaultEnabled({
-    storedPreference: networkVaultPreference.value
-  })
-)
-
-/**
- * 处理局域网协作库开关变化
- */
-const handleNetworkVaultChange = (checked: boolean) => {
-  networkVaultPreference.value = checked
-}
-
-/**
- * 监听局域网协作库设置变化
- */
-watch(networkVaultPreference, (val) => {
-  if (val === null) {
-    localStorage.removeItem(ENABLE_NETWORK_VAULT_KEY)
-    window.dispatchEvent(
-      new CustomEvent('local-storage-change', {
-        detail: { key: ENABLE_NETWORK_VAULT_KEY, value: null }
-      })
-    )
-    return
-  }
-
-  localStorage.setItem(ENABLE_NETWORK_VAULT_KEY, String(val))
-  window.dispatchEvent(
-    new CustomEvent('local-storage-change', {
-      detail: { key: ENABLE_NETWORK_VAULT_KEY, value: String(val) }
-    })
-  )
-})
 
 // ==============================
 // 资产服务器管理
@@ -397,9 +353,6 @@ const handleStorageChange = (e: StorageEvent) => {
   if (e.key === DEFAULT_APPS_KEY) {
     loadDefaultApps()
   }
-  if (e.key === ENABLE_NETWORK_VAULT_KEY) {
-    networkVaultPreference.value = readStoredNetworkVaultPreference(localStorage)
-  }
 }
 
 const handleCustomStorageChange = (e: CustomEvent) => {
@@ -411,9 +364,6 @@ const handleCustomStorageChange = (e: CustomEvent) => {
   }
   if (e.detail?.key === DEFAULT_APPS_KEY) {
     loadDefaultApps()
-  }
-  if (e.detail?.key === ENABLE_NETWORK_VAULT_KEY) {
-    networkVaultPreference.value = readStoredNetworkVaultPreference(localStorage)
   }
 }
 
@@ -640,36 +590,12 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- Advanced Settings Group -->
-    <div class="settings-group">
-      <h3 class="group-title">{{ $t('profile.asset.advanced') }}</h3>
-      <div class="settings-card">
-        <!-- Enable Network Vault Row -->
-        <div class="setting-row">
-          <div class="row-icon">
-            <PhInfo />
-          </div>
-          <div class="row-content">
-            <div class="row-title">
-              {{ $t('profile.asset.enableNetworkVault') }}
-            </div>
-            <div class="row-desc">
-              {{ $t('profile.asset.enableNetworkVaultDesc') }}
-            </div>
-          </div>
-          <div class="row-control">
-            <AppSwitch :checked="enableNetworkVault" @change="handleNetworkVaultChange" />
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!--
       TODO(服务器管理): 入口暂时隐藏。/server-management 整页只是 standalone 服务端的客户端，
       而服务端不在本仓库里，社区版用户点进去只会看到一排禁用按钮。等服务端开源、
       并补上凭据安全存储（当前 API Key 明文存 localStorage）和该页测试之后再放出来。
       页面代码与路由保留，不删。
-    <div v-if="enableNetworkVault" class="settings-group">
+    <div class="settings-group">
       <h3 class="group-title">{{ $t('profileAssetSettings.serverGroup.title') }}</h3>
       <div class="settings-card">
         <div class="setting-row app-row" @click="$router.push('/server-management')">

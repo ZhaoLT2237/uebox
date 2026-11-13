@@ -134,7 +134,7 @@ const SHOTS = Object.freeze([
       return document.querySelector('.mode-card') ? 'modal-open' : 'modal-missing'
     })()`,
     prepareSettle: 1200,
-    caption: '新建资产库：引用原有文件 / 复制并归档 / 网络协作库'
+    caption: '新建资产库：引用原有文件 / 复制并归档'
   },
   {
     // 网络协作库那一档展开后是两个页签（SMB 共享 / 资产服务器）。
@@ -153,6 +153,10 @@ const SHOTS = Object.freeze([
       if (!create) return 'no-create-item'
       create.dispatchEvent(new MouseEvent('click', { bubbles: true }))
       await wait(900)
+      const more = document.querySelector('[data-testid="more-modes-link"]')
+      if (!more) return 'no-more-modes-link'
+      more.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+      await wait(400)
       const network = document.querySelector('.mode-card.network-card')
       if (!network) return 'no-network-card'
       network.dispatchEvent(new MouseEvent('click', { bubbles: true }))

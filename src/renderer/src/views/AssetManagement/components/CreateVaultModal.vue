@@ -14,7 +14,6 @@
       <div class="modal-header">
         <div class="header-content">
           <h1 class="modal-title">{{ $t('createVaultModal.header.title') }}</h1>
-          <p class="modal-subtitle">{{ $t('createVaultModal.header.subtitle') }}</p>
         </div>
         <button class="close-btn" @click="handleCancel">
           <PhX />
@@ -46,22 +45,6 @@
         <div class="form-group">
           <label class="form-label">{{ $t('createVaultModal.form.modeLabel') }}</label>
           <div class="mode-cards">
-            <!--
-              加入团队（界面方案 4.1 A）：原来的「服务器资产库」卡片连同地址、CA 指纹、登录方式、
-              邀请码、令牌那一整套表单退役；点了直接打开登录框（4.1 B）
-            -->
-            <div class="mode-card" data-testid="join-team-card" @click="emit('joinTeam')">
-              <div class="card-header">
-                <div class="icon-wrapper">
-                  <PhUsersThree />
-                </div>
-              </div>
-              <div class="card-body">
-                <h3 class="card-title">{{ $t('teamProject.join.cardTitle') }}</h3>
-                <p class="card-desc">{{ $t('teamProject.join.cardDesc') }}</p>
-              </div>
-            </div>
-
             <!-- 引用模式卡片 -->
             <div
               class="mode-card"
@@ -104,9 +87,30 @@
               </div>
             </div>
 
-            <!-- 网络协作库卡片 (实验性功能，需在设置中启用) -->
+            <!--
+              下面两张卡大多数人用不到，默认收在「加入团队或连接共享库」链接后面。
+              加入团队的主路是邀请链接「用虚幻盒子打开」，不经过这个弹窗；这张卡点了
+              直接打开登录框（界面方案 4.1 B），不参与上面的模式选择。
+            -->
             <div
-              v-if="enableNetworkVault"
+              v-if="showMoreModes"
+              class="mode-card"
+              data-testid="join-team-card"
+              @click="emit('joinTeam')"
+            >
+              <div class="card-header">
+                <div class="icon-wrapper">
+                  <PhUsersThree />
+                </div>
+              </div>
+              <div class="card-body">
+                <h3 class="card-title">{{ $t('teamProject.join.cardTitle') }}</h3>
+                <p class="card-desc">{{ $t('teamProject.join.cardDesc') }}</p>
+              </div>
+            </div>
+
+            <div
+              v-if="showMoreModes"
               class="mode-card network-card"
               :class="{
                 active: formData.vaultType === VaultType.NETWORK
@@ -130,26 +134,21 @@
             </div>
           </div>
 
-          <!-- 动态提示信息 -->
-          <div class="mode-hint">
-            <template v-if="formData.vaultType === VaultType.REFERENCE">
-              <div class="hint-warning">
-                <PhWarning class="hint-icon" />
-                <span>{{ $t('createVaultModal.mode.reference.hint') }}</span>
-              </div>
-            </template>
-            <template v-else-if="formData.vaultType === VaultType.BACKUP">
-              <div class="hint-success">
-                <PhCheck class="hint-icon" />
-                <span>{{ $t('createVaultModal.mode.backup.hint') }}</span>
-              </div>
-            </template>
-            <template v-else-if="formData.vaultType === VaultType.NETWORK">
-              <div class="hint-info">
-                <PhUsersThree class="hint-icon" />
-                <span>{{ $t('createVaultModal.mode.network.hint') }}</span>
-              </div>
-            </template>
+          <button
+            v-if="!showMoreModes"
+            class="more-modes-link"
+            data-testid="more-modes-link"
+            @click="showMoreModes = true"
+          >
+            {{ $t('createVaultModal.form.moreModes') }}
+          </button>
+
+          <!-- 只有引用模式有一条会出错的后果要提前说：源文件挪走，库里就断链 -->
+          <div v-if="formData.vaultType === VaultType.REFERENCE" class="mode-hint">
+            <div class="hint-warning">
+              <PhWarning class="hint-icon" />
+              <span>{{ $t('createVaultModal.mode.reference.hint') }}</span>
+            </div>
           </div>
         </div>
 
@@ -561,10 +560,6 @@ import {
 } from '../../../store/modules/vaultStore'
 import NetworkAuthModal from './NetworkAuthModal.vue'
 import { isBrowsableAbsolutePath } from '../utils/networkBrowsePath'
-import {
-  readStoredNetworkVaultPreference,
-  resolveNetworkVaultEnabled
-} from '../utils/networkVaultAccess'
 
 // Props 定义
 interface Props {
@@ -592,12 +587,8 @@ const visible = ref(props.open)
 const loading = ref(false)
 const showAuthModal = ref(false)
 
-const networkVaultPreference = ref(readStoredNetworkVaultPreference(localStorage))
-const enableNetworkVault = computed(() =>
-  resolveNetworkVaultEnabled({
-    storedPreference: networkVaultPreference.value
-  })
-)
+/** 「加入团队」「网络协作库」两张卡是否已展开；每次打开弹窗都收起 */
+const showMoreModes = ref(false)
 
 // 网络状态
 const networkStatus = ref<{
@@ -703,10 +694,6 @@ watch(
   () => props.open,
   (newVal) => {
     visible.value = newVal
-    // 每次打开模态框时重新读取实验性功能设置
-    if (newVal) {
-      networkVaultPreference.value = readStoredNetworkVaultPreference(localStorage)
-    }
   }
 )
 
@@ -1128,6 +1115,7 @@ const resetForm = (): void => {
   formData.browsePath = ''
   formData.vaultType = VaultType.REFERENCE
   formData.icon = 'database'
+  showMoreModes.value = false
 
   errors.name = ''
   errors.path = ''
@@ -1352,14 +1340,8 @@ const handleCreate = async (): Promise<void> => {
       font-size: 20px;
       font-weight: 600;
       color: var(--color-text-primary);
-      margin: 0 0 4px 0;
-      letter-spacing: -0.02em;
-    }
-
-    .modal-subtitle {
-      font-size: 12px;
-      color: var(--color-text-secondary);
       margin: 0;
+      letter-spacing: -0.02em;
     }
   }
 
@@ -1523,57 +1505,36 @@ const handleCreate = async (): Promise<void> => {
   }
 }
 
-// 模式提示信息
+// 展开「加入团队 / 网络协作库」的文字链接
+.more-modes-link {
+  margin-top: 10px;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--color-text-primary);
+    text-decoration: underline;
+  }
+}
+
+// 引用模式的断链提醒
 .mode-hint {
-  min-height: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
   margin-top: 10px;
 
-  .hint-warning,
-  .hint-success,
-  .hint-info {
+  .hint-warning {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 12px;
-  }
-
-  .hint-warning {
     color: var(--color-warning-text);
-    animation: pulse 2s infinite;
 
     .hint-icon {
       font-size: 12px;
     }
-  }
-
-  .hint-success {
-    color: var(--color-success-text);
-
-    .hint-icon {
-      font-size: 12px;
-    }
-  }
-
-  .hint-info {
-    color: var(--color-accent-text);
-
-    .hint-icon {
-      font-size: 12px;
-    }
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
   }
 }
 
@@ -1631,20 +1592,6 @@ const handleCreate = async (): Promise<void> => {
 
 // 网络库卡片特殊样式
 .mode-card.network-card {
-  &.disabled {
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-    background: var(--color-bg-surface-hover);
-    border-color: var(--color-border-subtle);
-    pointer-events: auto; /* Required for tooltip */
-
-    &:hover {
-      background: var(--color-bg-surface-hover);
-      border-color: var(--color-border-subtle);
-      transform: none;
-    }
-  }
-
   .icon-wrapper.network {
     &.active {
       background: var(--gradient-accent);

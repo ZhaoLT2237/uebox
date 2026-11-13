@@ -3782,11 +3782,7 @@ export default {
         resume: '继续',
         enableFailed: '开启失败：{error}',
         disableConfirm: '关闭会删除已有索引，重新开启需要重建。确定关闭？'
-      },
-      // 高级设置
-      advanced: '高级',
-      enableNetworkVault: '启用局域网协作库',
-      enableNetworkVaultDesc: '开启后，新建资产库时将显示网络协作库选项。'
+      }
     },
     objectStorage: {
       title: '对象存储',
@@ -5744,13 +5740,13 @@ export default {
   },
   createVaultModal: {
     header: {
-      title: '新建资产库',
-      subtitle: '创建新的资源索引以管理文件'
+      title: '新建资产库'
     },
     form: {
       nameLabel: '名称',
       namePlaceholder: '例如：3D 模型库, 2024 项目素材...',
-      modeLabel: '模式'
+      modeLabel: '模式',
+      moreModes: '加入团队或连接共享库'
     },
     mode: {
       reference: {
@@ -5760,13 +5756,11 @@ export default {
       },
       backup: {
         title: '复制并归档',
-        desc: '将文件完整复制到库中，实现独立备份。',
-        hint: '源文件变动不会影响库内资产。'
+        desc: '将文件完整复制到库中，实现独立备份。'
       },
       network: {
         title: '网络协作库',
-        desc: '连接局域网共享，多人协作管理。',
-        hint: '多人可同时访问，支持协作管理资产。'
+        desc: '连接局域网共享，多人协作管理。'
       }
     },
     path: {

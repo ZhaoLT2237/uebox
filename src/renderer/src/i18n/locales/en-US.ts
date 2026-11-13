@@ -3909,11 +3909,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
         enableFailed: 'Could not enable: {error}',
         disableConfirm:
           'Turning this off deletes the index. Enabling it again requires rebuilding. Continue?'
-      },
-      advanced: 'Advanced',
-      enableNetworkVault: 'Enable LAN Collaboration Vault',
-      enableNetworkVaultDesc:
-        'When enabled, the network vault option appears when creating a vault.'
+      }
     },
 
     voice: {
@@ -5921,13 +5917,13 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
   },
   createVaultModal: {
     header: {
-      title: 'New vault',
-      subtitle: 'Create a new resource index to start managing your files'
+      title: 'New vault'
     },
     form: {
       nameLabel: 'Name',
       namePlaceholder: 'e.g. 3D Model Library, 2024 Project Assets...',
-      modeLabel: 'Mode'
+      modeLabel: 'Mode',
+      moreModes: 'Join a team or connect a shared vault'
     },
     mode: {
       reference: {
@@ -5937,13 +5933,11 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       },
       backup: {
         title: 'Copy and archive',
-        desc: 'Copies files entirely into the vault for an independent backup.',
-        hint: "Changes to source files won't affect assets in the vault."
+        desc: 'Copies files entirely into the vault for an independent backup.'
       },
       network: {
         title: 'Network collaboration vault',
-        desc: 'Connect to a LAN share for multi-user collaborative management.',
-        hint: 'Multiple people can access it at once and collaborate on managing assets.'
+        desc: 'Connect to a LAN share for multi-user collaborative management.'
       }
     },
     path: {
