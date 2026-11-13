@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { RouteLocationMatched, RouteMeta, RouteLocationNormalizedLoaded } from 'vue-router'
-import { getTabIdFromQuery, resolveTabRoute } from './tabRoute'
+import { getTabIdFromQuery, normalizeStoredTabKey, resolveTabRoute } from './tabRoute'
 
 type TestRoute = Pick<RouteLocationNormalizedLoaded, 'path' | 'fullPath' | 'meta' | 'query'> & {
   matched?: Array<Pick<RouteLocationMatched, 'path' | 'meta'>>
@@ -73,5 +73,22 @@ describe('getTabIdFromQuery', () => {
 
   it('returns the dedicated tab id', () => {
     expect(getTabIdFromQuery({ _tab_id: 't1' })).toBe('t1')
+  })
+})
+
+describe('preferences tab keyed by path', () => {
+  it('opens one preferences tab whatever ?tab= is requested', () => {
+    const meta = { isShowInTab: true, title: 'common.preferences' } as RouteMeta
+    const a = resolveTabRoute(createRoute({ path: '/preferences', fullPath: '/preferences', meta }))
+    const b = resolveTabRoute(
+      createRoute({ path: '/preferences', fullPath: '/preferences?tab=models', meta })
+    )
+    expect(a?.key).toBe('/preferences')
+    expect(b?.key).toBe('/preferences')
+  })
+
+  it('merges stored preferences keys but leaves other query-keyed tabs alone', () => {
+    expect(normalizeStoredTabKey('/preferences?tab=models')).toBe('/preferences')
+    expect(normalizeStoredTabKey('/dev-assistant?sid=s1')).toBe('/dev-assistant?sid=s1')
   })
 })

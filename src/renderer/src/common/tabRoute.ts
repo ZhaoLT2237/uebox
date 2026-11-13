@@ -12,6 +12,18 @@ type MinimalRouteLike = Pick<
   matched?: MinimalMatchedRoute[]
 }
 
+/**
+ * 只按 path 区分标签的页面。偏好设置用 `?tab=` 指定打开哪一页，
+ * 按 fullPath 区分的话，从不同入口跳进来会开出好几个同名的「偏好设置」标签。
+ */
+export const PATH_KEYED_TAB_PATHS: ReadonlySet<string> = new Set(['/preferences'])
+
+/** 存下来的旧标签 key（如 `/preferences?tab=models`）归并到的 key；不需要归并时返回原值 */
+export function normalizeStoredTabKey(key: string): string {
+  const path = key.split(/[?#]/)[0]
+  return PATH_KEYED_TAB_PATHS.has(path) ? path : key
+}
+
 export interface ResolvedTabRoute {
   key: string
   meta: RouteMeta
@@ -51,7 +63,7 @@ export function resolveTabRoute(route: MinimalRouteLike): ResolvedTabRoute | nul
   }
 
   return {
-    key: route.fullPath,
+    key: PATH_KEYED_TAB_PATHS.has(route.path) ? route.path : route.fullPath,
     meta
   }
 }

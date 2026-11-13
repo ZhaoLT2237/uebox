@@ -5,7 +5,7 @@ import { MINI_CHAT_SETTINGS_ENABLED } from '../../../../../shared/miniChatPrefer
  * 原型风格：玻璃面板 + 顶部Header + 内容区
  */
 import { ref, computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import PreferencesSidebar from './components/PreferencesSidebar.vue'
 import ProfileGeneral from './panels/ProfileGeneral.vue'
@@ -38,6 +38,7 @@ const { t } = useI18n()
 // 当前激活的菜单 key
 const activeKey = ref<string>('general')
 const route = useRoute()
+const router = useRouter()
 
 /**
  * 页面标题和描述配置。
@@ -173,6 +174,10 @@ watch(
  */
 function handleMenuChange(key: string): void {
   activeKey.value = key
+  // 地址跟着当前页走：外部入口（「去配置模型」）再跳一次同一页时，query 才会变化、watch 才会触发
+  if (route.path === '/preferences' && route.query.tab !== key) {
+    void router.replace({ query: { ...route.query, tab: key } })
+  }
 }
 </script>
 

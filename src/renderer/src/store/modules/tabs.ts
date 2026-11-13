@@ -1,7 +1,7 @@
 import { defineStore, type PiniaPluginContext } from 'pinia'
 import { ref, computed, watch, nextTick } from 'vue'
 import type { RouteLocationNormalized } from 'vue-router'
-import { resolveTabRoute } from '../../common/tabRoute'
+import { normalizeStoredTabKey, resolveTabRoute } from '../../common/tabRoute'
 
 export interface TabItem {
   key: string
@@ -96,10 +96,35 @@ export const useTabsStore = defineStore(
       return changed
     }
 
+    /**
+     * 把旧版按 fullPath 存下的同一页面标签（如 `/preferences?tab=models`）并成一个。
+     * 不并的话，点旧标签会再开出一个同名标签。
+     */
+    const mergePathKeyedTabs = (): boolean => {
+      const seen = new Set<string>()
+      const before = historyTabs.value.length
+      let changed = false
+      historyTabs.value = historyTabs.value.filter((tab) => {
+        const key = normalizeStoredTabKey(tab.key)
+        if (key !== tab.key) {
+          tab.key = key
+          tab.path = key
+          changed = true
+        }
+        if (seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      tabVisitHistory.value = [...new Set(tabVisitHistory.value.map(normalizeStoredTabKey))]
+      activeTab.value = normalizeStoredTabKey(activeTab.value)
+      return changed || historyTabs.value.length !== before
+    }
+
     // 在初始化时执行迁移（持久化数据恢复后还会由 afterHydrate 再跑一次）
     if (historyTabs.value.length > 0) {
       migrateTabTitles()
       unlockProjectLibTab()
+      mergePathKeyedTabs()
     }
 
     // 计算属性
@@ -795,6 +820,7 @@ export const useTabsStore = defineStore(
       resolveStartupTab,
       migrateTabTitles,
       unlockProjectLibTab,
+      mergePathKeyedTabs,
       addTab,
       setActiveTab,
       removeTab,
@@ -832,6 +858,7 @@ export const useTabsStore = defineStore(
           store.migrateTabTitles()
           // 老数据里的项目库还带着 fixed / isCanDelete=false，就地解锁
           store.unlockProjectLibTab()
+          store.mergePathKeyedTabs()
           // 调用清理函数
           store.cleanupSpotlightTabs()
           store.cleanupNestedRouteTabs()
