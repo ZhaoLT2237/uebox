@@ -4,6 +4,15 @@ interface VaultBrowseConfig {
   browsePath?: string
 }
 
+/**
+ * 界面上的 UNC 路径例子和前缀。走 i18n 插值传进去：写进语言包的话，
+ * vue-i18n 编译消息时会吃掉反斜杠。
+ */
+export const UNC_PATH_EXAMPLE = '\\\\192.168.1.100\\Assets'
+export const UNC_PATH_PREFIX = '\\\\'
+/** 资产库名称里不允许的字符，同样走插值（`|` 在 vue-i18n 里是复数分隔符） */
+export const VAULT_NAME_INVALID_CHARS = '< > : " / \\ | ? *'
+
 const HTTP_URL_RE = /^https?:\/\//i
 const WINDOWS_DRIVE_RE = /^[a-zA-Z]:[\\/]/
 

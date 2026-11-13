@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import AIBubble from './AIBubble.vue'
-import { AGENT_RESUME_ACTION } from '../composables/agentHandlerShared'
+import { routerKey } from 'vue-router'
+import { AGENT_RESUME_ACTION, OPEN_MODEL_SETTINGS_ACTION } from '../composables/agentHandlerShared'
 
 const read = vi.hoisted(() => vi.fn())
 const stop = vi.hoisted(() => vi.fn())
@@ -17,7 +18,8 @@ vi.mock('../composables/useReadAloud', () => ({
 
 function mountBubble(
   action: string,
-  data: Record<string, unknown> = { sessionId: 'session-1' }
+  data: Record<string, unknown> = { sessionId: 'session-1' },
+  provide: Record<symbol, unknown> = {}
 ): ReturnType<typeof mount> {
   return mount(AIBubble, {
     props: {
@@ -27,6 +29,7 @@ function mountBubble(
       actionButtons: [{ label: '接着跑', action, data }]
     },
     global: {
+      provide,
       stubs: {
         MarkdownRenderer: true,
         AgentProcessLog: true,
@@ -158,5 +161,19 @@ describe('AIBubble 消息动作', () => {
     await wrapper.find('.action-buttons button').trigger('click')
     expect(openManage).toHaveBeenCalledTimes(1)
     expect(wrapper.emitted('action')).toBeUndefined()
+  })
+
+  it('「打开模型设置」就地跳到模型设置，不冒 action', async () => {
+    const push = vi.fn()
+    const wrapper = mountBubble(OPEN_MODEL_SETTINGS_ACTION, {}, { [routerKey]: { push } })
+    await wrapper.find('.action-buttons button').trigger('click')
+    expect(push).toHaveBeenCalledWith({ path: '/preferences', query: { tab: 'models' } })
+    expect(wrapper.emitted('action')).toBeUndefined()
+  })
+
+  it('复制、重新生成图标带可读名称', () => {
+    const tools = mountBubble('open-preview').findAll('.tools .tool')
+    expect(tools[0].attributes('aria-label')).toBe('复制')
+    expect(tools[1].attributes('aria-label')).toBe('重新生成')
   })
 })

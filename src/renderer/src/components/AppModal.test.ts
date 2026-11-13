@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { mount, type VueWrapper } from '@vue/test-utils'
+import { KeepAlive, defineComponent } from 'vue'
 
 import AppModal from './AppModal.vue'
 
@@ -247,6 +248,45 @@ describe('AppModal', () => {
     await wrapper.setProps({ open: false })
 
     expect(document.querySelector('.first')).not.toBeNull()
+  })
+
+  /**
+   * 弹窗 Teleport 到 body，keep-alive 停用页面时不会带走它：资产库的「新建资产库」
+   * 弹窗曾一直盖在蓝图库、设置页上。停用时藏起来，切回来原样出现，填的内容不丢。
+   */
+  it('所在页面被 keep-alive 停用时藏起来并解锁滚动，切回来恢复，不发关闭', async () => {
+    const Page = defineComponent({
+      components: { AppModal },
+      emits: ['update:open'],
+      template:
+        '<AppModal :open="true" title="新建资产库" @update:open="$emit(\'update:open\', $event)"><input class="first" /></AppModal>'
+    })
+    const Other = defineComponent({ template: '<div class="other-page" />' })
+    const onUpdateOpen = vi.fn()
+    const Host = defineComponent({
+      components: { Page, Other, KeepAlive },
+      props: { tab: { type: String, default: 'page' } },
+      setup: () => ({ onUpdateOpen }),
+      template:
+        '<KeepAlive><Page v-if="tab === \'page\'" @update:open="onUpdateOpen" /><Other v-else /></KeepAlive>'
+    })
+    const wrapper = mount(Host, { attachTo: document.body }) as VueWrapper
+    mounted.push(wrapper)
+    const root = (): HTMLElement | null => q('.app-modal-root')
+
+    expect(root()?.style.display).not.toBe('none')
+    expect(document.body.style.overflow).toBe('hidden')
+    q<HTMLInputElement>('.first')!.value = '半成品'
+
+    await wrapper.setProps({ tab: 'other' })
+    expect(root()?.style.display).toBe('none')
+    expect(document.body.style.overflow).not.toBe('hidden')
+
+    await wrapper.setProps({ tab: 'page' })
+    expect(root()?.style.display).not.toBe('none')
+    expect(document.body.style.overflow).toBe('hidden')
+    expect(q<HTMLInputElement>('.first')?.value).toBe('半成品')
+    expect(onUpdateOpen).not.toHaveBeenCalled()
   })
 
   // 焦点跑到弹窗外面的话，键盘用户会在看不见的背景里乱按

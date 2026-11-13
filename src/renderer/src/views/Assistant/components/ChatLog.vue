@@ -142,7 +142,13 @@ const emit = defineEmits<{
   (e: 'user-copy', payload: { id: string; content: string }): void
   (
     e: 'user-confirm-edit',
-    payload: { id: string; newContent: string; originalContent: ChatMessageContent }
+    payload: {
+      id: string
+      newContent: string
+      originalContent: ChatMessageContent
+      /** 用户在确认框里取消时调用：回到编辑态，改好的文字原样放回去 */
+      reopen?: () => void
+    }
   ): void
   (e: 'source-click', source: any): void
   (e: 'user-scrolled-away', isAway: boolean): void
@@ -276,6 +282,7 @@ function handleUserConfirmEdit(payload: {
   id: string
   newContent: string
   originalContent: ChatMessageContent
+  reopen?: () => void
 }): void {
   emit('user-confirm-edit', payload)
 }

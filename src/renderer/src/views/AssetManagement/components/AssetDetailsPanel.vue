@@ -1,9 +1,8 @@
 <template>
   <div class="asset-details-panel">
     <div class="panel-header">
-      <span class="title">{{
-        asset?.assetName || folder?.name || $t('assetLib.details.title')
-      }}</span>
+      <!-- 有资产或文件夹时名字在正文大标题里，这里只留关闭按钮 -->
+      <span v-if="!asset && !folder" class="title">{{ $t('assetLib.details.title') }}</span>
       <AppButton
         variant="text"
         size="small"
@@ -622,7 +621,9 @@
             </div>
           </div>
         </div>
-        <h1 class="file-name">{{ folder.name }}</h1>
+        <h1 class="file-name">
+          {{ displayFolderName(folder.name, $t('assetLib.fileList.rootFolder')) }}
+        </h1>
       </div>
 
       <!-- 统计信息卡片 -->
@@ -778,6 +779,7 @@ import AppModal from '@renderer/components/AppModal.vue'
 import AppTooltip from '@renderer/components/AppTooltip.vue'
 import AppButton from '@renderer/components/AppButton.vue'
 import AppTag from '@renderer/components/AppTag.vue'
+import { displayFolderName } from '../utils/folderDisplayName'
 import { ref, watch, computed, inject, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
@@ -2885,6 +2887,10 @@ const handleOpenDependencyGraph = () => {
   padding: 0 12px 0 16px;
   background: var(--color-bg-page);
   border-bottom: 1px solid var(--color-border-subtle);
+
+  .close-btn {
+    margin-left: auto;
+  }
 }
 
 .title {

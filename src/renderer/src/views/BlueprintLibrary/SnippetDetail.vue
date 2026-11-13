@@ -103,7 +103,7 @@ const chatContext = computed<LibraryChatContext | null>(() => {
         <span class="topbar-chip">{{ t('snippetDetail.formBadge') }}</span>
       </template>
       <template #actions>
-        <AppButton type="primary" :loading="applying" @click="emit('apply')">
+        <AppButton variant="primary" :loading="applying" @click="emit('apply')">
           {{ t('snippetDetail.applyToProject') }}
         </AppButton>
       </template>

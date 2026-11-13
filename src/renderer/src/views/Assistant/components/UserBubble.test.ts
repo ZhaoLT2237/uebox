@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { PhCopy, PhPencilSimple, PhTarget, PhUsersThree } from '@phosphor-icons/vue'
 import type { ChatMessageContent } from '@renderer/store/modules/chatMessages'
@@ -79,9 +80,19 @@ describe('UserBubble command modes', () => {
     expect(wrapper.get('textarea').element.value).toBe(content)
     await wrapper.get('textarea').setValue(`/${command} 做两扇门`)
     await wrapper.get('textarea').trigger('keydown', { key: 'Enter', ctrlKey: true })
-    expect(wrapper.emitted('confirm-edit')).toEqual([
-      [{ id: 'editable-message', newContent: `/${command} 做两扇门`, originalContent: content }]
-    ])
+    const emitted = wrapper.emitted('confirm-edit')
+    expect(emitted).toHaveLength(1)
+    const payload = emitted![0][0] as { reopen: () => void }
+    expect(payload).toMatchObject({
+      id: 'editable-message',
+      newContent: `/${command} 做两扇门`,
+      originalContent: content
+    })
+    // 确认框里取消：回到编辑态，改好的文字还在
+    expect(wrapper.find('textarea').exists()).toBe(false)
+    payload.reopen()
+    await nextTick()
+    expect(wrapper.get('textarea').element.value).toBe(`/${command} 做两扇门`)
     vi.runOnlyPendingTimers()
     wrapper.unmount()
   })

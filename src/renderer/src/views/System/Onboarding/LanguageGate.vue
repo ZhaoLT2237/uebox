@@ -22,13 +22,8 @@
           @click="choose(option.value)"
         >
           <span class="option-label">{{ option.label }}</span>
-          <span class="option-sub">{{ option.sub }}</span>
         </button>
       </div>
-
-      <p class="gate-note">
-        {{ noteText }}
-      </p>
     </div>
   </div>
 </template>
@@ -45,11 +40,9 @@ const router = useRouter()
 const pending = ref<string>('')
 
 const options = [
-  { value: 'zh-CN', label: '简体中文', sub: '中国大陆' },
-  { value: 'en-US', label: 'English', sub: 'International' }
+  { value: 'zh-CN', label: '简体中文' },
+  { value: 'en-US', label: 'English' }
 ]
-
-const noteText = '之后可在设置中更改界面语言。 / UI language can be changed later in settings.'
 
 function choose(locale: string): void {
   if (pending.value) return
@@ -151,17 +144,5 @@ function choose(locale: string): void {
   font-size: 16px;
   font-weight: 500;
   color: var(--color-text-primary);
-}
-
-.option-sub {
-  font-size: 12px;
-  color: var(--color-text-secondary, #a0a0a5);
-}
-
-.gate-note {
-  margin: 24px 0 0;
-  font-size: 11px;
-  line-height: 1.6;
-  color: var(--color-text-muted);
 }
 </style>

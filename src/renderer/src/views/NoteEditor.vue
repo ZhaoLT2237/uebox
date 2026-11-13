@@ -1132,19 +1132,20 @@ onUnmounted(() => {
         <Transition name="toast-slide">
           <div v-if="showMarkdownToast" class="markdown-toast">
             <div class="toast-content">
-              <span class="toast-text">识别到粘贴内容符合 Markdown 语法</span>
+              <span class="toast-text">{{ t('noteEditor.markdownPaste.detected') }}</span>
               <AppButton
                 variant="link"
                 size="small"
                 class="toast-action"
                 @click="convertMarkdownToHtml"
               >
-                转化为对应格式
+                {{ t('noteEditor.markdownPaste.convert') }}
               </AppButton>
               <AppButton
                 variant="text"
                 size="small"
                 class="toast-close"
+                :aria-label="t('common.close')"
                 @click="closeMarkdownToast"
               >
                 ×

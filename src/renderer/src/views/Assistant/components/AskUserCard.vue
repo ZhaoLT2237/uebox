@@ -74,7 +74,6 @@
           {{ isLast ? t('assistant.askUser.submit') : t('assistant.askUser.next') }}
         </button>
       </div>
-      <div class="ask-user-hint">{{ t('assistant.askUser.declineHint') }}</div>
       <!-- 全部权限档：到点按推荐项继续。倒计时写在脸上，人在场时知道还有多久可以改 -->
       <div v-if="countdown" class="ask-user-hint ask-user-countdown">
         {{ t('assistant.askUser.autoCountdown', { time: countdown }) }}

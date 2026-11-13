@@ -511,7 +511,7 @@ onActivated(() => {
               <div v-else class="item-icon-tiny" :style="getCoverStyle(item)">
                 <PhFileText
                   v-if="!item.coverImage"
-                  style="font-size: 12px; color: rgba(255, 255, 255, 0.7)"
+                  style="font-size: 12px; color: var(--color-text-muted)"
                 />
               </div>
               <span class="item-title-text">{{ item.title }} </span>

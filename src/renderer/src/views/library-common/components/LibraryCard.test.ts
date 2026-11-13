@@ -104,4 +104,22 @@ describe('LibraryCard', () => {
     await wrapper.trigger('click')
     expect(wrapper.emitted('click')).toHaveLength(1)
   })
+
+  it('右键卡片打开「⋯」那份菜单；没有菜单时不拦右键', async () => {
+    const withMenu = mount(LibraryCard, {
+      props: { name: 'BP_Door' },
+      slots: { menu: '<div class="menu-item">编辑</div>' },
+      attachTo: document.body
+    })
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true })
+    withMenu.element.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(withMenu.find('.menu-trigger').element)
+    withMenu.unmount()
+
+    const bare = mountCard()
+    const plain = new MouseEvent('contextmenu', { bubbles: true, cancelable: true })
+    bare.element.dispatchEvent(plain)
+    expect(plain.defaultPrevented).toBe(false)
+  })
 })

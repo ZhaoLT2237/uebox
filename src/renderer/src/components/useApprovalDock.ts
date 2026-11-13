@@ -21,7 +21,7 @@
  * inject 拿不到兄弟分支里的东西。
  */
 
-import { shallowRef, type ShallowRef } from 'vue'
+import { computed, shallowRef, type ComputedRef, type Ref, type ShallowRef } from 'vue'
 
 /**
  * 当前的停靠元素，`null` 表示没有（此时审批框走浮层形态）。
@@ -31,9 +31,20 @@ import { shallowRef, type ShallowRef } from 'vue'
  */
 const dock: ShallowRef<HTMLElement | null> = shallowRef(null)
 
+/**
+ * 停靠位属于哪条对话。别的对话来的审批不能停在这里：停在输入框上方就像是
+ * 这条对话在问，用户会以为批的是眼前这件事。
+ */
+const dockChatSid: ShallowRef<Ref<string> | null> = shallowRef(null)
+
 /** 审批框那一侧：读停靠位 */
 export function useApprovalDock(): ShallowRef<HTMLElement | null> {
   return dock
+}
+
+/** 审批框那一侧：停靠位所在对话的 sid，没有停靠位时为空 */
+export function useApprovalDockChatSid(): ComputedRef<string> {
+  return computed(() => dockChatSid.value?.value ?? '')
 }
 
 /**
@@ -43,7 +54,7 @@ export function useApprovalDock(): ShallowRef<HTMLElement | null> {
  * 不会自己发现目标没了 —— 内容会留在一个脱离文档的节点上，屏幕上什么都没有。
  * Vue 在元素卸载时会用 `null` 回调函数 ref，摘除就挂在那一下上。
  */
-export function provideApprovalDock(): (el: unknown) => void {
+export function provideApprovalDock(chatSid?: Ref<string>): (el: unknown) => void {
   /** 这个实例登记进去的那一个。清空时只认它，别人的不动 */
   let mine: HTMLElement | null = null
 
@@ -51,12 +62,16 @@ export function provideApprovalDock(): (el: unknown) => void {
     if (el instanceof HTMLElement) {
       mine = el
       dock.value = el
+      dockChatSid.value = chatSid ?? null
       return
     }
 
     // 只摘自己那一个：路由切换时新旧页面的生命周期会交错，
     // 无条件清空会把新页面刚登记好的位置一起抹掉
-    if (dock.value === mine) dock.value = null
+    if (dock.value === mine) {
+      dock.value = null
+      dockChatSid.value = null
+    }
     mine = null
   }
 }

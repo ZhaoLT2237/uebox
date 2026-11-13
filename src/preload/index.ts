@@ -49,6 +49,7 @@ interface BridgeStatusPayload {
   port: number
   startedAt?: number
   startError?: string
+  startErrorCode?: 'EADDRINUSE' | 'EACCES' | 'UNKNOWN'
 }
 
 type RendererListener = (event: unknown, ...args: any[]) => void

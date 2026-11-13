@@ -17,11 +17,11 @@ describe('getGreetingTranslationKey', () => {
 })
 
 describe('welcome greeting copy', () => {
-  it('uses one polite sentence without a user name in Chinese', () => {
-    expect(zhCN.assistant.welcome.greetingPrompt).toBe('{greeting}，有什么可以帮您？')
+  it('shows only the greeting in Chinese', () => {
+    expect(zhCN.assistant.welcome.greetingPrompt).toBe('{greeting}')
   })
 
-  it('keeps the English greeting in one sentence', () => {
-    expect(enUS.assistant.welcome.greetingPrompt).toBe('{greeting}, how can I help you?')
+  it('shows only the greeting in English', () => {
+    expect(enUS.assistant.welcome.greetingPrompt).toBe('{greeting}')
   })
 })

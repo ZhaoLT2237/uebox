@@ -187,7 +187,7 @@
               'node-drop-target': dropTargetKey === key,
               'team-unsynced': isTeam && teamStore.isUnsynced(teamPathOf(path))
             }"
-            :title="title"
+            :title="displayFolderName(title, t('assetLib.fileList.rootFolder'))"
             :data-folder-key="key"
             @dragover.prevent.stop="handleNodeDragOver($event)"
             @dragenter.prevent.stop="handleNodeDragEnter($event, key)"
@@ -216,7 +216,9 @@
               />
               <PhFolder v-else weight="fill" class="folder-icon" />
             </span>
-            <span class="tree-node-text">{{ title }}</span>
+            <span class="tree-node-text">{{
+              displayFolderName(title, t('assetLib.fileList.rootFolder'))
+            }}</span>
             <!-- 「人 + 勾」：只有这些人能提交（不用锁图标 —— UE 里带锁的图标表示别人签出） -->
             <span
               v-if="isTeam && restrictionOf(path)"
@@ -358,6 +360,7 @@
 </template>
 
 <script setup lang="ts">
+import { displayFolderName } from '../utils/folderDisplayName'
 import AppSpin from '@renderer/components/AppSpin.vue'
 import AppModal from '@renderer/components/AppModal.vue'
 import { ref, reactive, onMounted, onBeforeUnmount, computed, watch } from 'vue'

@@ -62,11 +62,20 @@ describe('LanguageGate 选完语言之后的落点', () => {
   })
 })
 
-describe('LanguageGate 的说明文案', () => {
+describe('LanguageGate 的文案', () => {
   it('社区版不承诺「支付方式」—— 这里没有支付这回事', () => {
     const wrapper = mount(LanguageGate)
 
     expect(wrapper.text()).not.toContain('支付')
     expect(wrapper.text()).not.toContain('payment')
+  })
+
+  it('选项只写语言名，不附地区和说明小字', () => {
+    const wrapper = mount(LanguageGate)
+
+    expect(wrapper.findAll('button.option').map((b) => b.text())).toEqual(['简体中文', 'English'])
+    expect(wrapper.text()).not.toContain('中国大陆')
+    expect(wrapper.text()).not.toContain('International')
+    expect(wrapper.find('.gate-note').exists()).toBe(false)
   })
 })

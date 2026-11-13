@@ -22,7 +22,7 @@
           spellcheck="false"
           rows="1"
           @input="handleInput"
-          @keydown.enter.exact.prevent="handleEnter"
+          @keydown.enter.exact="handleEnter"
           @keydown.shift.enter.stop
         ></textarea>
         <PhCircleNotch v-if="isSearching" class="icon-spin loading-icon" />
@@ -548,7 +548,10 @@ function closeWindow(): void {
 /**
  * 处理 Enter 键
  */
-function handleEnter(): void {
+function handleEnter(event: KeyboardEvent): void {
+  // 输入法选字的那一下回车是给输入法的，不发送
+  if (event.isComposing || event.keyCode === 229) return
+  event.preventDefault()
   // 手动回车压过倒计时。用户已经确认过了，没必要再让他等完那两秒。
   // 走 `endDictation` 而不是自己拼一遍：收尾以后要加的每一步都只写在那一处
   void endDictation()
@@ -560,7 +563,7 @@ function handleEnter(): void {
  */
 function handleKeyDown(event: KeyboardEvent): void {
   // 不要在 IME 输入过程中触发
-  if (event.isComposing) return
+  if (event.isComposing || event.keyCode === 229) return
 
   switch (event.key) {
     case 'Escape':

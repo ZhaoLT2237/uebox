@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 
 import ChatSessionList from './ChatSessionList.vue'
 import { useChatSessionsStore } from '@renderer/store/modules/chatSessions'
+import { usePendingApprovalsStore } from '@renderer/store/modules/pendingApprovals'
 
 vi.mock('@floating-ui/dom', () => ({
   computePosition: vi.fn().mockResolvedValue({ x: 0, y: 0 }),
@@ -176,5 +177,30 @@ describe('ChatSessionList 行内操作', () => {
     await wrapper.vm.$nextTick()
 
     expect(document.querySelector('.app-menu-submenu__popup')?.textContent).toContain('项目 A')
+  })
+})
+
+/** 审批卡在等用户表态的对话，侧栏按「等你处理」显示，和等用户回答一样 */
+describe('ChatSessionList 待审批状态', () => {
+  it('队列里有这条对话的审批时显示为 waiting', async () => {
+    const store = useChatSessionsStore()
+    store.ensureSession('s1', '一个会话')
+    store.setAgentSessionId('s1', 'engine-1')
+
+    const wrapper = mountList()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.chat-item-waiting').exists()).toBe(false)
+
+    usePendingApprovalsStore().enqueue({
+      sessionId: 'engine-1',
+      toolCallId: 'call-1',
+      toolName: 'delete_asset',
+      namespace: 'asset',
+      risk: 'destructive',
+      args: {},
+      allowAlways: true
+    })
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.chat-item-waiting').exists()).toBe(true)
   })
 })

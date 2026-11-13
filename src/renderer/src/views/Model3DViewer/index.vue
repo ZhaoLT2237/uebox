@@ -113,7 +113,7 @@ const handleDrop = async (event: DragEvent): Promise<void> => {
 
   const validExtensions = ['.fbx', '.obj', '.glb', '.gltf']
   if (!validExtensions.some((ext) => file.name.toLowerCase().endsWith(ext))) {
-    alert(t('model3dViewer.alerts.invalidFormat'))
+    message.error(t('model3dViewer.alerts.invalidFormat'))
     return
   }
 
@@ -133,7 +133,7 @@ const handleDrop = async (event: DragEvent): Promise<void> => {
     }
   } catch (error) {
     console.error('[Model3DViewer] 获取文件路径失败:', error)
-    alert(t('model3dViewer.alerts.getPathFailed'))
+    message.error(t('model3dViewer.alerts.getPathFailed'))
   }
 }
 

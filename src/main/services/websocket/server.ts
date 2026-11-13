@@ -10,6 +10,7 @@ import { config } from '../config'
 import { projectManager } from '../project'
 import { MessageEnvelope, MessageType } from '../types'
 import {
+  type BridgeStartErrorCode,
   ServerState,
   IWebSocketService,
   IMessageEnvelope,
@@ -64,6 +65,7 @@ export class WebSocketService implements IWebSocketService {
    * 留在状态里 —— 否则应用照常开着、引擎却永远连不上，而没有任何地方说得出为什么。
    */
   private startError?: string
+  private startErrorCode?: BridgeStartErrorCode
 
   constructor(onInbound: InboundHandler) {
     this.connectionManager = new ConnectionManager()
@@ -101,12 +103,14 @@ export class WebSocketService implements IWebSocketService {
       // 起来了就把上一次的失败原因擦掉。不擦的话 `getStatus()` 会一直带着它，
       // 用户关掉占用端口的程序、重启桥接之后，界面上的横幅仍然说连不上
       this.startError = undefined
+      this.startErrorCode = undefined
       logger.info(`[WebSocketService] 服务器已启动，监听端口: ${targetPort}`)
       this.broadcastStatus()
     } catch (error: unknown) {
       this.serverState = ServerState.Error
       const err = error as NodeJS.ErrnoException
       this.startError = describeListenError(err, targetPort)
+      this.startErrorCode = classifyListenError(err)
       this.broadcastStatus()
       if (err.code === 'EADDRINUSE') {
         throw new WebSocketServiceError(WebSocketErrorCode.E_ADDRINUSE, this.startError)
@@ -246,7 +250,8 @@ export class WebSocketService implements IWebSocketService {
       state: this.serverState,
       port: this.currentPort,
       startedAt: this.startedAt,
-      ...(this.startError ? { startError: this.startError } : {})
+      ...(this.startError ? { startError: this.startError } : {}),
+      ...(this.startErrorCode ? { startErrorCode: this.startErrorCode } : {})
     }
   }
 
@@ -868,6 +873,11 @@ export class WebSocketService implements IWebSocketService {
  * 端口固定（17860）意味着 EADDRINUSE 不是罕见事故：开了两个盒子、
  * 或者别的程序先占了这个号，都会走到这里。
  */
+export function classifyListenError(error: NodeJS.ErrnoException): BridgeStartErrorCode {
+  if (error.code === 'EADDRINUSE' || error.code === 'EACCES') return error.code
+  return 'UNKNOWN'
+}
+
 export function describeListenError(error: NodeJS.ErrnoException, port: number): string {
   if (error.code === 'EADDRINUSE') {
     return (

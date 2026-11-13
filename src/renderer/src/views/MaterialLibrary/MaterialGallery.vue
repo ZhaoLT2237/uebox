@@ -267,17 +267,17 @@ const vFocus = {
 
       <template #card-menu="{ item }">
         <div class="menu-item" @click.stop="openEditModal(item.source as MaterialEntry)">
-          ✎ {{ $t('materialGallery.actions.editInfo') }}
+          {{ $t('materialGallery.actions.editInfo') }}
         </div>
         <div class="menu-item" @click.stop="handleFavorite(item.source as MaterialEntry)">
           {{
             item.isFavorite
-              ? `☆ ${$t('materialGallery.actions.unfavorite')}`
-              : `★ ${$t('materialGallery.actions.favorite')}`
+              ? $t('materialGallery.actions.unfavorite')
+              : $t('materialGallery.actions.favorite')
           }}
         </div>
         <div class="menu-item danger" @click.stop="handleDelete(item.source as MaterialEntry)">
-          ✕ {{ $t('materialGallery.actions.removeFromLibrary') }}
+          {{ $t('materialGallery.actions.removeFromLibrary') }}
         </div>
       </template>
 

@@ -506,6 +506,10 @@
               :list-generation="listGeneration"
               :ensure-files-loaded="ensureFilesLoaded"
               :selection-scope="selectionScope"
+              :has-query="!!filterForm.keyword?.trim() || activeFilterCount > 0"
+              @import-files="handleUploadFiles"
+              @import-folder="handleUploadFolder"
+              @clear-filters="handleResetFilter"
               @file-click="handleFileClick"
               @file-open="handleFileOpen"
               @folder-click="handleFolderClick"
@@ -909,7 +913,7 @@
         <div class="result-footer">
           <AppButton
             v-if="importResultData.retriableCount > 0"
-            type="primary"
+            variant="primary"
             :loading="importRetryLoading"
             @click="retryFailedImportFiles"
           >
@@ -949,8 +953,8 @@
             </AppButton>
           </div>
           <div class="right-btns">
-            <AppButton variant="primary" @click="handleOverwriteConfirm('overwrite')">
-              {{ t('common.confirm') }}
+            <AppButton @click="handleOverwriteConfirm('overwrite')">
+              {{ t('assetLib.import.overwrite') }}
             </AppButton>
             <AppButton variant="primary" @click="handleOverwriteConfirm('overwriteAll')">
               {{ t('assetLib.import.overwriteAll') }}
@@ -968,6 +972,7 @@
 </template>
 
 <script setup lang="ts">
+import { displayFolderName } from './utils/folderDisplayName'
 import AppAlert from '@renderer/components/AppAlert.vue'
 import AppDropdown from '@renderer/components/AppDropdown.vue'
 import AppMenu from '@renderer/components/AppMenu.vue'
@@ -6188,7 +6193,7 @@ const breadcrumbItems = computed(() => {
     if (nodePath) {
       nodePath.forEach((node) => {
         items.push({
-          name: node.title,
+          name: displayFolderName(node.title, t('assetLib.fileList.rootFolder')),
           path: node.path,
           key: node.key // 关键：携带唯一标识符
         })
@@ -6208,7 +6213,10 @@ const breadcrumbItems = computed(() => {
       let currentPathStr = ''
       paths.forEach((path) => {
         currentPathStr += `/${path}`
-        items.push({ name: path, path: currentPathStr })
+        items.push({
+          name: displayFolderName(path, t('assetLib.fileList.rootFolder')),
+          path: currentPathStr
+        })
       })
     }
   }

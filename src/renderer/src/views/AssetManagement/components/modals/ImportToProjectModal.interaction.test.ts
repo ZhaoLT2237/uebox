@@ -112,8 +112,11 @@ describe('import project preparation', () => {
         })
     )
     const visible = ref(true)
+    const setItem = vi.fn()
     const api = handlers(['preparing', 'importController', 'handleConfirm', 'handleCancel'], {
       ref,
+      LAST_IMPORT_PROJECT_KEY: 'assetManagement.lastImportProject',
+      localStorage: { setItem },
       AbortController,
       loading: ref(false),
       projectsLoading: ref(false),
@@ -138,6 +141,8 @@ describe('import project preparation', () => {
     const first = api.handleConfirm()
     await api.handleConfirm()
     expect(doFolderImport).toHaveBeenCalledTimes(1)
+    // 开始导入就记下这个工程，下次打开默认选中它
+    expect(setItem).toHaveBeenCalledWith('assetManagement.lastImportProject', 'target')
     expect(api.preparing.value).toBe(true)
     api.handleCancel()
     expect((doFolderImport.mock.calls[0][6] as AbortSignal).aborted).toBe(true)

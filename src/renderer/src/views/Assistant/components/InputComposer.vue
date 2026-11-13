@@ -716,11 +716,11 @@
           <!--
           停止任务和挂断通话分别保留入口：挂断后后台任务仍会继续。
 
-          跑着的时候输入框一有东西，这颗就从「停止」换回「发送」：人刚打完一句话，
-          手边这颗最该是发出去，不是把正在跑的那一轮掐了。清空输入框才退回红色停止。
+          跑着的时候停止键一直在。输入框一有东西，发送键出现在它右边：人刚打完一句话，
+          手边那颗是发出去；想掐掉这一轮也不用先把草稿删掉。
         -->
           <AppButton
-            v-if="props.isGenerating && !canSendFollowUp"
+            v-if="props.isGenerating"
             variant="primary"
             shape="circle"
             class="stop-btn"
@@ -733,7 +733,7 @@
             </template>
           </AppButton>
           <AppButton
-            v-else
+            v-if="!props.isGenerating || canSendFollowUp"
             variant="primary"
             shape="circle"
             class="send-btn"
@@ -2179,7 +2179,9 @@ const placeholderText = computed(() => {
     if (queuedFollowUps.value.length > 0 && followUpBehavior.value === 'queue') {
       return t('assistantInputComposer.placeholderQueued')
     }
-    return t('assistant.composer.placeholderSteer')
+    return followUpBehavior.value === 'queue'
+      ? t('assistant.composer.placeholderQueue')
+      : t('assistant.composer.placeholderSteer')
   }
   if (isImageGenerationMode.value) {
     return t('assistant.composer.placeholderImage')
@@ -3074,6 +3076,44 @@ ${content.value}`
   focus()
 }
 
+/**
+ * 把一段字放回输入框，接在用户正在打的字前面。
+ * 页面停止任务时用它退回排着没发的消息 —— 停掉的是这一轮，不是用户写好的话。
+ */
+function restoreText(text: string): void {
+  if (!text) return
+  const current = content.value.trim()
+  content.value = current
+    ? `${text}
+
+${content.value}`
+    : text
+}
+
+/**
+ * 页面上的建议卡片点进来：当作用户在输入框里打了这句再按发送，
+ * 没选模型时一样拦下来、保留草稿并打开模型选择。
+ *
+ * 推迟到这次点击冒泡完再发：拦下时打开的模型面板挂着 click-outside，
+ * 同一下点击冒到 document 会把它当场关掉。
+ */
+function submitText(text: string): void {
+  // 输入框里已经有草稿或附件：不替用户发，也不覆盖，把卡片文字接到草稿前面让用户自己改
+  const hasDraft =
+    composerContent.value.trim().length > 0 ||
+    pendingImages.value.length > 0 ||
+    pendingExcelFiles.value.length > 0 ||
+    pendingDocFiles.value.length > 0
+  if (hasDraft) {
+    restoreText(text)
+    return
+  }
+  content.value = text
+  window.setTimeout(() => handleSend(), 0)
+}
+
+defineExpose({ restoreText, submitText })
+
 /** 排着的消息。父组件没传就是空 —— 模板里不用到处判空 */
 const queuedFollowUps = computed(() => props.queuedFollowUps ?? [])
 
@@ -3094,8 +3134,25 @@ watch(
  */
 function handleKeydown(e: KeyboardEvent): void {
   if (props.disabled) return
+  // 输入法还在选字：这一下回车/Esc 是给输入法的
+  if (e.isComposing || e.keyCode === 229) return
 
   if (skillMenuVisible.value && skillCommandMenuRef.value?.onKeydown(e)) return
+
+  // Esc：有菜单先关菜单，没有菜单而在跑就停下这一轮
+  if (e.key === 'Escape') {
+    if (showMentionPopover.value || showWikiPopover.value) {
+      e.preventDefault()
+      showMentionPopover.value = false
+      showWikiPopover.value = false
+      return
+    }
+    if (props.isGenerating) {
+      e.preventDefault()
+      handleStop()
+    }
+    return
+  }
 
   // 修复在输入框中无法使用快捷键全选的问题
   const isSelectAll = (e.ctrlKey || e.metaKey) && String(e.key).toLowerCase() === 'a'

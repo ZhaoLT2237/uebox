@@ -135,6 +135,9 @@ export interface AgentModeHandlersDeps {
  */
 export const AGENT_RESUME_ACTION = 'agent-resume'
 
+/** 余额不足、密钥无效的报错气泡上「打开模型设置」的动作名。气泡就地跳转，不冒到页面 */
+export const OPEN_MODEL_SETTINGS_ACTION = 'open-model-settings'
+
 export function resolveTargetChatSid(
   agentStreamStore: any,
   sid: string,

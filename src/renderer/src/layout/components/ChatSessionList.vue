@@ -39,6 +39,7 @@ import { useChatSessionsStore, type ChatSession } from '@renderer/store/modules/
 import { useChatSidebarStore } from '@renderer/store/modules/chatSidebarStore'
 import { useChatMessagesStore } from '@renderer/store/modules/chatMessages'
 import { useAgentStreamStore } from '@renderer/store/modules/agentStream'
+import { usePendingApprovalsStore } from '@renderer/store/modules/pendingApprovals'
 import { useTabsStore } from '@renderer/store/modules/tabs'
 import { deleteChatSessions } from '@renderer/composables/deleteChatSession'
 import { detachChatSession, isDraggedOutOf } from '@renderer/composables/detachChatSession'
@@ -91,6 +92,7 @@ const chatStore = useChatSessionsStore()
 const sidebarStore = useChatSidebarStore()
 const chatMsgStore = useChatMessagesStore()
 const agentStreamStore = useAgentStreamStore()
+const pendingApprovals = usePendingApprovalsStore()
 const tabsStore = useTabsStore()
 
 const LOAD_STEP = 20
@@ -283,11 +285,18 @@ function isSessionRunning(chatSid: string): boolean {
   return agentStreamStore.isStreaming(chatSid) || chatMsgStore.isLastReplyTyping(chatSid)
 }
 
+/** 这条对话有审批卡在等用户表态 —— 和等用户回答一样算「等你处理」 */
+function hasPendingApproval(session: ChatSession): boolean {
+  const agentSessionId = session.agentSessionId
+  if (!agentSessionId) return false
+  return pendingApprovals.queue.some((item) => item.sessionId === agentSessionId)
+}
+
 function activityOf(session: ChatSession): ReturnType<typeof sessionActivityState> {
   return sessionActivityState(
     isSessionRunning(session.id),
     Boolean(session.taskDone),
-    agentStreamStore.hasPendingQuestion(session.id)
+    agentStreamStore.hasPendingQuestion(session.id) || hasPendingApproval(session)
   )
 }
 

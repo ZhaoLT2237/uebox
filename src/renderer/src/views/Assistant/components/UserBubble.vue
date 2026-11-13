@@ -65,8 +65,16 @@
         <!-- 工具栏 -->
         <div class="tools">
           <PhCheck v-if="isCopied" class="tool copied" />
-          <PhCopy v-else class="tool" @click="handleCopy" />
-          <PhPencilSimple class="tool" @click="startEdit" />
+          <AppTooltip v-else :title="t('assistant.chat.copy')">
+            <PhCopy class="tool" :aria-label="t('assistant.chat.copy')" @click="handleCopy" />
+          </AppTooltip>
+          <AppTooltip :title="t('assistant.chat.editMessage')">
+            <PhPencilSimple
+              class="tool"
+              :aria-label="t('assistant.chat.editMessage')"
+              @click="startEdit"
+            />
+          </AppTooltip>
         </div>
       </template>
     </div>
@@ -75,6 +83,7 @@
 
 <script setup lang="ts">
 import AppButton from '@renderer/components/AppButton.vue'
+import AppTooltip from '@renderer/components/AppTooltip.vue'
 import { computed, ref, nextTick } from 'vue'
 import type {
   ChatMessageContent,
@@ -110,7 +119,13 @@ const emit = defineEmits<{
   (e: 'copy', payload: { id: string; content: string }): void
   (
     e: 'confirm-edit',
-    payload: { id: string; newContent: string; originalContent: ChatMessageContent }
+    payload: {
+      id: string
+      newContent: string
+      originalContent: ChatMessageContent
+      /** 用户在确认框里取消时调用：回到编辑态，改好的文字原样放回去 */
+      reopen?: () => void
+    }
   ): void
 }>()
 
@@ -235,7 +250,11 @@ function confirmEdit(): void {
   emit('confirm-edit', {
     id: props.id,
     newContent,
-    originalContent: props.content
+    originalContent: props.content,
+    reopen: () => {
+      editingContent.value = newContent
+      isEditing.value = true
+    }
   })
 
   // 重置编辑状态

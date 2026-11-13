@@ -815,11 +815,17 @@ onBeforeUnmount(() => {
           >
             {{ t(tab.title) }}
           </span>
-          <PhX
+          <button
             v-if="tab.isCanDelete !== false"
+            type="button"
             class="tab-close"
+            :aria-label="t('tabs.closeTab')"
+            :title="t('tabs.closeTab')"
+            draggable="false"
             @click="handleTabRemove(tab.key, $event)"
-          />
+          >
+            <PhX />
+          </button>
         </div>
         <AppTooltip placement="bottom" :title="t('tabs.newChat')">
           <div class="add-tab-btn" @click="createNewChat">
@@ -831,12 +837,24 @@ onBeforeUnmount(() => {
     <!-- 可拖动空间（确保标签页很多时仍有拖动区域） -->
     <div class="header-spacer"></div>
     <div v-if="!isMac" class="window-controls">
-      <button class="window-button" @click="minimizeWindow">
+      <button
+        type="button"
+        class="window-button"
+        :aria-label="t('chatWindow.minimize')"
+        :title="t('chatWindow.minimize')"
+        @click="minimizeWindow"
+      >
         <svg width="12" height="12" viewBox="0 0 12 12">
           <rect x="2" y="5" width="8" height="2" fill="currentColor" />
         </svg>
       </button>
-      <button class="window-button" @click="maximizeWindow">
+      <button
+        type="button"
+        class="window-button"
+        :aria-label="t('chatWindow.maximize')"
+        :title="t('chatWindow.maximize')"
+        @click="maximizeWindow"
+      >
         <svg width="12" height="12" viewBox="0 0 12 12">
           <rect
             x="2"
@@ -849,7 +867,13 @@ onBeforeUnmount(() => {
           />
         </svg>
       </button>
-      <button class="window-button close" @click="closeWindow">
+      <button
+        type="button"
+        class="window-button close"
+        :aria-label="t('chatWindow.close')"
+        :title="t('chatWindow.close')"
+        @click="closeWindow"
+      >
         <svg width="12" height="12" viewBox="0 0 12 12">
           <path
             d="M2 2L10 10M10 2L2 10"
@@ -1093,20 +1117,31 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 
+/* 点击区 24px，负边距把占位压回原来的 16px，标签宽度不变 */
 .tab-close {
   font-size: 11px;
   color: var(--color-text-primary);
   opacity: 0;
   transition: all 0.15s ease;
-  padding: 2px;
+  padding: 0;
+  margin: -4px;
+  border: none;
   border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
+  width: 24px;
+  height: 24px;
   -webkit-app-region: no-drag;
+
+  &:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
 
   &:hover {
     opacity: 1;
@@ -1249,6 +1284,7 @@ onBeforeUnmount(() => {
       height: 14px;
       font-size: 12px;
       padding: 1px;
+      margin: 0;
     }
   }
   .tab-home-icon {

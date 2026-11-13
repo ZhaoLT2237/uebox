@@ -9,14 +9,28 @@
     浮层。两种形态的差别只有定位，见 `useApprovalDock.ts`。
   -->
   <Teleport :to="dockTarget">
-    <div v-if="pendingAction" class="sensitive-action-confirm" :class="{ floating: !dock }">
+    <div v-if="pendingAction" class="sensitive-action-confirm" :class="{ floating: !docked }">
       <div class="confirm-header">
         <div class="header-left">
           <PhWarning class="warning-icon" />
           <span class="header-title">{{ t('assistant.sensitiveAction.title') }}</span>
+          <span v-if="foreignSession" class="source-chat" :title="foreignSession.title">
+            {{ foreignSession.title }}
+          </span>
         </div>
-        <div v-if="queueLength > 1" class="queue-badge">
-          {{ t('assistant.sensitiveAction.queued', { count: queueLength - 1 }) }}
+        <div class="header-right">
+          <AppButton
+            v-if="foreignSession"
+            size="small"
+            variant="text"
+            class="btn-goto-chat"
+            @click="goToSourceChat"
+          >
+            {{ t('assistant.sensitiveAction.goToChat') }}
+          </AppButton>
+          <div v-if="queueLength > 1" class="queue-badge">
+            {{ t('assistant.sensitiveAction.queued', { count: queueLength - 1 }) }}
+          </div>
         </div>
       </div>
       <div class="confirm-body">
@@ -106,7 +120,12 @@ import { aiAPI, ChatAbortedError } from '@renderer/api/ai'
 import { clampOutputTokens } from '@core/shared/tokenBudget'
 import { getModelLimits } from '@renderer/services/notebook/contextBudget'
 import { useApprovalDisplay } from '@renderer/components/useApprovalDisplay'
-import { useApprovalDock } from '@renderer/components/useApprovalDock'
+import { useApprovalDock, useApprovalDockChatSid } from '@renderer/components/useApprovalDock'
+import { useRouter } from 'vue-router'
+import { usePendingApprovalsStore } from '@renderer/store/modules/pendingApprovals'
+import { useChatSessionsStore, type ChatSession } from '@renderer/store/modules/chatSessions'
+import { useTabsStore } from '@renderer/store/modules/tabs'
+import { chatSessionRoute } from '@renderer/common/chatRoute'
 
 const { t, locale } = useI18n()
 
@@ -117,7 +136,41 @@ const { current: pendingAction, queueLength, reply } = useApprovalDisplay()
  * 走浮层形态（库页面点「放进当前工程」这类，用户此刻不在对话里）。
  */
 const dock = useApprovalDock()
-const dockTarget = computed<HTMLElement | string>(() => dock.value ?? 'body')
+const dockChatSid = useApprovalDockChatSid()
+const approvals = usePendingApprovalsStore()
+const chatSessions = useChatSessionsStore()
+const tabsStore = useTabsStore()
+const router = useRouter()
+
+/**
+ * 这条审批来自哪条对话 —— 只在它不是眼前这条时有值。
+ *
+ * 不是眼前这条就不停靠到输入框上方，改走浮层，卡片头写明来源并给「前往」。
+ * 找不到来源（库页面发起的操作没有对话）时按原样处理。
+ */
+const foreignSession = computed<ChatSession | null>(() => {
+  const request = approvals.current
+  if (!request) return null
+  const source = chatSessions.sessionByAgentSessionId(request.sessionId)
+  if (!source || source.id === dockChatSid.value) return null
+  return source
+})
+
+const docked = computed<boolean>(() => Boolean(dock.value) && !foreignSession.value)
+const dockTarget = computed<HTMLElement | string>(() =>
+  docked.value && dock.value ? dock.value : 'body'
+)
+
+function goToSourceChat(): void {
+  const target = foreignSession.value
+  if (!target) return
+  void router?.push(
+    chatSessionRoute(
+      target.id,
+      tabsStore.historyTabs.map((tab) => tab.path)
+    )
+  )
+}
 
 /** AI 解释内容 */
 const aiExplanation = ref('')
@@ -347,7 +400,24 @@ Please explain what this operation means and does.`
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
   }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+  }
+}
+
+.source-chat {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-size: 12px;
 }
 
 .warning-icon {

@@ -27,4 +27,13 @@ describe('PreferencesSidebar', () => {
 
     expect(wrapper.emitted('change')?.[0]).toEqual(['project'])
   })
+
+  it('每组有组标题', () => {
+    const wrapper = mount(PreferencesSidebar, {
+      props: { activeKey: 'general' }
+    })
+
+    const titles = wrapper.findAll('.nav-group-title').map((node) => node.text())
+    expect(titles).toEqual(['应用', 'AI', '项目与资产'])
+  })
 })

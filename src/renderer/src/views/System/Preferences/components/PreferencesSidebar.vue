@@ -24,6 +24,7 @@ import {
   PhPalette,
   PhPlugs,
   PhRobot,
+  PhShareNetwork,
   PhSquaresFour,
   PhToolbox,
   PhUsersThree,
@@ -37,6 +38,8 @@ interface MenuItem {
 }
 
 interface MenuGroup {
+  key: string
+  titleKey: string
   items: MenuItem[]
 }
 
@@ -48,10 +51,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{ (e: 'change', key: string): void }>()
 
 /**
- * 菜单分组配置
- * 通过分割线实现视觉归类
- */
-/**
  * Agent V3 调试台是给开发这个 agent 的人用的内部工具（逐步执行、看原始事件、
  * 手动 steer），不是给终端用户的功能。以前它无条件挂在偏好设置里，
  * 任何用户打开设置都能看到一个自己完全用不上的「调试台」。
@@ -62,8 +61,9 @@ const showAgentDebugPanel =
   import.meta.env.DEV || String(import.meta.env.VITE_SHOW_AGENT_DEBUG || '') === 'true'
 
 const menuGroups: MenuGroup[] = [
-  // 基础设置组
   {
+    key: 'app',
+    titleKey: 'profile.menuGroup.app',
     items: [
       {
         key: 'general',
@@ -89,11 +89,17 @@ const menuGroups: MenuGroup[] = [
               icon: PhChatCircle
             }
           ]
-        : [])
+        : []),
+      {
+        key: 'about',
+        labelKey: 'profile.menu.about',
+        icon: PhInfo
+      }
     ]
   },
-  // AI 相关组
   {
+    key: 'ai',
+    titleKey: 'profile.menuGroup.ai',
     items: [
       {
         key: 'ai',
@@ -148,7 +154,8 @@ const menuGroups: MenuGroup[] = [
       {
         key: 'mcp',
         labelKey: 'profile.menu.mcp',
-        icon: PhPlugs
+        // 与「模型」的插头区分开：MCP 是接进来的外部服务网络
+        icon: PhShareNetwork
       },
       {
         key: 'cli',
@@ -172,8 +179,9 @@ const menuGroups: MenuGroup[] = [
         : [])
     ]
   },
-  // 工程与资产组
   {
+    key: 'workspace',
+    titleKey: 'profile.menuGroup.workspace',
     items: [
       {
         key: 'project',
@@ -209,11 +217,6 @@ const menuGroups: MenuGroup[] = [
         key: 'namingRules',
         labelKey: 'profile.menu.namingRules',
         icon: PhFileText
-      },
-      {
-        key: 'about',
-        labelKey: 'profile.menu.about',
-        icon: PhInfo
       }
     ]
   }
@@ -237,14 +240,12 @@ function handleMenuClick(key: string): void {
 
     <!-- 导航菜单 -->
     <nav class="sidebar-nav">
-      <template v-for="(group, groupIndex) in menuGroups" :key="groupIndex">
-        <!-- 分割线（除第一组外） -->
-        <div v-if="groupIndex > 0" class="nav-divider" />
-
-        <!-- 菜单项 -->
+      <template v-for="group in menuGroups" :key="group.key">
+        <h2 class="nav-group-title">{{ $t(group.titleKey) }}</h2>
         <button
           v-for="item in group.items"
           :key="item.key"
+          type="button"
           class="nav-item"
           :class="{ active: props.activeKey === item.key }"
           @click="handleMenuClick(item.key)"
@@ -298,11 +299,16 @@ function handleMenuClick(key: string): void {
   }
 }
 
-/* 分割线 - 用于视觉分组 */
-.nav-divider {
-  height: 1px;
-  margin: var(--space-2) var(--space-4);
-  background: linear-gradient(to right, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+.nav-group-title {
+  margin: var(--space-4) 0 var(--space-1);
+  padding: 0 var(--space-4);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 .nav-item {

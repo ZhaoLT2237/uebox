@@ -62,6 +62,7 @@
 
       <section v-if="!conversationMode" class="composer-section">
         <InputComposer
+          ref="composerRef"
           :is-generating="isGenerating"
           :is-image-generation-mode="isImageGenerationMode"
           :is-agent-mode="true"
@@ -116,6 +117,7 @@
             variant="text"
             shape="circle"
             class="scroll-to-bottom-btn"
+            :aria-label="t('assistant.chat.scrollToBottom')"
             @click="scrollToBottom"
           >
             <template #icon>
@@ -204,6 +206,7 @@
           @open="teamTab.show"
         />
         <InputComposer
+          ref="composerRef"
           :is-generating="isGenerating"
           :is-image-generation-mode="isImageGenerationMode"
           :is-agent-mode="true"
@@ -408,6 +411,7 @@ import { useAgentStreamStore } from '../../store/modules/agentStream'
 import { useFollowUpQueueStore } from '../../store/modules/followUpQueue'
 import { agentV3API } from '@renderer/api/agentV3'
 import { branchChat } from './composables/chatBranch'
+import { askDiscardLaterTurns, countLaterTurns } from './composables/discardLaterTurns'
 import { countUserTurnsBefore, rewindTranscript } from './composables/transcriptRewind'
 import { openSideQuestion } from './composables/sideQuestion'
 import {
@@ -638,7 +642,9 @@ const chatComposerRef = ref<HTMLElement | null>(null)
  * 审批框停靠位的函数 ref。绑在输入框上方那个空 div 上，
  * 应用级的 `SensitiveActionConfirm` 会把内容 Teleport 到这里。
  */
-const setApprovalDock = provideApprovalDock()
+const setApprovalDock = provideApprovalDock(sid)
+/** 输入框。欢迎态和对话态各一个，同一时刻只挂着一个 */
+const composerRef = ref<InstanceType<typeof InputComposer> | null>(null)
 
 const composerHeightPx = ref(0)
 const composerHeightVar = computed(() => {
@@ -1593,6 +1599,11 @@ watch(isImageGenerationMode, (newValue) => {
 function handleSuggestionClick(item: SuggestionItem): void {
   const q = String(item.prompt || item.title || '').trim()
   if (!q) return
+  // 走输入框的发送：没选模型时由它拦下，和用户自己敲回车一样
+  if (composerRef.value) {
+    composerRef.value.submitText(q)
+    return
+  }
   handleSend({ content: q, images: [] })
 }
 
@@ -1744,6 +1755,18 @@ async function ensureIdleBeforeResend(): Promise<boolean> {
  * @param payload 气泡信息
  */
 async function handleBubbleRetry(payload: { id: string; content: string }): Promise<void> {
+  // 不是最后一轮：后面几轮会一起删掉，先问
+  const retryIndex = messages.value.findIndex((m) => m.id === payload.id)
+  const laterRetryTurns = retryIndex < 0 ? 0 : countLaterTurns(messages.value, retryIndex)
+  if (laterRetryTurns > 0) {
+    const choice = await askDiscardLaterTurns({
+      title: t('assistant.chat.regenerate'),
+      count: laterRetryTurns,
+      t
+    })
+    if (choice === 'cancel') return
+  }
+
   // 先停干净再重来。放在删消息之前：停不下来时这一步要能原样退出
   if (!(await ensureIdleBeforeResend())) return
 
@@ -1865,13 +1888,18 @@ function handleBubbleSuggest(payload: { id: string; text: string }): void {
  * 先清队列再停：停下来会让主进程发 `released`，而接那条的
  * `followUpDelivery` 只看队列里还有没有货。反过来写就会正好赶在清空前投递出去。
  */
-function stopAgentAndDropQueue(): void {
+function stopAgentAndDropQueue(): Promise<boolean> {
+  // 排着的话退回输入框，不悄悄丢掉：停掉的是这一轮，不是用户写好的下一句
+  const dropped = listFollowUps(followUpQueues.value, sid.value)
+    .map((item) => item.text.trim())
+    .filter(Boolean)
   followUpQueues.value = clearFollowUps(followUpQueues.value, sid.value)
-  stopAgent()
+  if (dropped.length > 0) composerRef.value?.restoreText(dropped.join('\n\n'))
+  return stopAgent()
 }
 
 function handleBubbleStop(): void {
-  stopAgentAndDropQueue()
+  void stopAgentAndDropQueue()
 }
 
 /**
@@ -1894,7 +1922,7 @@ function handleComposerStop(): void {
     voice.interrupt()
     return
   }
-  stopAgentAndDropQueue()
+  void stopAgentAndDropQueue()
 }
 
 /**
@@ -2036,11 +2064,29 @@ async function handleUserConfirmEdit(payload: {
   id: string
   newContent: string
   originalContent: ChatMessageContent
+  reopen?: () => void
 }): Promise<void> {
   const { id: messageId, newContent, originalContent } = payload
 
+  const editIndex = messages.value.findIndex((m) => m.id === messageId)
+  const laterEditTurns = editIndex < 0 ? 0 : countLaterTurns(messages.value, editIndex)
+  if (laterEditTurns > 0) {
+    const choice = await askDiscardLaterTurns({
+      title: t('assistant.chat.editMessage'),
+      count: laterEditTurns,
+      t
+    })
+    if (choice !== 'continue') {
+      payload.reopen?.()
+      return
+    }
+  }
+
   // 同 handleBubbleRetry：编辑后重发也是开新一轮，先把旧的那轮停干净
-  if (!(await ensureIdleBeforeResend())) return
+  if (!(await ensureIdleBeforeResend())) {
+    payload.reopen?.()
+    return
+  }
 
   // 找到当前用户消息的索引
   const msgIndex = messages.value.findIndex((m) => m.id === messageId)
@@ -2281,6 +2327,8 @@ function handleClearSession(): void {
     okText: t('common.clear'),
     cancelText: t('common.cancel'),
     onOk: async () => {
+      // 先停掉还在跑的那一轮：不停的话它的输出会接着写进刚清空的对话
+      await stopAgentAndDropQueue()
       // 语音是应用级的一路，只有清的是**这次通话绑的那条**对话才挂断
       if (sid.value === voiceChatSid()) await voice.stop()
       // 清除前端消息
@@ -2956,7 +3004,7 @@ function selectBrowserPage(): void {
 .scroll-to-bottom-btn {
   :deep(svg) {
     font-size: 30px;
-    color: #ffffffa9;
+    color: var(--color-text-secondary);
   }
 }
 

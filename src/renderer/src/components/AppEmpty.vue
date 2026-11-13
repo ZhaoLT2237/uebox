@@ -7,6 +7,9 @@
  *
  * 不给默认插图：a-empty 那张灰色小盒子是 antd 的品牌资产，
  * 换过来正好把它甩掉。需要更具体的图（比如录屏库的场记板）就用 #icon 插槽。
+ *
+ * `#action` 插槽放按钮（「添加引擎」「重试」）：空状态直接给出下一步操作，
+ * 不写「点击右上角…」这种指路文案。
  */
 interface Props {
   /** 一行标题。给了就比 description 大一号、颜色深一档 */
@@ -32,6 +35,9 @@ withDefaults(defineProps<Props>(), { title: undefined, description: undefined })
     <p v-if="description || $slots.default" class="app-empty__text">
       <slot>{{ description }}</slot>
     </p>
+    <div v-if="$slots.action" class="app-empty__action">
+      <slot name="action" />
+    </div>
   </div>
 </template>
 
@@ -77,5 +83,13 @@ withDefaults(defineProps<Props>(), { title: undefined, description: undefined })
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
   line-height: 1.5;
+}
+
+.app-empty__action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 </style>

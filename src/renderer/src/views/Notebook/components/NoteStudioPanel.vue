@@ -1880,11 +1880,7 @@ function handleEditTaskPrompt(type: string, label: string, e: Event): void {
                         }}</span>
                       </template>
                       <template v-else>
-                        <span
-                          class="output-type-label"
-                          :style="{ color: getOutputTypeColor(output.type).color }"
-                          >{{ getOutputTypeLabel(output.type) }}</span
-                        >
+                        <span class="output-type-label">{{ getOutputTypeLabel(output.type) }}</span>
                         <span class="footer-sep">·</span>
                         <span class="output-time">{{ formatTime(output.createdAt) }}</span>
                       </template>
@@ -2693,6 +2689,8 @@ function handleEditTaskPrompt(type: string, label: string, e: Event): void {
   font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
+  // 彩色只留给图标：这些 400 色阶的字在浅色主题上看不清
+  color: var(--color-text-muted);
 }
 
 .footer-sep {

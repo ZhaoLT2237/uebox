@@ -24,12 +24,25 @@
             "
             class="empty-state"
           >
-            <div class="empty-icon">📄</div>
-            <div class="empty-text">{{ t('assetLib.fileList.empty') }}</div>
-            <div class="empty-desc">
-              <span v-if="!selectedFolderKey">{{ t('assetLib.fileList.selectFolder') }}</span>
-              <span v-else>{{ t('assetLib.fileList.addAsset') }}</span>
-            </div>
+            <AppEmpty :title="t(FILE_LIST_EMPTY_TITLE[emptyKind])">
+              <template #icon>
+                <PhTrash v-if="emptyKind === 'trash'" />
+                <PhStar v-else-if="emptyKind === 'favorites'" />
+                <PhMagnifyingGlass v-else-if="emptyKind === 'filtered'" />
+                <PhFolderOpen v-else />
+              </template>
+              <template v-if="emptyKind === 'filtered'" #action>
+                <AppButton @click="emit('clear-filters')">
+                  {{ t('assetLib.fileList.clearFilters') }}
+                </AppButton>
+              </template>
+              <template v-else-if="emptyKind === 'folder' && libraryCaps.canImport" #action>
+                <AppButton variant="primary" @click="emit('import-files')">
+                  <template #icon><PhFilePlus /></template>
+                  {{ t('assetManagement.importFile') }}
+                </AppButton>
+              </template>
+            </AppEmpty>
           </div>
           <div v-else class="file-content-wrapper">
             <!-- 文件夹区域 -->
@@ -711,6 +724,9 @@
 
 <script setup lang="ts">
 import AppSpin from '@renderer/components/AppSpin.vue'
+import AppEmpty from '@renderer/components/AppEmpty.vue'
+import AppButton from '@renderer/components/AppButton.vue'
+import { fileListEmptyKind, FILE_LIST_EMPTY_TITLE } from '../utils/fileListEmptyState'
 import AssetLoadingContent from './AssetLoadingContent.vue'
 import { confirmDialog } from '@renderer/utils/dialog'
 import AppModal from '@renderer/components/AppModal.vue'
@@ -731,7 +747,9 @@ import {
   PhCloudArrowUp,
   PhDownloadSimple,
   PhFileZip,
+  PhFilePlus,
   PhFileText,
+  PhMagnifyingGlass,
   PhFolder,
   PhFolderOpen,
   PhFolderPlus,
@@ -870,6 +888,8 @@ interface Props {
   listGeneration?: number
   ensureFilesLoaded?: (assetKey?: string) => Promise<boolean>
   selectionScope?: string
+  /** 有搜索关键字或任何筛选条件；列表为空时据此提示「清除筛选」 */
+  hasQuery?: boolean
 }
 
 interface Emits {
@@ -887,6 +907,10 @@ interface Emits {
    * 给了 assetKey 就会在跳过去之后把那个资产选中。
    */
   (e: 'locate-in-folder', folderKey?: string, assetKey?: string): void
+  /** 与右下角导入按钮同一套处理 */
+  (e: 'import-files'): void
+  (e: 'import-folder'): void
+  (e: 'clear-filters'): void
 }
 const emit = defineEmits<Emits>()
 
@@ -1167,6 +1191,14 @@ const { t, locale } = useI18n()
 // ---- 当前数据源能做什么（服务器库时，本地库的改动类操作不出现）
 const libraryStore = useAssetLibraryStore()
 const libraryCaps = computed(() => libraryStore.capabilities)
+
+const emptyKind = computed(() =>
+  fileListEmptyKind({
+    shortcut: selectionStore.selectedShortcut,
+    hasQuery: props.hasQuery,
+    folderKey: props.selectedFolderKey
+  })
+)
 /** 设置里「显示资产版本」开关 */
 const showAssetVersion = useShowAssetVersion()
 // 团队工程的那几件事（签出角标、悬停两行、右键三项）都在 useTeamAsset 里
@@ -3293,8 +3325,30 @@ const handleItemClick = (file: AssetDataRow | FolderItem, event: MouseEvent): vo
 const contextMenuRef = ref()
 const currentRightClickAsset = ref<any | null>(null)
 
-// 资产相关菜单项
-const assetMenuItems = computed<MenuItem[]>(() => [
+/**
+ * 「上传到百度网盘 / WebDAV」：只在对应服务已授权时出现，后面带一条分隔线。
+ * 两个都没授权就整段不出现，不留一条孤零零的分隔线。
+ */
+const cloudUploadMenuItems = (dividerKey: string): MenuItem[] => {
+  const items: MenuItem[] = []
+  if (baiduyunStore.isAuthenticated)
+    items.push({
+      key: 'upload-baiduyun',
+      label: t('assetLib.contextMenu.uploadToBaiduyun'),
+      icon: PhCloudArrowUp
+    })
+  if (webdavStore.isConnected)
+    items.push({
+      key: 'upload-webdav',
+      label: t('assetLib.contextMenu.uploadToWebdav'),
+      icon: PhCloudArrowUp
+    })
+  if (items.length) items.push({ key: dividerKey, label: '', type: 'divider' })
+  return items
+}
+
+/** 资产菜单。收藏前后同一份顺序，只换收藏那一项的文字和 key */
+const buildAssetMenuItems = (isFavorite: boolean): MenuItem[] => [
   {
     key: 'import-to-project',
     label: t('assetLib.contextMenu.importToProject'),
@@ -3317,19 +3371,19 @@ const assetMenuItems = computed<MenuItem[]>(() => [
     icon: PhTag
   },
   {
-    key: 'favorite',
-    label: t('assetLib.contextMenu.addToFav'),
+    key: isFavorite ? 'unfavorite' : 'favorite',
+    label: t(isFavorite ? 'assetLib.contextMenu.removeFromFav' : 'assetLib.contextMenu.addToFav'),
     icon: PhStar,
     shortcut: 'CommandOrControl+D'
   },
   {
     key: 'reimport',
-    label: t('assetLib.contextMenu.reimport', '修复资产依赖'),
+    label: t('assetLib.contextMenu.reimport'),
     icon: PhArrowsClockwise
   },
   {
     key: 'locate-in-folder',
-    label: t('assetLib.contextMenu.locateInFolder', '跳转到所在目录'),
+    label: t('assetLib.contextMenu.locateInFolder'),
     icon: PhFolderOpen,
     shortcut: 'CommandOrControl+B'
   },
@@ -3343,22 +3397,7 @@ const assetMenuItems = computed<MenuItem[]>(() => [
     label: '',
     type: 'divider'
   },
-  {
-    key: 'upload-baiduyun',
-    label: t('assetLib.contextMenu.uploadToBaiduyun', '上传到百度网盘'),
-    icon: PhCloudArrowUp
-  },
-  {
-    key: 'upload-webdav',
-    label: t('assetLib.contextMenu.uploadToWebdav', '上传到 WebDAV'),
-    icon: PhCloudArrowUp
-  },
-
-  {
-    key: 'divider-asset-1',
-    label: '',
-    type: 'divider'
-  },
+  ...cloudUploadMenuItems('divider-asset-2'),
   {
     key: 'delete',
     label: t('assetLib.contextMenu.delete'),
@@ -3366,79 +3405,10 @@ const assetMenuItems = computed<MenuItem[]>(() => [
     danger: true,
     shortcut: 'Delete'
   }
-])
+]
 
-// 已收藏资产的菜单项
-const favoriteAssetMenuItems = computed<MenuItem[]>(() => [
-  {
-    key: 'import-to-project',
-    label: t('assetLib.contextMenu.importToProject'),
-    icon: PhDownloadSimple
-  },
-  {
-    key: 'divider-fav-0',
-    label: '',
-    type: 'divider'
-  },
-  {
-    key: 'rename',
-    label: t('assetLib.contextMenu.rename'),
-    icon: PhPencilSimple,
-    shortcut: 'F2'
-  },
-  {
-    key: 'add-tags',
-    label: t('assetLib.contextMenu.addTags'),
-    icon: PhTag
-  },
-  {
-    key: 'unfavorite',
-    label: t('assetLib.contextMenu.removeFromFav'),
-    icon: PhStar,
-    shortcut: 'CommandOrControl+D'
-  },
-  {
-    key: 'upload-baiduyun',
-    label: t('assetLib.contextMenu.uploadToBaiduyun', '上传到百度网盘'),
-    icon: PhCloudArrowUp
-  },
-  {
-    key: 'upload-webdav',
-    label: t('assetLib.contextMenu.uploadToWebdav', '上传到 WebDAV'),
-    icon: PhCloudArrowUp
-  },
-  {
-    key: 'reimport',
-    label: t('assetLib.contextMenu.reimport', '修复资产'),
-    icon: PhArrowsClockwise
-  },
-  {
-    key: 'locate-in-folder',
-    label: t('assetLib.contextMenu.locateInFolder', '在文件夹视图中显示'),
-    icon: PhFolderOpen,
-    shortcut: 'CommandOrControl+B'
-  },
-  {
-    key: 'recrop-thumbnail',
-    label: t('assetFileList.contextMenu.recropThumbnail'),
-    icon: PhImage
-  },
-  {
-    key: 'divider-asset-1',
-    label: '',
-    type: 'divider'
-  },
-  {
-    key: 'delete',
-    label: t('assetLib.contextMenu.delete'),
-    icon: PhTrash,
-    danger: true,
-    shortcut: 'Delete'
-  }
-])
-
-// 文件夹相关菜单项（未收藏）
-const folderMenuItems = computed<MenuItem[]>(() => [
+/** 文件夹菜单。收藏前后同一份顺序，只换收藏那一项的文字和 key */
+const buildFolderMenuItems = (isFavorite: boolean): MenuItem[] => [
   {
     key: 'import-to-project',
     label: t('assetLib.contextMenu.importToProject'),
@@ -3462,28 +3432,18 @@ const folderMenuItems = computed<MenuItem[]>(() => [
   },
   {
     key: 'set-color-folder',
-    label: t('assetLib.contextMenu.setColor', '修改颜色'),
+    label: t('assetLib.contextMenu.setColor'),
     icon: PhPalette
   },
   {
-    key: 'favorite-folder',
-    label: t('assetLib.contextMenu.addToFav'),
+    key: isFavorite ? 'unfavorite-folder' : 'favorite-folder',
+    label: t(isFavorite ? 'assetLib.contextMenu.removeFromFav' : 'assetLib.contextMenu.addToFav'),
     icon: PhStar,
     shortcut: 'CommandOrControl+D'
   },
   {
-    key: 'upload-baiduyun',
-    label: t('assetLib.contextMenu.uploadToBaiduyun', '上传到百度网盘'),
-    icon: PhCloudArrowUp
-  },
-  {
-    key: 'upload-webdav',
-    label: t('assetLib.contextMenu.uploadToWebdav', '上传到 WebDAV'),
-    icon: PhCloudArrowUp
-  },
-  {
     key: 'reimport-folder',
-    label: t('assetLib.contextMenu.reimport', '修复资产'),
+    label: t('assetLib.contextMenu.reimport'),
     icon: PhArrowsClockwise
   },
   {
@@ -3491,6 +3451,7 @@ const folderMenuItems = computed<MenuItem[]>(() => [
     label: '',
     type: 'divider'
   },
+  ...cloudUploadMenuItems('divider-folder-2'),
   {
     key: 'delete-folder',
     label: t('assetLib.contextMenu.delete'),
@@ -3498,68 +3459,27 @@ const folderMenuItems = computed<MenuItem[]>(() => [
     danger: true,
     shortcut: 'Delete'
   }
-])
-
-// 文件夹相关菜单项（已收藏）
-const favoriteFolderMenuItems = computed<MenuItem[]>(() => [
-  {
-    key: 'import-to-project',
-    label: t('assetLib.contextMenu.importToProject'),
-    icon: PhDownloadSimple
-  },
-  {
-    key: 'divider-folder-0',
-    label: '',
-    type: 'divider'
-  },
-  {
-    key: 'rename-folder',
-    label: t('assetLib.contextMenu.rename'),
-    icon: PhPencilSimple,
-    shortcut: 'F2'
-  },
-  {
-    key: 'add-tags-folder',
-    label: t('assetLib.contextMenu.addTags'),
-    icon: PhTag
-  },
-  {
-    key: 'unfavorite-folder',
-    label: t('assetLib.contextMenu.removeFromFav'),
-    icon: PhStar,
-    shortcut: 'CommandOrControl+D'
-  },
-  {
-    key: 'upload-baiduyun',
-    label: t('assetLib.contextMenu.uploadToBaiduyun', '上传到百度网盘'),
-    icon: PhCloudArrowUp
-  },
-  {
-    key: 'upload-webdav',
-    label: t('assetLib.contextMenu.uploadToWebdav', '上传到 WebDAV'),
-    icon: PhCloudArrowUp
-  },
-  {
-    key: 'reimport-folder',
-    label: t('assetLib.contextMenu.reimport', '修复资产'),
-    icon: PhArrowsClockwise
-  },
-  {
-    key: 'divider-folder-1',
-    label: '',
-    type: 'divider'
-  },
-  {
-    key: 'delete-folder',
-    label: t('assetLib.contextMenu.delete'),
-    icon: PhTrash,
-    danger: true,
-    shortcut: 'Delete'
-  }
-])
+]
 
 // 空白区域菜单项
 const emptyAreaMenuItems = computed<MenuItem[]>(() => [
+  {
+    key: 'import-files',
+    label: t('assetManagement.importFile'),
+    icon: PhFilePlus,
+    disabled: !libraryCaps.value.canImport
+  },
+  {
+    key: 'import-folder',
+    label: t('assetManagement.importFolder'),
+    icon: PhFolderPlus,
+    disabled: !libraryCaps.value.canImport
+  },
+  {
+    key: 'divider-empty-0',
+    label: '',
+    type: 'divider'
+  },
   {
     key: 'add-folder',
     label: t('assetLib.contextMenu.newFolder'),
@@ -3696,9 +3616,7 @@ const currentContextMenuItems = computed(() => {
       }
     }
 
-    const baseFolderMenu = isFolderFav
-      ? [...favoriteFolderMenuItems.value]
-      : [...folderMenuItems.value]
+    const baseFolderMenu = buildFolderMenuItems(isFolderFav)
 
     // 如果是插件文件夹，修改"导入项目"为"导入插件到项目"
     const folderType = (currentRightClickAsset.value as any).folderType
@@ -3736,7 +3654,7 @@ const currentContextMenuItems = computed(() => {
   }
 
   // 复制基础菜单
-  const menuItems = isFavorite ? [...favoriteAssetMenuItems.value] : [...assetMenuItems.value]
+  const menuItems = buildAssetMenuItems(isFavorite)
 
   menuItems.splice(1, 0, {
     key: 'open-local-path',
@@ -4483,6 +4401,12 @@ const handleContextMenuClick = async (key: string, _item: MenuItem) => {
     case 'add-folder':
       handleAddFolder()
       break
+    case 'import-files':
+      emit('import-files')
+      break
+    case 'import-folder':
+      emit('import-folder')
+      break
     case 'refresh':
       handleRefresh()
       break
@@ -4533,13 +4457,13 @@ const handleContextMenuClick = async (key: string, _item: MenuItem) => {
       }
       break
     case 'upload-baiduyun':
-      if (currentRightClickAsset.value) {
-        await handleUploadToBaiduyun(currentRightClickAsset.value)
+      for (const item of menuActionSources() as Array<AssetDataRow | FolderItem>) {
+        await handleUploadToBaiduyun(item)
       }
       break
     case 'upload-webdav':
-      if (currentRightClickAsset.value) {
-        await handleUploadToWebdav(currentRightClickAsset.value)
+      for (const item of menuActionSources() as Array<AssetDataRow | FolderItem>) {
+        await handleUploadToWebdav(item)
       }
       break
     case 'reimport':
@@ -6793,25 +6717,8 @@ async function handleAssetDragEnd(event: DragEvent): Promise<void> {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      height: 200px;
+      min-height: 200px;
       color: var(--color-text-muted);
-
-      .empty-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-        opacity: 0.6;
-      }
-
-      .empty-text {
-        font-size: 16px;
-        font-weight: 500;
-        margin-bottom: 8px;
-      }
-
-      .empty-desc {
-        font-size: 14px;
-        opacity: 0.8;
-      }
     }
 
     .file-content-wrapper {

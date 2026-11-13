@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import AppTooltip from '@renderer/components/AppTooltip.vue'
 import AppButton from '@renderer/components/AppButton.vue'
-import { onMounted, onUnmounted, ref, computed, watch } from 'vue'
-import { Layout, Menu, Popover } from 'ant-design-vue'
+import AppDropdown from '@renderer/components/AppDropdown.vue'
+import AppMenu from '@renderer/components/AppMenu.vue'
+import AppMenuDivider from '@renderer/components/AppMenuDivider.vue'
+import AppMenuItem from '@renderer/components/AppMenuItem.vue'
+import { nextTick, onMounted, onUnmounted, ref, computed, watch } from 'vue'
+import { Layout, Menu } from 'ant-design-vue'
 import { PhDotsThree, PhNotePencil, PhPencilSimple } from '@phosphor-icons/vue'
 import UserSection from './UserSection.vue'
 import ChatSessionList from './ChatSessionList.vue'
@@ -244,25 +248,13 @@ const handleMenuClick = (info: any): void => {
 }
 
 /**
- * 计算共创市场菜单项
- */
-const coCreateMarketItem = computed<MenuItem | undefined>(() => {
-  return menuItems.value.find(
-    (i) => i.path.includes('co-create-market') || i.label === t('menu.coCreateMarket')
-  )
-})
-
-/**
- * 计算功能菜单项（剔除共创市场、个人中心、偏好设置）
+ * 计算功能菜单项（剔除个人中心、偏好设置）
  *
  * 项目库（路由 `/`）留在这条列表里，靠 meta.sort = 8 排在资产库（9）上面。
  */
 const featureItems = computed<MenuItem[]>(() => {
-  const exclude = new Set<string>()
-  if (coCreateMarketItem.value) exclude.add(coCreateMarketItem.value.key)
   // 排除个人中心和偏好设置
-  exclude.add('Profile')
-  exclude.add('Preferences')
+  const exclude = new Set<string>(['Profile', 'Preferences'])
   return menuItems.value.filter((i) => !exclude.has(i.key))
 })
 
@@ -280,8 +272,16 @@ const resolvedTools = computed(() =>
 const pinnedItems = computed(() => resolvedTools.value.pinned)
 const moreItems = computed(() => resolvedTools.value.more)
 
-// 「更多」的右侧弹层：点击触发行开合，点浮层外的任何地方自动收起（Popover 自带）
+// 「更多」的右侧弹层：点击触发行开合，点浮层外的任何地方自动收起（AppDropdown 自带）
 const morePopupOpen = ref(false)
+const moreMenuRef = ref<{ focusFirst: () => void } | null>(null)
+
+// 打开后焦点进第一项，键盘用户直接用方向键选；Esc 关掉时 AppDropdown 把焦点还给触发行
+watch(morePopupOpen, async (open) => {
+  if (!open) return
+  await nextTick()
+  moreMenuRef.value?.focusFirst()
+})
 
 // 当前路由落在「更多」里的工具时，触发行亮起 —— 弹层不自动弹出，只给视觉锚点
 const isMoreActive = computed(() =>
@@ -482,22 +482,6 @@ function openChat(id: string): void {
       </AppButton>
     </div>
 
-    <div class="menu-fixed">
-      <Menu
-        :selected-keys="selectedKeys"
-        :open-keys="[]"
-        mode="inline"
-        theme="light"
-        @click="handleMenuClick"
-      >
-        <Menu.Item v-if="coCreateMarketItem" :key="coCreateMarketItem.key" class="home-menu-item">
-          <component :is="coCreateMarketItem.icon" v-if="coCreateMarketItem.icon" />
-          <span>{{ coCreateMarketItem.label }}</span>
-        </Menu.Item>
-        <Menu.Divider />
-      </Menu>
-    </div>
-
     <div class="menu-scroll-wrap">
       <div ref="menuScrollRef" class="menu-scroll" @scroll="handleScroll">
         <div ref="menuContentRef">
@@ -532,40 +516,38 @@ function openChat(id: string): void {
 
           <!-- 更多：点击后从右侧弹出的浮层，收纳不常驻的工具（默认知识库、AI 创作）。
                不用 Menu.SubMenu 内联展开 —— 那会把列表顶下去，浮层才是参考稿的形态 -->
-          <Popover
-            v-model:open="morePopupOpen"
-            trigger="hover"
-            placement="rightTop"
-            :mouse-enter-delay="0.15"
-            :mouse-leave-delay="0.15"
-            overlay-class-name="sidebar-more-popover"
-          >
-            <div class="more-trigger" :class="{ 'is-active': isMoreActive }">
+          <AppDropdown v-model:open="morePopupOpen" :trigger="['click']" placement="rightStart">
+            <button
+              type="button"
+              class="more-trigger"
+              :class="{ 'is-active': isMoreActive }"
+              aria-haspopup="menu"
+              :aria-expanded="morePopupOpen"
+            >
               <PhDotsThree />
               <span>{{ t('sidebarTools.more') }}</span>
-            </div>
-            <template #content>
-              <div class="more-popup">
-                <div
+            </button>
+            <template #overlay>
+              <AppMenu ref="moreMenuRef" class="more-popup" :selected-keys="selectedKeys">
+                <AppMenuItem
                   v-for="item in moreItems"
                   :key="item.key"
-                  class="more-popup-item"
-                  :class="{ 'is-active': selectedKeys.includes(item.key) }"
+                  :item-key="item.key"
                   @click="navigateToMoreItem(item)"
                 >
-                  <component :is="item.icon" v-if="item.icon" />
-                  <span>{{ item.label }}</span>
+                  <template v-if="item.icon" #icon><component :is="item.icon" /></template>
+                  {{ item.label }}
                   <span v-if="item.isBeta" class="beta-tag">Beta</span>
-                </div>
-                <div class="more-popup-divider" />
+                </AppMenuItem>
+                <AppMenuDivider />
                 <!-- 「自定义」永远在弹层末尾，哪怕所有工具都勾成常驻，入口也不会丢 -->
-                <div class="more-popup-item" @click="openCustomizeFromPopup">
-                  <PhPencilSimple />
-                  <span>{{ t('sidebarTools.customize') }}</span>
-                </div>
-              </div>
+                <AppMenuItem @click="openCustomizeFromPopup">
+                  <template #icon><PhPencilSimple /></template>
+                  {{ t('sidebarTools.customize') }}
+                </AppMenuItem>
+              </AppMenu>
             </template>
-          </Popover>
+          </AppDropdown>
 
           <div class="sidebar-divider" />
 
@@ -858,11 +840,6 @@ function openChat(id: string): void {
   letter-spacing: 0.5px;
 }
 
-.menu-fixed {
-  flex: none;
-  padding: var(--space-1) 0 0;
-}
-
 .menu-scroll-wrap {
   position: relative;
   flex: 1;
@@ -944,13 +921,19 @@ function openChat(id: string): void {
   display: flex;
   align-items: center;
   gap: var(--sidebar-row-gap);
+  box-sizing: border-box;
+  width: calc(100% - var(--space-2) * 2);
   height: var(--sidebar-row-height);
   line-height: var(--sidebar-row-height);
   margin: 4px var(--space-2);
   padding: 0 var(--sidebar-row-padding);
+  border: none;
   border-radius: var(--sidebar-row-radius);
+  background: transparent;
   color: var(--sidebar-text);
+  font: inherit;
   font-size: var(--sidebar-label-size);
+  text-align: left;
   cursor: pointer;
   user-select: none;
   transition:
@@ -982,54 +965,15 @@ function openChat(id: string): void {
     background: var(--sidebar-active-bg);
     color: var(--sidebar-text-strong);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
 }
 
-// 「更多」弹层内容被 Teleport 到 body，作用域样式仍会跟着插槽内容生效。
-// 全部度量与取值逐字复刻右键 ContextMenu（components/ContextMenu/ContextMenu.vue
-// 的 .context-menu）—— 那边改了这边要跟着改，两处必须长得一模一样
 .more-popup {
-  display: flex;
-  flex-direction: column;
   min-width: 220px;
-}
-
-.more-popup-item {
-  display: flex;
-  align-items: center;
-  margin: 2px 0;
-  padding: 8px 12px;
-  border-radius: 6px;
-  color: var(--color-text-primary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-  svg {
-    display: block;
-    flex: none;
-    margin-right: 12px;
-    font-size: 14px;
-    opacity: 0.9;
-  }
-
-  &:hover {
-    background: var(--color-bg-surface-hover);
-    color: var(--color-text-primary);
-    transform: translateX(2px);
-  }
-
-  &.is-active {
-    background: var(--color-bg-selected);
-    color: var(--color-text-selected);
-  }
-}
-
-.more-popup-divider {
-  height: 1px;
-  margin: 6px 0;
-  background: var(--color-bg-surface-hover);
 }
 
 /* 左边这段留给 macOS 的红绿灯。品牌标识照常显示，只是往右挪 —— 让位是让位，
@@ -1189,24 +1133,5 @@ function openChat(id: string): void {
 .expand-icon {
   margin-left: auto;
   color: var(--color-text-secondary);
-}
-</style>
-
-<style lang="less">
-// Popover 的壳被 Teleport 到 body，不带本组件的 scope，只能开非 scoped 块调。
-// 取值逐字复刻 ContextMenu.vue 的 .context-menu：半透明深色玻璃面板
-.sidebar-more-popover {
-  .ant-popover-inner,
-  .ant-popover-inner-content {
-    padding: 6px;
-    border-radius: 10px;
-    // 主题底色按 92% 不透明：跟主题表面色走，还留一点透气的毛玻璃感
-    background: color-mix(in srgb, var(--color-bg-page) 92%, transparent) !important;
-    backdrop-filter: blur(1px);
-  }
-
-  .ant-popover-arrow {
-    display: none;
-  }
 }
 </style>

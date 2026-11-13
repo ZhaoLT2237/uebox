@@ -245,7 +245,7 @@
 }
 
 .ant-input-group-addon {
-  color: #ffffff7a !important;
+  color: var(--color-text-muted) !important;
 }
 
 .ant-table-thead > tr > th {

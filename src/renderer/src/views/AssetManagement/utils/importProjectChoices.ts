@@ -132,3 +132,18 @@ export function importFilterChips(
   }
   return chips
 }
+
+/**
+ * 打开「导入到工程」时默认选中哪个工程：已连接的 UE 工程恰好一个就选它；
+ * 否则选上次导入的那个（还在候选里才算）；都没有就不选。
+ */
+export function defaultImportProjectKey(
+  choices: ImportProjectChoice[],
+  connected: ConnectedChoice[],
+  lastKey: string | null
+): string | null {
+  const live = choices.filter((item) => importProjectConnection(item, connected))
+  if (live.length === 1) return live[0].projectKey
+  if (lastKey && choices.some((item) => item.projectKey === lastKey)) return lastKey
+  return null
+}

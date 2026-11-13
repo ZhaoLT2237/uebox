@@ -518,8 +518,16 @@
       :class="[status, toolsMode === 'hover' && status === 'done' ? 'hover-done' : '']"
     >
       <PhCheck v-if="status === 'done' && isCopied" class="tool copied" />
-      <PhCopy v-else-if="status === 'done'" class="tool" @click="emitCopy" />
-      <PhArrowClockwise v-if="status === 'done'" class="tool" @click="emitRetry" />
+      <AppTooltip v-else-if="status === 'done'" :title="t('assistant.chat.copy')">
+        <PhCopy class="tool" :aria-label="t('assistant.chat.copy')" @click="emitCopy" />
+      </AppTooltip>
+      <AppTooltip v-if="status === 'done'" :title="t('assistant.chat.regenerate')">
+        <PhArrowClockwise
+          class="tool"
+          :aria-label="t('assistant.chat.regenerate')"
+          @click="emitRetry"
+        />
+      </AppTooltip>
       <AppTooltip v-if="status === 'done'" :title="t('assistant.branch.tooltip')">
         <PhGitBranch class="tool" @click="emitBranch" />
       </AppTooltip>
@@ -664,7 +672,7 @@ import {
 import { useConnectedProjects } from '@renderer/composables/useBridgeStatus'
 import { confirmDialog } from '@renderer/utils/dialog'
 import { REVIEW_FIX_ACTION, reviewFindingText, SELF_CHECK_ACTION } from '../composables/selfCheck'
-import { AGENT_RESUME_ACTION } from '../composables/agentHandlerShared'
+import { AGENT_RESUME_ACTION, OPEN_MODEL_SETTINGS_ACTION } from '../composables/agentHandlerShared'
 import { isCreatorPlanAction, runCreatorPlanAction } from '../composables/creatorPlanChatError'
 import { routerKey } from 'vue-router'
 import type { AgentReviewFinding } from '@core/shared/agentReview'
@@ -968,6 +976,10 @@ function emitAction(button: MessageActionButton): void {
   }
   // Box Plan 的错误提示（管理订阅、去重新连接）在这里就地处理，
   // 不冒到页面：气泡放在哪个宿主里都能用，不用每个宿主各接一遍
+  if (button.action === OPEN_MODEL_SETTINGS_ACTION) {
+    void router?.push({ path: '/preferences', query: { tab: 'models' } })
+    return
+  }
   if (isCreatorPlanAction(button.action)) {
     void runCreatorPlanAction(button.action, () =>
       router?.push({ path: '/preferences', query: { tab: 'models' } })
@@ -2312,7 +2324,7 @@ function toggleChanges(): void {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #cfcfd6;
+  background: var(--color-text-muted);
   animation: loading-pulse 1.4s infinite ease-in-out;
 }
 

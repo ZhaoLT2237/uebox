@@ -63,8 +63,8 @@ describe('敏感操作确认框的挂载位置', () => {
    */
   it('停靠位两头都接上：助手页登记，审批框读取', () => {
     const confirm = read('src/renderer/src/components/SensitiveActionConfirm.vue')
-    expect(confirm).toContain(
-      "import { useApprovalDock } from '@renderer/components/useApprovalDock'"
+    expect(confirm).toMatch(
+      /import \{[^}]*\buseApprovalDock\b[^}]*\} from '@renderer\/components\/useApprovalDock'/
     )
 
     const assistant = read('src/renderer/src/views/Assistant/Welcome.vue')

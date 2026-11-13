@@ -15,6 +15,12 @@
  *    弹窗，关掉里面那个时不能把锁一起解了。所以用模块级计数，不是布尔。
  * 4. **Esc 关闭**：可以用 `:keyboard="false"` 关掉（比如正在上传，中途退出会留下半个文件）。
  *
+ * ## 所在页面被 keep-alive 停用时
+ *
+ * 弹窗 Teleport 到了 body，keep-alive 只把页面本身收进缓存容器，弹窗会留在 body 上、
+ * 盖住切过去的那一页。停用期间只藏起来、交还滚动锁，不发 `update:open`：
+ * 用户切回来时弹窗和里面填到一半的内容都还在。
+ *
  * ## 长相照搬现状
  *
  * 底色 `--color-bg-raised`、标题 `--color-text-primary`、头尾分隔线 `--color-border`
@@ -23,7 +29,9 @@
 import {
   computed,
   nextTick,
+  onActivated,
   onBeforeUnmount,
+  onDeactivated,
   ref,
   useId,
   useSlots,
@@ -106,6 +114,9 @@ const panelRef = ref<HTMLElement | null>(null)
 const titleId = `app-modal-title-${useId()}`
 /** destroyOnClose 时用它决定内容还挂不挂在 DOM 上 */
 const mounted = ref(props.open)
+/** 所在页面被 keep-alive 停用，弹窗暂时藏起来 */
+const deactivated = ref(false)
+const visible = computed(() => props.open && !deactivated.value)
 
 const panelWidth = computed(() =>
   typeof props.width === 'number' ? `${props.width}px` : props.width
@@ -119,8 +130,12 @@ const panelWidth = computed(() =>
  */
 let openCount = 0
 let savedOverflow = ''
+/** 这个实例当前占着一份锁。停用、关闭、卸载可能先后发生，只能还一次 */
+let holdsLock = false
 
 function lockScroll(): void {
+  if (holdsLock) return
+  holdsLock = true
   if (openCount === 0) {
     savedOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
@@ -129,6 +144,8 @@ function lockScroll(): void {
 }
 
 function unlockScroll(): void {
+  if (!holdsLock) return
+  holdsLock = false
   openCount = Math.max(0, openCount - 1)
   if (openCount === 0) document.body.style.overflow = savedOverflow
 }
@@ -195,7 +212,7 @@ watch(
     if (isOpen) {
       previouslyFocused = document.activeElement as HTMLElement | null
       mounted.value = true
-      lockScroll()
+      if (!deactivated.value) lockScroll()
       await nextTick()
       // 先聚到面板本身而不是第一个按钮：聚到按钮上读屏软件只会念那个按钮，
       // 用户不知道弹出来的是什么
@@ -211,9 +228,19 @@ watch(
   { immediate: true }
 )
 
+onDeactivated(() => {
+  deactivated.value = true
+  unlockScroll()
+})
+
+onActivated(() => {
+  deactivated.value = false
+  if (props.open) lockScroll()
+})
+
 // 弹窗开着的时候组件被卸载（路由跳走等），锁不解就整个应用滚不动了
 onBeforeUnmount(() => {
-  if (props.open) unlockScroll()
+  unlockScroll()
 })
 </script>
 
@@ -221,7 +248,7 @@ onBeforeUnmount(() => {
   <Teleport to="body">
     <div
       v-if="mounted"
-      v-show="open"
+      v-show="visible"
       class="app-modal-root"
       :style="{ zIndex }"
       @keydown="onKeydown"

@@ -125,13 +125,11 @@ describe('SessionProjectChip 切换项目归属', () => {
     expect(wrapper.find('.chip-name').text()).toBe('Alpha')
   })
 
-  it('选择「不在项目中工作」后待定归属不再回来，首条消息也不会把它盖回去', async () => {
+  it('选择「移出项目」后待定归属不再回来，首条消息也不会把它盖回去', async () => {
     const chatStore = useChatSessionsStore()
 
     const wrapper = mountChip('sid-drop', 'test222')
-    const remove = wrapper
-      .findAll('.menu-item')
-      .find((item) => item.text().includes('不在项目中工作'))
+    const remove = wrapper.findAll('.menu-item').find((item) => item.text().includes('移出项目'))
     expect(remove).toBeDefined()
 
     await remove!.trigger('click')

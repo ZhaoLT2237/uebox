@@ -186,5 +186,9 @@
   "unreal-agent:import-path": {
     "category": "ui",
     "why": "上次导入到项目的路径，是输入框记忆。"
+  },
+  "assetManagement.lastImportProject": {
+    "category": "ui",
+    "why": "导入到工程弹窗上次选中的工程 key，用来默认选中；丢了只是不预选。"
   }
 }

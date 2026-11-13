@@ -136,3 +136,45 @@ it('replays updates received during a post-initialization refresh', async () => 
   expect(getProjects).toHaveBeenCalledTimes(3)
   expect(getCollections).toHaveBeenCalledTimes(3)
 })
+
+it('the hover open button opens the project with a single click', async () => {
+  getProjects.mockResolvedValue({
+    success: true,
+    data: [{ projectKey: 'one', projectName: 'Demo', originPath: 'D:/Demo/Demo.uproject' }]
+  } as ProjectsResult)
+  const originalInvoke = window.api.invoke
+  const invoke = vi.fn().mockResolvedValue({ success: true })
+  window.api.invoke = invoke as typeof window.api.invoke
+  try {
+    mount()
+    await flushPromises()
+    await wrapper.get('.open-trigger').trigger('click')
+    await flushPromises()
+    expect(invoke).toHaveBeenCalledWith('shell:openUproject', 'D:/Demo/Demo.uproject')
+  } finally {
+    window.api.invoke = originalInvoke
+  }
+})
+
+it('offers an import button when the library is empty', async () => {
+  getProjects.mockResolvedValue({ success: true, data: [] })
+  mount()
+  await flushPromises()
+  expect(wrapper.find('app-empty-stub').exists()).toBe(true)
+  wrapper.unmount()
+
+  wrapper = shallowMount(ProjectSection, {
+    global: {
+      stubs: {
+        AppCard: false,
+        AppEmpty: false,
+        AppButton: false,
+        ASpace: true,
+        ASelect: true,
+        AInputSearch: true
+      }
+    }
+  })
+  await flushPromises()
+  expect(wrapper.find('.app-empty__action').text()).toContain('导入项目')
+})

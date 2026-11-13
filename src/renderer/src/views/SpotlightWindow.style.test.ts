@@ -42,3 +42,14 @@ describe('SpotlightWindow 听写时序', () => {
     )
   })
 })
+
+describe('SpotlightWindow 输入法', () => {
+  // 回车由 textarea 自己的 @keydown.enter 处理，判断要放在那里，外层那个拦不住它
+  it('textarea 上的回车处理先让过输入法选字', () => {
+    expect(source).toContain('@keydown.enter.exact="handleEnter"')
+    const body = source.slice(source.indexOf('function handleEnter('))
+    const fn = body.slice(0, body.indexOf('\n}\n'))
+    expect(fn.indexOf('event.isComposing || event.keyCode === 229')).toBeGreaterThan(-1)
+    expect(fn.indexOf('event.isComposing')).toBeLessThan(fn.indexOf('executeSelected()'))
+  })
+})

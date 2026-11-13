@@ -49,7 +49,7 @@
               <span class="selector-title">{{ t('assetLib.filter.selectAssetTypes') }}</span>
               <AppButton
                 v-if="assetTypesProxy.length > 0"
-                type="link"
+                variant="link"
                 size="small"
                 class="clear-btn"
                 @click="clearAssetTypes"

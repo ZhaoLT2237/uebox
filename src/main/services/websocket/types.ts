@@ -183,7 +183,15 @@ export interface WebSocketServiceStatus {
    * 有地方可查 —— 否则表现是「盒子开着，引擎永远连不上，谁也说不出为什么」。
    */
   startError?: string
+  /**
+   * 启动失败的类别。界面按它和 `port` 自己拼文案（要跟着界面语言走），
+   * `startError` 只作为原文细节保留。
+   */
+  startErrorCode?: BridgeStartErrorCode
 }
+
+/** 桥接启动失败的类别：端口被占、没有权限、其他 */
+export type BridgeStartErrorCode = 'EADDRINUSE' | 'EACCES' | 'UNKNOWN'
 
 /**
  * WebSocket 错误码

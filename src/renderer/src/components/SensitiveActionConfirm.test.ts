@@ -16,6 +16,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import SensitiveActionConfirm from './SensitiveActionConfirm.vue'
 import { provideApprovalDock } from './useApprovalDock'
 import { usePendingApprovalsStore } from '@renderer/store/modules/pendingApprovals'
+import { useChatSessionsStore } from '@renderer/store/modules/chatSessions'
+import { ref } from 'vue'
 
 const aiMocks = vi.hoisted(() => ({ chatText: vi.fn() }))
 
@@ -32,6 +34,9 @@ vi.mock('@renderer/api/ai', async () => {
 vi.mock('@renderer/services/notebook/contextBudget', () => ({
   getModelLimits: vi.fn(async () => ({ contextWindow: 128_000, maxOutputTokens: 8192 }))
 }))
+
+const routerMocks = vi.hoisted(() => ({ push: vi.fn() }))
+vi.mock('vue-router', () => ({ useRouter: () => ({ push: routerMocks.push }) }))
 
 vi.mock('@renderer/api/agentV3', () => ({
   agentV3API: { replyApproval: vi.fn() }
@@ -288,5 +293,65 @@ describe('SensitiveActionConfirm 的「以后都允许」', () => {
     const wrapper = mountConfirm()
     expect(wrapper.find('.btn-allow-forever').exists()).toBe(false)
     expect(wrapper.find('.btn-allow-chat').exists()).toBe(false)
+  })
+})
+
+/**
+ * 审批来自别的对话：不能停在眼前这条对话的输入框上方，像是这条对话在问。
+ * 改走浮层，卡片头写来源对话，给「前往」。
+ */
+describe('SensitiveActionConfirm 跨对话的审批', () => {
+  let setDock: ((el: unknown) => void) | null = null
+
+  beforeEach(() => {
+    routerMocks.push.mockClear()
+    useChatSessionsStore().sessions = [
+      { id: 'chat-a', title: '对话 A', createdAt: 1, updatedAt: 1, agentSessionId: 's1' },
+      { id: 'chat-b', title: '对话 B', createdAt: 1, updatedAt: 1, agentSessionId: 's2' }
+    ]
+  })
+
+  afterEach(() => {
+    setDock?.(null)
+    setDock = null
+    usePendingApprovalsStore().settle('call-1')
+  })
+
+  function dockFor(chatSid: string): HTMLElement {
+    const dockEl = document.createElement('div')
+    document.body.appendChild(dockEl)
+    setDock = provideApprovalDock(ref(chatSid))
+    setDock(dockEl)
+    return dockEl
+  }
+
+  it('来自当前对话：照旧停靠，不显示来源', async () => {
+    const dock = dockFor('chat-a')
+    enqueue('call-1')
+    track(mount(SensitiveActionConfirm))
+    await flushPromises()
+
+    const card = dock.querySelector('.sensitive-action-confirm')
+    expect(card).not.toBeNull()
+    expect(card!.querySelector('.source-chat')).toBeNull()
+    expect(card!.querySelector('.btn-goto-chat')).toBeNull()
+  })
+
+  it('来自别的对话：不停靠，卡片头写来源对话，点「前往」切过去', async () => {
+    const dock = dockFor('chat-b')
+    enqueue('call-1')
+    track(mount(SensitiveActionConfirm))
+    await flushPromises()
+
+    expect(dock.querySelector('.sensitive-action-confirm')).toBeNull()
+    const cards = document.body.querySelectorAll('.sensitive-action-confirm')
+    expect(cards).toHaveLength(1)
+    expect(cards[0].classList.contains('floating')).toBe(true)
+    expect(cards[0].querySelector('.source-chat')?.textContent?.trim()).toBe('对话 A')
+    ;(cards[0].querySelector('.btn-goto-chat') as HTMLElement).click()
+    expect(routerMocks.push).toHaveBeenCalledWith({
+      name: 'AssistantWelcome',
+      query: { sid: 'chat-a' }
+    })
   })
 })

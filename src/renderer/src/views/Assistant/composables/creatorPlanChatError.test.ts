@@ -209,6 +209,9 @@ describe('handleAgentError 遇到套餐错误', () => {
       code: 'quota_exhausted'
     })
     expect(String(lastAssistant().content)).not.toContain('本月额度用完')
-    expect(lastAssistant().actionButtons).toBeUndefined()
+    // 不是套餐按钮，是去改模型设置
+    expect(lastAssistant().actionButtons?.map((button) => button.action)).toEqual([
+      'open-model-settings'
+    ])
   })
 })

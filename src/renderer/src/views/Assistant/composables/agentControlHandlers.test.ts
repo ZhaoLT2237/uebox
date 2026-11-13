@@ -1,13 +1,21 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { ref } from 'vue'
 
 import enUS from '@renderer/i18n/locales/en-US'
 import zhCN from '@renderer/i18n/locales/zh-CN'
 
 import {
+  createAgentControlHandlers,
   describeStartupError,
   describeSteerRejection,
   isAgentNetworkError
 } from './agentControlHandlers'
+import { AGENT_RESUME_ACTION, OPEN_MODEL_SETTINGS_ACTION } from './agentHandlerShared'
+import type { AgentModeHandlersDeps } from './agentHandlerShared'
+
+vi.mock('@renderer/utils/messageManager', () => ({
+  message: { error: vi.fn(), warning: vi.fn() }
+}))
 
 describe('Agent 错误分类', () => {
   it('没有错误码的 Connection error 也识别为网络问题', () => {
@@ -206,5 +214,60 @@ describe('describeSteerRejection', () => {
     expect(describeSteerRejection({}, 'restored', t)).toBeUndefined()
     expect(describeSteerRejection(null, 'queued', t)).toBeUndefined()
     expect(describeSteerRejection({ code: 'NOT_RUNNING' }, 'restored', noCopy)).toBeUndefined()
+  })
+})
+
+/**
+ * 余额不足、密钥无效：不改配置必然再错。气泡上不挂「接着跑」，挂「打开模型设置」。
+ */
+describe('鉴权 / 余额错误的去处', () => {
+  function run(error: Record<string, unknown>): Array<{ label: string; action: string }> {
+    const replaceTyping = vi.fn()
+    const deps = {
+      sid: ref('chat-1'),
+      chatMsgStore: {
+        getMessages: () => [{ id: 'typing-1', role: 'assistant', content: '', status: 'typing' }],
+        replaceTyping
+      },
+      currentAgentProcess: ref([]),
+      currentSessionId: ref(''),
+      currentAgentController: ref(null),
+      currentText: ref(''),
+      agentStreamStore: {
+        getChatSidByAgentSession: () => 'chat-1',
+        getStreamByAgentSession: () => ({ currentTypingId: 'typing-1' }),
+        getTypingId: () => 'typing-1',
+        cleanupStream: vi.fn()
+      },
+      t: (key: string) => key,
+      clearWikiRagState: vi.fn()
+    } as unknown as AgentModeHandlersDeps
+    void createAgentControlHandlers(deps).handleAgentError(null, {
+      sessionId: 'engine-1',
+      message: 'x',
+      ...error
+    } as never)
+    return replaceTyping.mock.calls[0][4].actionButtons
+  }
+
+  it('401：挂「打开模型设置」', () => {
+    expect(run({ statusCode: 401 })).toEqual([
+      { label: 'assistant.agentMode.openModelSettings', action: OPEN_MODEL_SETTINGS_ACTION }
+    ])
+  })
+
+  it('余额不足：挂「打开模型设置」', () => {
+    expect(run({ statusCode: 402 })).toEqual([
+      { label: 'assistant.agentMode.openModelSettings', action: OPEN_MODEL_SETTINGS_ACTION }
+    ])
+  })
+
+  it('服务暂时不可用：仍是「接着跑」', () => {
+    expect(run({ statusCode: 503 })[0].action).toBe(AGENT_RESUME_ACTION)
+  })
+
+  it('按钮文案两侧都配了', () => {
+    expect(zhCN.assistant.agentMode.openModelSettings).toBe('打开模型设置')
+    expect(typeof enUS.assistant.agentMode.openModelSettings).toBe('string')
   })
 })

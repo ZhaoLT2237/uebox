@@ -60,3 +60,18 @@ describe('MiniChatWindow 侧边问一句关窗不留东西', () => {
     expect(body).toContain('agentV3API.deleteSession(borrowed.agentSessionId)')
   })
 })
+
+describe('MiniChatWindow 运行中的发送键', () => {
+  it('运行中换成带名称的停止键，发送键不再转圈', () => {
+    expect(source).toMatch(
+      /<AppTooltip v-if="isGenerating"[^>]*>\s*<AppButton[^>]*:aria-label="t\('miniChatWindow\.stopButton'\)"[^>]*@click="handleStopGenerating"/s
+    )
+    expect(source).not.toContain(':loading="isGenerating')
+  })
+
+  it('输入法选字时回车不发送', () => {
+    const body = source.slice(source.indexOf('function handleEnterKey'))
+    expect(body.slice(0, body.indexOf('\n}\n'))).toContain('e.isComposing || e.keyCode === 229')
+    expect(source).toContain('@keydown.enter.exact="handleEnterKey"')
+  })
+})

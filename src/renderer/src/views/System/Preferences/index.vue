@@ -41,13 +41,9 @@ const route = useRoute()
 const router = useRouter()
 
 /**
- * 页面标题和描述配置。
- *
- * `descKey` 是可选的：页名本身已经说清楚的页面（常规、外观、快捷键、录屏、资产）
- * 不写副标题。原先每页都硬凑一句，凑出来的是「管理应用通用设置」这类空话，
- * 占着每页顶部最贵的位置却不提供任何信息。
+ * 页面标题配置。标题下不放说明段：页名已经说清楚这一页是什么。
  */
-const pageHeaders: Record<string, { titleKey: string; descKey?: string }> = {
+const pageHeaders: Record<string, { titleKey: string }> = {
   general: {
     titleKey: 'profile.general.title'
   },
@@ -61,51 +57,42 @@ const pageHeaders: Record<string, { titleKey: string; descKey?: string }> = {
     titleKey: 'profile.ai.title'
   },
   personalization: {
-    titleKey: 'profile.personalization.title',
-    descKey: 'profile.personalization.description'
+    titleKey: 'profile.personalization.title'
   },
   skills: {
     titleKey: 'profile.skills.title'
   },
   experience: {
-    titleKey: 'profile.experience.title',
-    descKey: 'profile.experience.description'
+    titleKey: 'profile.experience.title'
   },
   tools: {
-    titleKey: 'profile.tools.title',
-    descKey: 'profile.tools.description'
+    titleKey: 'profile.tools.title'
   },
   usage: {
-    titleKey: 'profile.usage.title',
-    descKey: 'profile.usage.description'
+    titleKey: 'profile.usage.title'
   },
   models: {
     titleKey: 'profile.models.title'
   },
   team: {
-    titleKey: 'profile.team.title',
-    descKey: 'profile.team.description'
+    titleKey: 'profile.team.title'
   },
   // 面板里已经有「对外暴露虚幻引擎能力」这个小标题，页面 Header 用
   // client 的标题会在同一屏出现两次一模一样的文字（上一版就是这样）。
   mcp: {
-    titleKey: 'mcp.client.title',
-    descKey: 'mcp.client.shortDescription'
+    titleKey: 'mcp.client.title'
   },
   agentV3Debug: {
-    titleKey: 'agentV3Debug.title',
-    descKey: 'agentV3Debug.description'
+    titleKey: 'agentV3Debug.title'
   },
   project: {
     titleKey: 'profile.project.title'
   },
   plugin: {
-    titleKey: 'profile.plugin.title',
-    descKey: 'profile.plugin.description'
+    titleKey: 'profile.plugin.title'
   },
   cli: {
-    titleKey: 'profile.cli.title',
-    descKey: 'profile.cli.description'
+    titleKey: 'profile.cli.title'
   },
   objectStorage: {
     titleKey: 'profile.objectStorage.title'
@@ -114,12 +101,10 @@ const pageHeaders: Record<string, { titleKey: string; descKey?: string }> = {
     titleKey: 'profile.asset.title'
   },
   notebook: {
-    titleKey: 'profile.notebook.title',
-    descKey: 'profile.notebook.description'
+    titleKey: 'profile.notebook.title'
   },
   namingRules: {
-    titleKey: 'profile.namingRules.title',
-    descKey: 'profile.namingRules.description'
+    titleKey: 'profile.namingRules.title'
   },
   screenRecorder: {
     titleKey: 'profile.screenRecorder.title'
@@ -131,8 +116,7 @@ const pageHeaders: Record<string, { titleKey: string; descKey?: string }> = {
     titleKey: 'profile.voice.title'
   },
   about: {
-    titleKey: 'profile.about.title',
-    descKey: 'profile.about.description'
+    titleKey: 'profile.about.title'
   }
 }
 
@@ -142,15 +126,6 @@ const pageHeaders: Record<string, { titleKey: string; descKey?: string }> = {
 const currentTitle = computed(() => {
   const header = pageHeaders[activeKey.value]
   return header ? t(header.titleKey) : ''
-})
-
-/**
- * 当前页面描述。没配 `descKey` 就返回空串，模板那边整个 <p> 都不渲染 ——
- * 留一个空段落会在标题下方撑出一条对不上任何东西的空隙
- */
-const currentDesc = computed(() => {
-  const header = pageHeaders[activeKey.value]
-  return header?.descKey ? t(header.descKey) : ''
 })
 
 // 监听路由参数，支持从外部跳转到特定设置项
@@ -191,10 +166,7 @@ function handleMenuChange(key: string): void {
       <main class="preferences-main glass-panel">
         <!-- 顶部 Header -->
         <header class="preferences-header">
-          <div>
-            <h2 class="header-title">{{ currentTitle }}</h2>
-            <p v-if="currentDesc" class="header-desc">{{ currentDesc }}</p>
-          </div>
+          <h2 class="header-title">{{ currentTitle }}</h2>
         </header>
 
         <!-- 内容滚动区 -->
@@ -323,13 +295,6 @@ function handleMenuChange(key: string): void {
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   letter-spacing: 0.02em;
-}
-
-.header-desc {
-  margin: var(--space-1) 0 0;
-  font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
-  font-weight: var(--font-weight-light);
 }
 
 /* 内容滚动区 */

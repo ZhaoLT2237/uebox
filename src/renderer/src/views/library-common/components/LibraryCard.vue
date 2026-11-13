@@ -12,7 +12,10 @@
  *   - 默认插槽   仅 `create` 模式下用作按钮文案
  *
  * 点击、拖放这些监听不用在这里声明：Vue 会把 attrs 落到根节点上。
+ * 右键卡片打开的是同一份「⋯」菜单；没有菜单的卡片右键不拦。
  */
+import { ref } from 'vue'
+
 withDefaults(
   defineProps<{
     /** 卡片主标题 */
@@ -26,10 +29,18 @@ withDefaults(
   }>(),
   { name: '', meta: '', stats: '', create: false }
 )
+
+/** 右键打开的就是「⋯」那份菜单：把焦点给「⋯」按钮，:focus-within 让下拉显形 */
+const menuTrigger = ref<HTMLButtonElement | null>(null)
+function openMenu(event: MouseEvent): void {
+  if (!menuTrigger.value) return
+  event.preventDefault()
+  menuTrigger.value.focus()
+}
 </script>
 
 <template>
-  <div class="library-card" :class="{ 'is-create': create }">
+  <div class="library-card" :class="{ 'is-create': create }" @contextmenu="openMenu">
     <template v-if="create">
       <div class="create-icon">+</div>
       <div class="create-text"><slot /></div>
@@ -44,7 +55,7 @@ withDefaults(
 
       <!-- 菜单挂在卡片上而不是封面里：封面 overflow:hidden，下拉会被裁掉 -->
       <div v-if="$slots.menu" class="card-menu" @click.stop>
-        <button class="menu-trigger" @click.stop>⋯</button>
+        <button ref="menuTrigger" class="menu-trigger" @click.stop>⋯</button>
         <div class="menu-dropdown">
           <slot name="menu" />
         </div>

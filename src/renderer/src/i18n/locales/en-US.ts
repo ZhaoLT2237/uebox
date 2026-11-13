@@ -107,7 +107,7 @@ export default {
     smartNameFailed: 'Naming failed. Type a name yourself, or check the light-task model.',
     smartNameBusy: 'Already naming this chat — try again in a moment',
     moveToProject: 'Move to project',
-    removeFromProject: 'Work outside a project',
+    removeFromProject: 'Remove from project',
     newProjectGroup: 'New project group…',
     projectNamePlaceholder: 'Enter the UE project name',
     delete: 'Delete',
@@ -158,8 +158,6 @@ export default {
   },
   agentV3Debug: {
     title: 'Agent V3 Debug Console',
-    description:
-      'Drive the V3 kernel directly: send prompts, watch the event stream, try steering and approvals. A development diagnostic, not the production chat UI.',
     sessionId: 'Session ID',
     mode: 'Mode',
     modeAgent: 'Agent (can act)',
@@ -200,10 +198,6 @@ export default {
       title: 'Connect external MCP servers',
       description:
         'Connect third-party MCP services to extend the assistant. Paste configurations in Claude Desktop format.',
-      // Used by the page header. The panel no longer repeats the title, so the
-      // long description has nowhere to live.
-      shortDescription:
-        'Give the assistant third-party capabilities, or open Unreal Engine to external clients.',
       empty: 'No MCP servers configured yet.',
       configPath: 'Config file: {path}',
       // Two groups: what the box installed vs what the user added. Mixed together,
@@ -963,6 +957,7 @@ First work out why the install failed from the output above. If you can run comm
   },
   tabs: {
     close: 'Close',
+    closeTab: 'Close tab',
     closeOther: 'Close Others',
     closeRight: 'Close to the Right',
     copy: 'Duplicate',
@@ -1216,6 +1211,7 @@ First work out why the install failed from the output above. If you can run comm
       listenerFailed: 'Failed to register import progress listener',
       overwriteConfirm: 'File Exists',
       overwriteMessage: 'File "{fileName}" already exists, overwrite?',
+      overwrite: 'Overwrite',
       overwriteAll: 'Overwrite All',
       skipAll: 'Skip All',
       errorTitle: 'Asset Import Error',
@@ -1300,6 +1296,11 @@ First work out why the install failed from the output above. If you can run comm
       empty: 'No Assets',
       selectFolder: 'Please select a folder first',
       addAsset: 'Add Assets',
+      emptyFiltered: 'No assets match the current filters',
+      emptyTrash: 'Trash is empty',
+      emptyFavorites: 'No favorite assets',
+      clearFilters: 'Clear filters',
+      rootFolder: 'All',
       folders: 'Folders',
       files: 'Files',
       importTask: 'Import Task',
@@ -1820,6 +1821,8 @@ First work out why the install failed from the output above. If you can run comm
         default: 'Default',
         start: 'Launch',
         more: 'More',
+        add: 'Add engine',
+        retry: 'Retry',
         setDefault: 'Set as Default',
         unsetDefault: 'Unset Default',
         openRoot: 'Install Directory',
@@ -1828,15 +1831,14 @@ First work out why the install failed from the output above. If you can run comm
         // The engine list can be empty on first run — it used to render nothing,
         // leaving a new user unable to tell "none found" from "broken"
         emptyTitle: 'No Unreal Engine installation found',
-        emptyDesc: 'Drop an engine folder here, or use the + button above to add one.',
+        emptyDesc: 'Drop an engine folder here.',
         // A failed scan and a genuinely empty machine are different things;
         // only the latter earns the line above. scanFailed is the toast for an
         // explicit refresh; the two below stay on screen when the list is empty
         scanFailed: 'Engine scan failed, so this list may be incomplete.',
         staleList: 'List may be stale',
         scanFailedTitle: 'Could not read the engine list',
-        scanFailedDesc:
-          'This does not mean you have no engines — the scan just did not come back. Hit refresh to retry.',
+        scanFailedDesc: 'This does not mean you have no engines. Only this scan failed.',
         dropTitle: 'Drop to add custom engine',
         dropDesc: 'Drop engine root directory (containing Engine/Binaries/Win64/UnrealEditor.exe)',
         addSuccess: 'Added {count} custom engine(s)',
@@ -1871,8 +1873,8 @@ First work out why the install failed from the output above. If you can run comm
         emptyDesc: 'Drag .uproject files or project directories here to import',
         // No match is not the same as nothing imported — only the latter needs import advice
         loadFailedTitle: 'Could not read your project list',
-        loadFailedDesc:
-          'This does not mean you have no projects — the read just did not come back. Refresh to retry.',
+        loadFailedDesc: 'This does not mean you have no projects. Only this read failed.',
+        retry: 'Retry',
         noSearchResults: 'No projects match "{keyword}"',
         noSearchResultsDesc: 'Clear the search box above to see all your projects.',
         import: 'Import Project',
@@ -1881,6 +1883,8 @@ First work out why the install failed from the output above. If you can run comm
         importExisting: 'Import existing project',
         refresh: 'Refresh',
         open: 'Open Project',
+        openAction: 'Open',
+        connected: 'Connected',
         openFolder: 'Open Folder',
         rename: 'Rename',
         remove: 'Remove',
@@ -1896,8 +1900,7 @@ First work out why the install failed from the output above. If you can run comm
         multiProjectConfirmContent: 'This directory contains {count} projects. Import all of them?',
         bulkImportSuccess: 'Import successful, {count} projects',
         importError: 'Import error',
-        dropHint: 'Drop to import assets',
-        dropHintDesc: 'Supports folder and file drag-and-drop import',
+        dropHint: 'Drop to import projects',
         invalidDrop: 'No UE project found. Drop a project folder or .uproject file.',
         searchPlaceholder: 'Search my projects',
         engineFilter: 'Filter by engine version',
@@ -2541,7 +2544,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     },
     // A message typed mid-run, shown where it happened on the timeline
     steer: {
-      pending: 'Queued',
+      pending: 'Not delivered yet',
       applied: 'Sent',
       notApplied: 'Not sent',
       cancel: 'Take back to edit',
@@ -2559,7 +2562,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       back: 'Back',
       step: '{current} / {total}',
       decline: 'Let AI decide',
-      declineHint: 'Skip this question and let the AI choose the most suitable option',
       multi: 'Pick any',
       cancel: 'Dismiss for now',
       answered: 'Answered',
@@ -2584,7 +2586,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       hint: 'Tokens actually sent to and returned by the model, as billed by the provider'
     },
     welcome: {
-      greetingPrompt: '{greeting}, how can I help you?'
+      greetingPrompt: '{greeting}'
     },
     suggestions: {
       // Replaces the first card until 2026-11-16 10:00, see megaJamSuggestion.ts
@@ -2669,6 +2671,12 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       emptyMessage: 'Message content cannot be empty',
       editMessage: 'Edit Message',
       editMessagePlaceholder: 'Modify message content and send...',
+      regenerate: 'Regenerate',
+      copy: 'Copy',
+      scrollToBottom: 'Scroll to bottom',
+      discardLaterTurns: '{count} later turn(s) will be deleted.',
+      discardContinue: 'Continue',
+      discardCancel: 'Cancel',
       我的资产库有多少的资产: 'How many assets are in my asset library'
     },
     branch: {
@@ -2690,9 +2698,9 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
      * question is for understanding what is *going on* and leaves nothing behind.
      */
     sideQuestion: {
-      open: 'Ask a side question (with context)',
+      open: 'Side question',
       noContext: 'This chat has no context to hand over yet',
-      failed: 'Could not open the side question'
+      failed: "Couldn't open side question"
     },
     search: {
       notImplemented: 'Web search function not implemented yet'
@@ -2969,7 +2977,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       placeholder3D: 'Enter 3D model description or upload up to 5 images',
       placeholderImage: 'Enter image description or upload up to 5 images',
       placeholderAgent: 'Send message or instruction to AI...',
-      placeholderSteer: 'Running — type to steer it (press Enter)...',
+      placeholderSteer: 'Messages are inserted into the current task',
+      placeholderQueue: 'Messages are sent after this turn',
       placeholderImageChat: 'Chat with AI using images',
       placeholderDefault: 'Send a message to AI...',
       maxImagesWarning: 'Max 5 images allowed',
@@ -3231,6 +3240,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       providerAuthFailedTitle: 'API key invalid or expired',
       providerAuthFailedDesc:
         'Check the API key for this provider under Settings → Models — it may be mistyped or expired.',
+      openModelSettings: 'Open model settings',
       // Rate limit related
       rateLimitExceeded: 'Too many requests, please try again later',
       rateLimitTitle: 'Rate Limit Exceeded',
@@ -3291,6 +3301,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       reject: 'Reject',
       allowForChat: 'Allow for this chat',
       allowForever: 'Always allow',
+      goToChat: 'Go to chat',
       allowForeverHint:
         'Stops asking for this operation in every chat. You can remove it in Settings → AI Assistant.',
       whatIsThis: 'What is this?',
@@ -3435,13 +3446,17 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       namingRules: 'Naming Rules',
       about: 'About'
     },
+    menuGroup: {
+      app: 'App',
+      ai: 'AI',
+      workspace: 'Projects & Assets'
+    },
     // AI Settings
     models: {
       title: 'Models'
     },
     team: {
       title: 'Team',
-      description: 'Check results and task history of each model in team mode',
       empty: 'After you use /team, check results and task history for each model appear here.',
       note: 'Only models that were checked or took on tasks are listed. Reopened means a task you reopened on the task board.',
       col: {
@@ -3555,7 +3570,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // Personalization: the standing description you wrote about yourself
     personalization: {
       title: 'Personalization',
-      description: 'Work background and communication preferences.',
       // Standing instructions
       instructionsTitle: 'Instructions for the assistant',
       instructionsDesc: 'Persistent preferences applied to all chats.',
@@ -3568,7 +3582,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // Skills: what the assistant knows how to do, and what it taught itself
     tools: {
       title: 'Tools',
-      description: 'Which tools the assistant has, and how they reach the model.',
       toolSearchTitle: 'How tools reach the model',
       toolSearchBeta: 'Tool Search (Beta)',
       toolSearchOn: 'On demand: skills and search fetch tools when they are needed.',
@@ -3708,8 +3721,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // 经验库：做事时踩过又绕过去的坑（见 ProfileExperience.vue）
     experience: {
       title: 'Lessons learned',
-      description:
-        'Pitfalls hit and worked around during real work. Shown again when the same error comes back; ones that do not help retire on their own.',
       listTitle: 'All lessons',
       offNote: 'Auto-remember is off on the Skills page: existing lessons are kept but not shown.',
       undo: 'Undo last review',
@@ -3763,7 +3774,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // Usage, computed from the chat history already on disk
     usage: {
       title: 'Usage',
-      description: 'AI usage and change statistics.',
       overviewTitle: 'Overview',
       chartTitle: 'By day',
       range: {
@@ -3841,7 +3851,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // Notebook Settings
     notebook: {
       title: 'Knowledge Base',
-      description: 'Manage image recognition for web pages and search indexes.',
       settingsTitle: 'Web imports',
       autoTrain: 'Automatically index notes',
       autoTrainDesc:
@@ -4047,7 +4056,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     },
     cli: {
       title: 'Command line',
-      description: 'Drive Unreal Engine from a terminal — for external agents and scripts',
       intro: 'Open the target project before using engine commands. Help: uebox --help',
       loading: 'Checking…',
       unavailable: 'Command-line tool not found. Please reinstall the app.',
@@ -4079,7 +4087,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     },
     plugin: {
       title: 'Plugins',
-      description: 'Unreal Engine connection plugin.',
       // Bridge status. This page showed no status at all, yet the AI points
       // users here when it cannot reach the engine — they arrive and still
       // cannot find out whether anything is connected
@@ -4236,7 +4243,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // Naming rules settings
     namingRules: {
       title: 'Naming Rules',
-      description: 'Set consistent asset names, type recognition, and target folders.',
       save: 'Save',
       reset: 'Reset',
       reload: 'Reload',
@@ -4698,6 +4704,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     // Add source modal
     addSource: {
       title: 'Add Source',
+      urlLabel: 'URL',
+      wechatLabel: 'WeChat article URL',
       description:
         'After adding sources, UnrealBox can answer based on the information that matters most to you.',
       examples:
@@ -4833,6 +4841,10 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
   },
   // Note Editor
   noteEditor: {
+    markdownPaste: {
+      detected: 'Pasted content is Markdown',
+      convert: 'Convert'
+    },
     saveFailedAlert:
       'This section could not be saved. Check that the vault is still available and not locked by another program, then retry.',
     retrySave: 'Retry save',
@@ -5035,7 +5047,10 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       removeTitle: 'Remove asset path',
       changeRootTitle: 'Change asset path (no files are moved)',
       byPathOption: '(Assigned by path)',
-      deleteTitle: 'Delete vault'
+      deleteTitle: 'Delete vault',
+      delete: 'Delete',
+      removeRootConfirm:
+        'Remove asset path "{name}"? The folder on disk is kept; it is no longer used as a group.'
     },
     member: {
       sectionTitle: 'Members',
@@ -5061,7 +5076,16 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       nameRequired: 'Name cannot be empty',
       memberCredentialsRequired: 'Enter the member username and password',
       memberSaveFailed: 'Could not save the member',
-      memberSaved: 'Member saved'
+      memberSaved: 'Member saved',
+      operationFailed: 'Operation failed',
+      rootCreated: 'Asset path created',
+      renamed: 'Renamed',
+      rootRemoved: 'Asset path removed',
+      rootChanged: 'Group changed',
+      rootReset: 'Group reset to follow the path',
+      rootChangeFailed: 'Could not change the group',
+      vaultDeleted: 'Vault "{name}" deleted',
+      deleteFailed: 'Delete failed'
     }
   },
   aigcImagePanel: {
@@ -5436,13 +5460,13 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       typeLabel: 'Collection'
     },
     menu: {
-      changeCover: '🖼 Change cover',
-      recordCover: '⏺ Record cover',
-      resetCover: '↺ Reset to default cover',
-      editInfo: '✎ Edit info',
-      unfavorite: '☆ Unfavorite',
-      favorite: '★ Favorite',
-      delete: '✕ Delete'
+      changeCover: 'Change cover',
+      recordCover: 'Record cover',
+      resetCover: 'Reset to default cover',
+      editInfo: 'Edit info',
+      unfavorite: 'Unfavorite',
+      favorite: 'Favorite',
+      delete: 'Delete'
     },
     list: {
       colName: 'Name',
@@ -5746,7 +5770,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       unfavorite: 'Unfavorite',
       textures: 'Textures',
       editInfo: 'Edit info',
-      removeFromLibrary: 'Remove from library'
+      removeFromLibrary: 'Delete'
     },
     collection: {
       badge: 'Collection',
@@ -5804,15 +5828,15 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
         'Enter a valid name, or check whether a material with the same path already exists',
       createdDraft: 'Material draft created',
       updatedInfo: 'Material info updated',
-      removed: 'Material entry removed',
+      removed: 'Material deleted',
       collectionCreated: 'Material collection created',
       addedToCollection: 'Added to material collection'
     },
     removeConfirm: {
-      title: 'Remove from material library?',
+      title: 'Delete material?',
       content:
-        '"{name}" will be removed from the offline material library. This only affects Unreal Box\'s local library record and will not delete the external project file.',
-      okText: 'Remove'
+        '"{name}" will be deleted from the material library. External project files are not affected.',
+      okText: 'Delete'
     }
   },
   tiptapToolbar: {
@@ -5921,7 +5945,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     },
     form: {
       nameLabel: 'Name',
-      namePlaceholder: 'e.g. 3D Model Library, 2024 Project Assets...',
+      namePlaceholder: 'e.g. 3D Models',
       modeLabel: 'Mode',
       moreModes: 'Join a team or connect a shared vault'
     },
@@ -5950,7 +5974,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       tabSmb: 'SMB share',
       tabNas: 'Asset server',
       pathLabel: 'Network path',
-      pathPlaceholder: 'e.g. \\\\192.168.1.100\\Assets',
+      pathPlaceholder: 'e.g. {example}',
       authButton: 'Enter credentials',
       checking: 'Checking network path...',
       accessibleWritable: 'Path is accessible, write permission granted',
@@ -5972,8 +5996,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       apiKeyPlaceholder: 'Browse only without a key; a key is required to upload or overwrite',
       browsePathLabel: 'Shared browse path',
       optionalHint: 'optional',
-      browsePathPlaceholder:
-        'e.g. \\\\192.168.1.100\\Assets, only used to jump to the server directory',
+      browsePathPlaceholder: 'e.g. {example}, only used to jump to the server directory',
       browsePathTip:
         'Only used for "open local path / locate file". For asset server mode, an accessible SMB share path is recommended.'
     },
@@ -5995,16 +6018,16 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     footer: {
       cancelButton: 'Cancel',
       creating: 'Creating...',
-      createButton: 'Create now'
+      createButton: 'Create'
     },
     errors: {
       nameRequired: 'Please enter a vault name',
       nameTooShort: 'Vault name must be at least 2 characters',
-      nameInvalidChars: 'Vault name cannot contain special characters < > : " / \\ | ? *',
-      nameInvalidCharsShort: 'Name cannot contain special characters < > : " / \\ | ? *',
+      nameInvalidChars: 'Vault name cannot contain special characters {chars}',
+      nameInvalidCharsShort: 'Name cannot contain special characters {chars}',
       selectPathFailed: 'Failed to select path',
       networkPathRequired: 'Please enter a network path',
-      networkPathFormat: 'Network path should start with \\\\',
+      networkPathFormat: 'Network path should start with {prefix}',
       browsePathFormat: 'Shared browse path should be a UNC or absolute path',
       connectFailed: 'Connection failed',
       connectFailedCheckAddress: 'Connection failed, please check the address',
@@ -6022,9 +6045,9 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     },
     confirm: {
       deleteWithApiKey:
-        'Delete vault "{name}" from the server?\n\nWarning: an API Key was detected, so physical files will be deleted as well!',
+        'Delete vault "{name}" from the server? An admin key is set, so the files on the server will be deleted too.',
       deleteWithoutApiKey:
-        'Delete vault "{name}" from the server?\n\nNote: this only unregisters the vault record on the server; physical files will not be deleted.'
+        'Delete vault "{name}" from the server? Only the vault record is removed; the files on the server are kept.'
     },
     toast: {
       nodeClaimed: 'Asset node claimed',
@@ -6242,8 +6265,8 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       readOnlyDesc: 'Can inspect and analyze, but cannot change projects, assets or local files',
       askLabel: 'Ask for approval',
       askDesc: 'Always ask before changing the project or assets',
-      autoEditLabel: 'Approve for me',
-      autoEditDesc: 'Only ask for operations detected as risky',
+      autoEditLabel: 'Auto-approve',
+      autoEditDesc: 'Ask only for risky operations',
       yoloLabel: 'Full access',
       yoloDesc: 'Unrestricted access to your project, assets and local files',
       confirmTitle: 'Turn on full access?',
@@ -6728,7 +6751,12 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     }
   },
   bridgeBanner: {
-    title: 'The engine bridge did not start'
+    title: 'Unreal Engine connection unavailable',
+    portInUse:
+      'Port {port} is in use. Close the program or other Unreal Box window using it, then click Retry.',
+    noPermission: 'Unreal Box has no permission to use port {port}. Restart Unreal Box.',
+    retry: 'Retry',
+    retryFailed: 'The port is still unavailable'
   },
   modelViewer: {
     loading: 'Loading model…',
@@ -8410,8 +8438,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     modals: {
       editBrowsePathModal: {
         title: 'Edit shared browse path',
-        pathPlaceholder:
-          'e.g. \\\\192.168.1.100\\Assets, only used to jump to the server directory',
+        pathPlaceholder: 'e.g. {example}, only used to jump to the server directory',
         tip: 'Only used for "open local path / locate file". For asset server mode, an accessible SMB share path is recommended.'
       },
       editServerAddressModal: {
@@ -8585,6 +8612,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
   },
   miniChatWindow: {
     sendButton: 'Send',
+    stopButton: 'Stop',
     /**
      * Banner shown when this window carries the main chat's context.
      *

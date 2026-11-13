@@ -2,8 +2,9 @@
   <AppModal
     v-model:open="visible"
     :width="650"
+    :title="$t('createVaultModal.header.title')"
     :mask-closable="false"
-    :keyboard="false"
+    :keyboard="!loading"
     :closable="false"
     hide-footer
     class="create-vault-modal"
@@ -15,7 +16,12 @@
         <div class="header-content">
           <h1 class="modal-title">{{ $t('createVaultModal.header.title') }}</h1>
         </div>
-        <button class="close-btn" @click="handleCancel">
+        <button
+          type="button"
+          class="close-btn"
+          :aria-label="$t('common.close')"
+          @click="handleCancel"
+        >
           <PhX />
         </button>
       </div>
@@ -44,12 +50,21 @@
         <!-- 2. 导入模式选择 -->
         <div class="form-group">
           <label class="form-label">{{ $t('createVaultModal.form.modeLabel') }}</label>
-          <div class="mode-cards">
+          <div
+            class="mode-cards"
+            role="radiogroup"
+            :aria-label="$t('createVaultModal.form.modeLabel')"
+          >
             <!-- 引用模式卡片 -->
             <div
               class="mode-card"
               :class="{ active: formData.vaultType === VaultType.REFERENCE }"
+              role="radio"
+              :aria-checked="formData.vaultType === VaultType.REFERENCE"
+              tabindex="0"
               @click="selectVaultType(VaultType.REFERENCE)"
+              @keydown.enter.prevent="selectVaultType(VaultType.REFERENCE)"
+              @keydown.space.prevent="selectVaultType(VaultType.REFERENCE)"
             >
               <div class="card-header">
                 <div
@@ -70,7 +85,12 @@
             <div
               class="mode-card"
               :class="{ active: formData.vaultType === VaultType.BACKUP }"
+              role="radio"
+              :aria-checked="formData.vaultType === VaultType.BACKUP"
+              tabindex="0"
               @click="selectVaultType(VaultType.BACKUP)"
+              @keydown.enter.prevent="selectVaultType(VaultType.BACKUP)"
+              @keydown.space.prevent="selectVaultType(VaultType.BACKUP)"
             >
               <div class="card-header">
                 <div
@@ -96,7 +116,11 @@
               v-if="showMoreModes"
               class="mode-card"
               data-testid="join-team-card"
+              role="button"
+              tabindex="0"
               @click="emit('joinTeam')"
+              @keydown.enter.prevent="emit('joinTeam')"
+              @keydown.space.prevent="emit('joinTeam')"
             >
               <div class="card-header">
                 <div class="icon-wrapper">
@@ -115,7 +139,12 @@
               :class="{
                 active: formData.vaultType === VaultType.NETWORK
               }"
+              role="radio"
+              :aria-checked="formData.vaultType === VaultType.NETWORK"
+              tabindex="0"
               @click="selectVaultType(VaultType.NETWORK)"
+              @keydown.enter.prevent="selectVaultType(VaultType.NETWORK)"
+              @keydown.space.prevent="selectVaultType(VaultType.NETWORK)"
             >
               <div class="card-header">
                 <div
@@ -204,7 +233,9 @@
                 <input
                   v-model="formData.networkPath"
                   type="text"
-                  :placeholder="$t('createVaultModal.network.pathPlaceholder')"
+                  :placeholder="
+                    $t('createVaultModal.network.pathPlaceholder', { example: UNC_PATH_EXAMPLE })
+                  "
                   class="glass-input network-input"
                   :class="{ 'has-error': errors.networkPath }"
                   @input="onNetworkPathInput"
@@ -324,7 +355,11 @@
                   <input
                     v-model="formData.browsePath"
                     type="text"
-                    :placeholder="$t('createVaultModal.nas.browsePathPlaceholder')"
+                    :placeholder="
+                      $t('createVaultModal.nas.browsePathPlaceholder', {
+                        example: UNC_PATH_EXAMPLE
+                      })
+                    "
                     class="glass-input"
                     :class="{ 'has-error': errors.browsePath }"
                     @input="onBrowsePathInput"
@@ -503,10 +538,7 @@
           @click="handleCreate"
         >
           <span v-if="loading">{{ $t('createVaultModal.footer.creating') }}</span>
-          <template v-else>
-            <span>{{ $t('createVaultModal.footer.createButton') }}</span>
-            <PhArrowRight class="arrow-icon" />
-          </template>
+          <span v-else>{{ $t('createVaultModal.footer.createButton') }}</span>
         </button>
       </div>
     </div>
@@ -533,7 +565,6 @@ import { ref, reactive, computed, watch, toRaw } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { message } from '@/utils/messageManager'
 import {
-  PhArrowRight,
   PhLock,
   PhCaretRight,
   PhCheck,
@@ -559,7 +590,12 @@ import {
   type VaultInfo
 } from '../../../store/modules/vaultStore'
 import NetworkAuthModal from './NetworkAuthModal.vue'
-import { isBrowsableAbsolutePath } from '../utils/networkBrowsePath'
+import {
+  isBrowsableAbsolutePath,
+  UNC_PATH_EXAMPLE,
+  UNC_PATH_PREFIX,
+  VAULT_NAME_INVALID_CHARS
+} from '../utils/networkBrowsePath'
 
 // Props 定义
 interface Props {
@@ -802,7 +838,9 @@ const validateName = (): boolean => {
   // 检查特殊字符
   const invalidChars = /[<>:"/\\|?*]/
   if (invalidChars.test(formData.name)) {
-    errors.name = t('createVaultModal.errors.nameInvalidChars')
+    errors.name = t('createVaultModal.errors.nameInvalidChars', {
+      chars: VAULT_NAME_INVALID_CHARS
+    })
     return false
   }
 
@@ -860,7 +898,9 @@ const validateNetworkPath = async (): Promise<boolean> => {
   // 检查路径格式
   const networkPath = formData.networkPath.trim()
   if (!networkPath.startsWith('\\\\')) {
-    errors.networkPath = t('createVaultModal.errors.networkPathFormat')
+    errors.networkPath = t('createVaultModal.errors.networkPathFormat', {
+      prefix: UNC_PATH_PREFIX
+    })
     return false
   }
 
@@ -992,7 +1032,9 @@ const handleRemoteCreate = async (): Promise<void> => {
   // 检查特殊字符
   const invalidChars = /[<>:"/\\|?*]/
   if (invalidChars.test(name)) {
-    remoteCreateError.value = t('createVaultModal.errors.nameInvalidCharsShort')
+    remoteCreateError.value = t('createVaultModal.errors.nameInvalidCharsShort', {
+      chars: VAULT_NAME_INVALID_CHARS
+    })
     return
   }
 
@@ -1303,6 +1345,11 @@ const handleCreate = async (): Promise<void> => {
  * 注意：Modal 使用 Teleport 渲染到 body，必须使用全局样式
  */
 .create-vault-modal {
+  // 标题只给 aria-labelledby 用，看得见的标题在玻璃面板里
+  .app-modal__header {
+    display: none;
+  }
+
   .app-modal__panel {
     background: transparent !important;
     box-shadow: none !important;
@@ -1456,6 +1503,11 @@ const handleCreate = async (): Promise<void> => {
   &.active {
     background: var(--color-bg-selected);
     box-shadow: 0 4px 20px -5px var(--color-accent-border);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--color-accent-solid);
+    outline-offset: 2px;
   }
 
   .card-header {
@@ -1744,15 +1796,6 @@ const handleCreate = async (): Promise<void> => {
       color: var(--color-text-secondary);
       cursor: not-allowed;
       box-shadow: none;
-    }
-
-    .arrow-icon {
-      font-size: 12px;
-      transition: transform 0.2s ease;
-    }
-
-    &:hover:not(.disabled) .arrow-icon {
-      transform: translateX(3px);
     }
   }
 }

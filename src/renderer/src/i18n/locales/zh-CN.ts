@@ -108,7 +108,7 @@ export default {
     /** 这条对话已经有一次起名在途（多半是「自动生成新标题」那一路）。等一下再点就有 */
     smartNameBusy: '正在命名，请稍后重试',
     moveToProject: '归入工程',
-    removeFromProject: '不在项目中工作',
+    removeFromProject: '移出项目',
     newProjectGroup: '新建工程分组…',
     projectNamePlaceholder: '请输入 UE 工程名',
     delete: '删除',
@@ -159,8 +159,6 @@ export default {
   },
   agentV3Debug: {
     title: 'Agent V3 调试台',
-    description:
-      '直接驱动 V3 内核：发送指令、查看事件流、测试插话与审批。仅供开发诊断，非正式对话界面。',
     sessionId: 'Session ID',
     mode: '模式',
     modeAgent: 'Agent（可执行操作）',
@@ -200,8 +198,6 @@ export default {
     client: {
       title: '接入外部 MCP 服务',
       description: '连接第三方 MCP 服务，扩展助手能力；可粘贴 Claude Desktop 格式的配置。',
-      // 页面 Header 用这句短的。面板里不再重复标题，长描述用不上了
-      shortDescription: '给助手接入第三方能力，或把虚幻引擎开放给外部客户端。',
       empty: '尚未配置 MCP 服务。',
       configPath: '配置文件：{path}',
       // 上半页分两组：盒子自己装好的 vs 用户自己加的。原来这两类混在一起，
@@ -941,6 +937,7 @@ export default {
   },
   tabs: {
     close: '关闭',
+    closeTab: '关闭标签页',
     closeOther: '关闭其他',
     closeRight: '关闭右侧',
     copy: '复制',
@@ -1040,7 +1037,7 @@ export default {
       unresolvedCount: '{count} 个未找到',
       showAllDependencies: '展开全部 {count} 条',
       locateDependency: '定位到所在文件夹',
-      dependencyNotFound: '这个依赖不在当前保管库里',
+      dependencyNotFound: '这个依赖不在当前资产库里',
       cropPreview: '裁剪预览图',
       editNote: '编辑备注',
       noteInputPlaceholder: '输入备注内容...',
@@ -1125,9 +1122,9 @@ export default {
       assetTypeOther: '其他'
     },
     vault: {
-      default: '默认保管库',
-      unnamed: '未命名保管库',
-      untitled: '未命名保管库',
+      default: '默认资产库',
+      unnamed: '未命名资产库',
+      untitled: '未命名资产库',
       create: '创建资产库',
 
       clearCache: '清除缓存并重新加载',
@@ -1142,7 +1139,7 @@ export default {
       },
       rename: {
         title: '重命名资产库',
-        placeholder: '请输入新的保管库名称'
+        placeholder: '请输入新的资产库名称'
       },
       context: {
         sync: '拉取同步',
@@ -1154,31 +1151,31 @@ export default {
         rename: '重命名资产库'
       },
       moveConfirm: {
-        title: '确认移动保管库',
+        title: '确认移动资产库',
         content: '移动过程可能需要较长时间，期间请保持应用开启。确定要继续吗？'
       },
       delete: {
-        title: '删除保管库',
+        title: '删除资产库',
         warning:
-          '警告：此操作将永久删除保管库 "{name}" 及其所有数据（包括文件和数据库），且不可恢复。',
+          '警告：此操作将永久删除资产库 "{name}" 及其所有数据（包括文件和数据库），且不可恢复。',
         networkWarning:
           '这是局域网协作库。删除操作仅会移除本地的连接记录和缓存数据库，不会删除网络位置 "{networkPath}" 中的源文件。',
-        confirmLabel: '请输入保管库名称以确认删除：',
+        confirmLabel: '请输入资产库名称以确认删除：',
         placeholder: '请输入 {name}',
-        inputMismatch: '保管库名称不匹配'
+        inputMismatch: '资产库名称不匹配'
       },
-      moving: '正在移动保管库...',
+      moving: '正在移动资产库...',
       messages: {
-        switched: '已切换到保管库: {name}',
+        switched: '已切换到资产库：{name}',
         renamed: '重命名成功',
         renameFailed: '重命名失败',
         openSuccess: '已在文件管理器中打开',
         openFailed: '打开文件管理器失败',
-        removed: '保管库已从列表中删除',
-        removeFailed: '删除保管库失败',
-        loadFailed: '加载保管库列表失败',
-        moveSuccess: '移动保管库成功',
-        moveFailed: '移动保管库失败',
+        removed: '资产库已从列表中删除',
+        removeFailed: '删除资产库失败',
+        loadFailed: '加载资产库列表失败',
+        moveSuccess: '移动资产库成功',
+        moveFailed: '移动资产库失败',
         devFeature: '功能开发中...'
       }
     },
@@ -1194,6 +1191,7 @@ export default {
       listenerFailed: '注册文件夹导入进度监听失败',
       overwriteConfirm: '文件已存在',
       overwriteMessage: '文件 "{fileName}" 已存在，是否覆盖？',
+      overwrite: '覆盖',
       overwriteAll: '全部覆盖',
       skipAll: '全部跳过',
       errorTitle: '资产导入出错',
@@ -1226,7 +1224,7 @@ export default {
       waitingDecision: '请为当前文件选择处理方式；长时间未响应时，系统将跳过并记录原因。',
       unconfirmedCount: '服务器尚未确认保存：{count} 项',
       scanIssueCount: '无法读取：{count} 个文件或目录（目录内数量未知）',
-      retryOriginalVault: '请切回原任务的保管库后重试，导入目标不会改到当前库。',
+      retryOriginalVault: '请切回原任务的资产库后重试，导入目标不会改到当前库。',
       stopping: '正在停止，等待当前文件收尾…',
       fileBatch: '导入 {count} 个文件',
       retryFailedFiles: '重试这 {count} 个文件',
@@ -1273,6 +1271,11 @@ export default {
       empty: '暂无资产',
       selectFolder: '请先选择一个文件夹',
       addAsset: '添加资产',
+      emptyFiltered: '没有符合条件的资产',
+      emptyTrash: '回收站为空',
+      emptyFavorites: '暂无收藏的资产',
+      clearFilters: '清除筛选',
+      rootFolder: '全部',
       folders: '文件夹',
       files: '文件',
       importTask: '导入任务',
@@ -1318,7 +1321,7 @@ export default {
       uploadFailed: '上传失败：{error}',
       openLocalPath: '打开本地路径',
       openLocalPathFailed: '打开本地路径失败',
-      openLocalPathNotFound: '这个路径不存在，打不开：{path}（在保管库设置里改「浏览路径」）',
+      openLocalPathNotFound: '这个路径不存在，打不开：{path}（在资产库设置里改「浏览路径」）',
       openLocalPathFailedAt: '打开本地路径失败：{path}（{error}）',
       useAsReference: '用作参考图生成',
       useAsReferenceSuccess: '已添加为 AI 创作参考图',
@@ -1775,7 +1778,9 @@ export default {
       // 引擎区域
       engine: {
         title: '引擎版本',
+        add: '添加引擎',
         refresh: '刷新',
+        retry: '重试',
         lastOpened: '最近打开',
         running: '运行中',
         default: '默认',
@@ -1789,13 +1794,13 @@ export default {
         // 首次启动时引擎区可能一个都没有 —— 原来这里什么都不显示，
         // 新用户看到的是一片空白，不知道盒子是没扫到还是坏了
         emptyTitle: '未找到已安装的虚幻引擎',
-        emptyDesc: '将引擎根目录拖到此处，或点击上方的 + 手动添加。',
+        emptyDesc: '将引擎根目录拖到此处。',
         // 扫不动和真的没装是两回事，后者才是上面那句。
         // scanFailed 给主动点刷新的那一次弹提示；下面两句是列表空着时留在屏幕上的
         scanFailed: '扫描引擎失败，列表可能不全。',
         staleList: '列表可能已过期',
         scanFailedTitle: '读取引擎列表失败',
-        scanFailedDesc: '这不表示未安装引擎，仅本次读取失败。请点击右上角刷新重试。',
+        scanFailedDesc: '这不表示未安装引擎，仅本次读取失败。',
         dropTitle: '释放以添加自定义引擎',
         dropDesc: '拖入引擎根目录（包含 Engine/Binaries/Win64/UnrealEditor.exe）',
         addSuccess: '已添加 {count} 个自定义引擎',
@@ -1829,7 +1834,8 @@ export default {
         emptyDesc: '拖拽 .uproject 文件或项目目录到此处导入',
         // 搜不到 ≠ 一个都没导入：后者才该讲怎么导入
         loadFailedTitle: '读取工程列表失败',
-        loadFailedDesc: '这不表示没有工程，仅本次读取失败。请刷新页面重试。',
+        loadFailedDesc: '这不表示没有工程，仅本次读取失败。',
+        retry: '重试',
         noSearchResults: '未找到匹配「{keyword}」的工程',
         noSearchResultsDesc: '清空上方搜索框即可查看全部工程。',
         import: '导入项目',
@@ -1838,6 +1844,8 @@ export default {
         importExisting: '导入已有工程',
         refresh: '刷新',
         open: '打开项目',
+        openAction: '打开',
+        connected: '已连接',
         openFolder: '打开目录',
         rename: '重命名',
         remove: '移除',
@@ -1853,10 +1861,9 @@ export default {
         multiProjectConfirmContent: '该目录中包含 {count} 个工程，确定要全部导入吗？',
         bulkImportSuccess: '导入成功，共 {count} 个工程',
         importError: '导入异常',
-        dropHint: '释放以导入资产',
-        dropHintDesc: '支持文件夹和文件的拖拽导入',
+        dropHint: '释放以导入项目',
         invalidDrop: '未找到 UE 工程，请拖入工程目录或 .uproject 文件',
-        searchPlaceholder: '搜索我的工程',
+        searchPlaceholder: '搜索我的项目',
         engineFilter: '按引擎版本筛选',
         allEngineVersions: '全部版本',
         unknownEngineVersion: '版本未知',
@@ -2484,7 +2491,7 @@ export default {
     },
     // 运行途中插的那句话，显示在时间线上它发生的位置
     steer: {
-      pending: '排队中',
+      pending: '待送达',
       applied: '已发送',
       notApplied: '未发送',
       cancel: '撤回重新编辑',
@@ -2502,7 +2509,6 @@ export default {
       back: '上一步',
       step: '{current} / {total}',
       decline: '由 AI 决定',
-      declineHint: '此问题不作选择，由 AI 选择最合适的方案',
       multi: '可多选',
       cancel: '关闭，暂不回答',
       answered: '已回答',
@@ -2510,7 +2516,7 @@ export default {
       cancelled: '未回答',
       skippedOne: '此问题未选择',
       delegatedOne: '由 AI 决定',
-      autoCountdown: '全部权限模式下，{time} 后按推荐项继续',
+      autoCountdown: '完全访问权限模式下，{time} 后按推荐项继续',
       autoAnswered: '已按推荐项继续'
     },
     // 每轮回复下方的 token 用量
@@ -2527,7 +2533,7 @@ export default {
       hint: '本轮实际发送给模型及模型返回的 token，按服务商计费口径统计'
     },
     welcome: {
-      greetingPrompt: '{greeting}，有什么可以帮您？'
+      greetingPrompt: '{greeting}'
     },
     suggestions: {
       // 2026-11-16 10:00 前顶替「知识问答」，见 megaJamSuggestion.ts
@@ -2606,6 +2612,12 @@ export default {
       emptyMessage: '消息内容不能为空',
       editMessage: '编辑消息',
       editMessagePlaceholder: '修改消息内容后发送...',
+      regenerate: '重新生成',
+      copy: '复制',
+      scrollToBottom: '滚动到底部',
+      discardLaterTurns: '将删除此后的 {count} 轮对话。',
+      discardContinue: '继续',
+      discardCancel: '取消',
       我的资产库有多少的资产: '我的资产库有多少的资产'
     },
     branch: {
@@ -2625,9 +2637,9 @@ export default {
      * 新对话；侧边是弄明白**现在什么情况**，问完关掉，主对话一个字都不知道。
      */
     sideQuestion: {
-      open: '侧边问一句（带上下文）',
+      open: '侧边提问',
       noContext: '暂无可带入的上下文',
-      failed: '没能打开「侧边问一句」'
+      failed: '无法打开侧边提问'
     },
     search: {
       notImplemented: '搜索网页功能暂未实现'
@@ -2898,7 +2910,8 @@ export default {
       placeholder3D: '请输入 3D 模型描述或上传最多 5 张图片',
       placeholderImage: '请输入图片描述或上传最多 5 张图片',
       placeholderAgent: '给 AI 发消息或发布指令...',
-      placeholderSteer: '正在执行，可随时发送新指令...',
+      placeholderSteer: '发送后插入当前任务',
+      placeholderQueue: '本轮结束后发送',
       placeholderImageChat: '通过图片与 AI 对话',
       placeholderDefault: '给 AI 发消息…',
       maxImagesWarning: '最多上传 5 张图片',
@@ -3136,7 +3149,7 @@ export default {
       sessionBusy: '此对话仍有一轮任务在运行。请等待其结束，或直接在输入框中输入调整指令。',
       resume: '继续尝试',
       resumeProgress: '从断点继续执行…',
-      resumeFailed: '没能接着跑：{reason}',
+      resumeFailed: '无法从断点继续：{reason}',
       autoResume:
         '模型连接中断，{seconds} 秒后自动继续（第 {attempt}/{max} 次）。已完成的步骤不会重复执行。',
       modelRetry:
@@ -3156,6 +3169,7 @@ export default {
       providerAuthFailed: '模型服务商拒绝了本次请求',
       providerAuthFailedTitle: 'API 密钥无效或已过期',
       providerAuthFailedDesc: '请在 设置 → 模型 中检查该服务商的 API 密钥是否有误或已过期。',
+      openModelSettings: '打开模型设置',
       // 速率限制相关
       rateLimitExceeded: '请求过于频繁，请稍后再试',
       rateLimitTitle: '请求过于频繁',
@@ -3213,6 +3227,7 @@ export default {
       reject: '拒绝',
       allowForChat: '本对话内均允许',
       allowForever: '以后均允许',
+      goToChat: '前往',
       allowForeverHint: '所有对话中不再询问此操作。可在「设置 → AI 助手」中移除。',
       whatIsThis: '这是什么？',
       // 并行执行时可能同时有好几条在等，答完这条会接着弹下一条
@@ -3333,13 +3348,17 @@ export default {
       namingRules: '命名规则',
       about: '关于'
     },
+    menuGroup: {
+      app: '应用',
+      ai: 'AI',
+      workspace: '项目与资产'
+    },
     // AI 设置
     models: {
       title: '模型'
     },
     team: {
       title: '团队',
-      description: '团队模式中各模型的检测结论与任务记录',
       empty: '使用 /team 后，各模型的检测结论与任务记录将显示在此处。',
       note: '仅列出检测过或参与过任务的模型。打回指用户在任务板上重开的任务。',
       col: {
@@ -3448,7 +3467,6 @@ export default {
     // 个性化：我写给它的那段常驻说明
     personalization: {
       title: '个性化',
-      description: '工作背景与沟通偏好。',
       // 常驻说明
       instructionsTitle: '给助手的说明',
       instructionsDesc: '应用于所有对话的长期偏好。',
@@ -3461,7 +3479,6 @@ export default {
     // 技能：它会做哪些事，以及它自己学会的那些
     tools: {
       title: '工具',
-      description: '可用工具及其提供给模型的方式。',
       toolSearchTitle: '工具提供方式',
       toolSearchBeta: '工具搜索（Beta）',
       toolSearchOn: '按需提供：由技能和搜索在需要时加载工具。',
@@ -3594,7 +3611,6 @@ export default {
     // 经验库：做事时踩过又绕过去的坑（见 ProfileExperience.vue）
     experience: {
       title: '经验库',
-      description: '执行任务时遇到并已解决的问题。再次出现相同报错时自动提示，无效的经验自动淘汰。',
       listTitle: '全部经验',
       offNote: '「技能」页的自动记录已关闭：已有经验保留，但不再提示。',
       undo: '撤销上次整理',
@@ -3647,7 +3663,6 @@ export default {
     // 用量：从已有对话记录里算
     usage: {
       title: '用量',
-      description: 'AI 用量与改动统计。',
       overviewTitle: '总览',
       chartTitle: '按天',
       range: {
@@ -3723,7 +3738,6 @@ export default {
     // 知识库设置
     notebook: {
       title: '知识库',
-      description: '管理网页图片识别和搜索索引。',
       settingsTitle: '网页导入',
       autoTrain: '笔记自动索引',
       autoTrainDesc: '编辑笔记后自动更新索引，方便助手检索。',
@@ -3844,7 +3858,6 @@ export default {
     },
     cli: {
       title: '命令行',
-      description: '从终端调用虚幻引擎能力，供外部 Agent 和自动化脚本使用',
       intro: '终端操作引擎前请打开目标工程。帮助：uebox --help',
       loading: '正在检查…',
       unavailable: '未找到命令行程序，请重新安装应用。',
@@ -3874,7 +3887,6 @@ export default {
     },
     plugin: {
       title: '插件',
-      description: '虚幻引擎连接插件。',
       // 桥接状态。这一页原来一个状态都不显示，而 AI 连不上引擎时
       // 会把用户指到这儿来 —— 他到了却问不出「到底连上没有」
       status: '连接状态',
@@ -4096,7 +4108,6 @@ export default {
     // 命名规则设置
     namingRules: {
       title: '命名规则',
-      description: '统一资产名称、类型识别和归属目录。',
       save: '保存',
       reset: '重置',
       reload: '重新加载',
@@ -4544,6 +4555,8 @@ export default {
     // 添加来源弹窗
     addSource: {
       title: '添加来源',
+      urlLabel: '网址',
+      wechatLabel: '微信公众号文章链接',
       description: '添加来源后，虚幻盒子可基于这些信息回答问题。',
       examples: '（示例：UE 学习笔记、项目文档、会议记录等）',
       /*
@@ -4675,6 +4688,10 @@ export default {
   },
   // 笔记编辑器
   noteEditor: {
+    markdownPaste: {
+      detected: '粘贴的内容为 Markdown 格式',
+      convert: '转换格式'
+    },
     saveFailedAlert: '该段内容保存失败。请检查保管库是否存在、是否被其他程序占用，然后重试。',
     retrySave: '重试保存',
     emptyTitle: '没有打开任何笔记',
@@ -4876,7 +4893,9 @@ export default {
       removeTitle: '移除资产路径',
       changeRootTitle: '变更所属资产路径（不移动文件）',
       byPathOption: '（按路径归属）',
-      deleteTitle: '删除资产库'
+      deleteTitle: '删除资产库',
+      delete: '删除',
+      removeRootConfirm: '确定移除资产路径「{name}」吗？磁盘上的目录不会被删除，仅不再作为分组。'
     },
     member: {
       sectionTitle: '成员',
@@ -4902,7 +4921,16 @@ export default {
       nameRequired: '名称不能为空',
       memberCredentialsRequired: '请输入成员账号和密码',
       memberSaveFailed: '成员保存失败',
-      memberSaved: '成员已保存'
+      memberSaved: '成员已保存',
+      operationFailed: '操作失败',
+      rootCreated: '资产路径已创建',
+      renamed: '已重命名',
+      rootRemoved: '资产路径已移除',
+      rootChanged: '归属已变更',
+      rootReset: '已恢复为按路径归属',
+      rootChangeFailed: '变更失败',
+      vaultDeleted: '资产库「{name}」已删除',
+      deleteFailed: '删除失败'
     }
   },
   aigcImagePanel: {
@@ -5267,13 +5295,13 @@ export default {
       typeLabel: '集合'
     },
     menu: {
-      changeCover: '🖼 修改封面',
-      recordCover: '⏺ 录制封面',
-      resetCover: '↺ 恢复默认封面',
-      editInfo: '✎ 编辑信息',
-      unfavorite: '☆ 取消收藏',
-      favorite: '★ 收藏',
-      delete: '✕ 删除'
+      changeCover: '修改封面',
+      recordCover: '录制封面',
+      resetCover: '恢复默认封面',
+      editInfo: '编辑信息',
+      unfavorite: '取消收藏',
+      favorite: '收藏',
+      delete: '删除'
     },
     list: {
       colName: '名称',
@@ -5576,7 +5604,7 @@ export default {
       unfavorite: '取消收藏',
       textures: '贴图',
       editInfo: '编辑信息',
-      removeFromLibrary: '移出材质库'
+      removeFromLibrary: '删除'
     },
     collection: {
       badge: '集合',
@@ -5633,15 +5661,14 @@ export default {
       invalidName: '名称无效或路径已存在',
       createdDraft: '已创建材质草稿',
       updatedInfo: '已更新材质信息',
-      removed: '已移出材质条目',
+      removed: '材质已删除',
       collectionCreated: '已创建材质集合',
       addedToCollection: '已加入材质集合'
     },
     removeConfirm: {
-      title: '移出材质库？',
-      content:
-        '“{name}”将从离线材质库中移除。此操作只影响虚幻盒子的本地库记录，不会删除外部工程文件。',
-      okText: '移出'
+      title: '删除材质？',
+      content: '「{name}」将从材质库中删除，外部工程文件不受影响。',
+      okText: '删除'
     }
   },
   tiptapToolbar: {
@@ -5662,38 +5689,38 @@ export default {
     addLink: '添加链接'
   },
   vaultManagerCreateVaultModal: {
-    title: '创建新保管库',
+    title: '新建资产库',
     form: {
-      nameLabel: '保管库名称',
-      namePlaceholder: '请输入保管库名称',
+      nameLabel: '资产库名称',
+      namePlaceholder: '请输入资产库名称',
       descriptionLabel: '描述',
-      descriptionPlaceholder: '请输入保管库描述（可选）',
+      descriptionPlaceholder: '请输入资产库描述（可选）',
       locationLabel: '存储位置',
       defaultLocation: '默认位置',
       defaultLocationDesc: '存储在应用数据目录下',
       customLocation: '自定义位置',
       customLocationDesc: '选择自定义的存储位置',
       customPathLabel: '自定义路径',
-      customPathPlaceholder: '请选择保管库存储路径',
+      customPathPlaceholder: '请选择资产库存储路径',
       selectPathButton: '选择路径',
-      pathPreview: '保管库将创建在: {path}'
+      pathPreview: '资产库将创建在：{path}'
     },
     rules: {
-      nameRequired: '请输入保管库名称',
-      nameLength: '保管库名称长度应在1-50个字符之间',
-      pathRequired: '请选择保管库路径'
+      nameRequired: '请输入资产库名称',
+      nameLength: '资产库名称长度应在1-50个字符之间',
+      pathRequired: '请选择资产库路径'
     },
     dialog: {
-      title: '选择保管库存储位置',
+      title: '选择资产库存储位置',
       buttonLabel: '选择此位置'
     },
     messages: {
       selectPathFailed: '选择路径失败',
       pathValidationFailed: '路径验证失败',
       invalidPath: '请选择有效的存储路径',
-      createSuccess: '保管库"{name}"创建成功',
+      createSuccess: '资产库「{name}」创建成功',
       createFailed: '创建失败: {error}',
-      createVaultFailed: '创建保管库失败'
+      createVaultFailed: '创建资产库失败'
     }
   },
   conflictResolveModal: {
@@ -5734,7 +5761,7 @@ export default {
     rotated: '已重新生成，请将新码发送给同事',
     shareWriteLabel: '允许共享目录中的同事写入',
     shareWriteHint: '勾选后，可访问此共享文件夹的电脑将自动获得写入权限，无需手动填写访问码',
-    notServer: '当前保管库不是主机模式，没有配对码',
+    notServer: '当前资产库不是主机模式，没有配对码',
     authRequired: '需要资产库访问码，请向主机索取配对码后填写',
     authInvalid: '资产库访问码不正确，请向主机确认'
   },
@@ -5744,7 +5771,7 @@ export default {
     },
     form: {
       nameLabel: '名称',
-      namePlaceholder: '例如：3D 模型库, 2024 项目素材...',
+      namePlaceholder: '例如：3D 模型库',
       modeLabel: '模式',
       moreModes: '加入团队或连接共享库'
     },
@@ -5773,7 +5800,7 @@ export default {
       tabSmb: 'SMB 共享',
       tabNas: '资产服务器',
       pathLabel: '网络路径',
-      pathPlaceholder: '例如：\\\\192.168.1.100\\Assets',
+      pathPlaceholder: '例如：{example}',
       authButton: '输入凭据',
       checking: '正在检测网络路径...',
       accessibleWritable: '路径可访问，有写入权限',
@@ -5795,7 +5822,7 @@ export default {
       apiKeyPlaceholder: '无 KEY 时仅可浏览，有 KEY 才能上传/覆盖',
       browsePathLabel: '共享浏览路径',
       optionalHint: '可选',
-      browsePathPlaceholder: '例如：\\\\192.168.1.100\\Assets，仅用于跳转到服务器目录',
+      browsePathPlaceholder: '例如：{example}，仅用于跳转到服务器目录',
       browsePathTip: '仅用于“打开本地路径/定位文件”。资产服务器模式建议填写可访问的 SMB 共享路径。'
     },
     remote: {
@@ -5816,16 +5843,16 @@ export default {
     footer: {
       cancelButton: '取消',
       creating: '创建中...',
-      createButton: '立即创建'
+      createButton: '创建'
     },
     errors: {
       nameRequired: '请输入资产库名称',
       nameTooShort: '资产库名称至少需要2个字符',
-      nameInvalidChars: '资产库名称不能包含特殊字符 < > : " / \\ | ? *',
-      nameInvalidCharsShort: '名称不能包含特殊字符 < > : " / \\ | ? *',
+      nameInvalidChars: '资产库名称不能包含特殊字符 {chars}',
+      nameInvalidCharsShort: '名称不能包含特殊字符 {chars}',
       selectPathFailed: '选择路径失败',
       networkPathRequired: '请输入网络路径',
-      networkPathFormat: '网络路径需以 \\\\ 开头',
+      networkPathFormat: '网络路径需以 {prefix} 开头',
       browsePathFormat: '共享浏览路径需为 UNC 或绝对路径',
       connectFailed: '连接失败',
       connectFailedCheckAddress: '连接失败，请检查地址是否正确',
@@ -5838,14 +5865,14 @@ export default {
       nameAlreadyExists: '名称 "{name}" 已存在，请使用其他名称'
     },
     dialog: {
-      selectPathTitle: '选择保管库存储位置',
+      selectPathTitle: '选择资产库存储位置',
       selectPathButton: '选择此位置'
     },
     confirm: {
       deleteWithApiKey:
-        '确定要从服务器上删除资产库「{name}」吗？\n\n⚠️ 已检测到 API 密钥，将同时删除物理文件。',
+        '确定要从服务器删除资产库「{name}」吗？已填写管理员密钥，服务器上的文件将一并删除。',
       deleteWithoutApiKey:
-        '确定要从服务器上删除资产库「{name}」吗？\n\n注意：此操作仅注销服务器上的资产库记录，不会删除物理文件。'
+        '确定要从服务器删除资产库「{name}」吗？仅移除服务器上的资产库记录，服务器上的文件保留。'
     },
     toast: {
       nodeClaimed: '资产节点已认领',
@@ -6071,8 +6098,8 @@ export default {
       readOnlyDesc: '仅查看和分析，无修改权限',
       askLabel: '请求批准',
       askDesc: '修改工程和资产时始终询问',
-      autoEditLabel: '帮我批准',
-      autoEditDesc: '仅对检测到的风险操作请求批准',
+      autoEditLabel: '自动批准',
+      autoEditDesc: '仅风险操作需要批准',
       yoloLabel: '完全访问权限',
       yoloDesc: '可不受限制地修改工程、资产和本地文件',
       // 开启完全访问权限前的二次确认。参考 Codex 的做法：
@@ -6432,7 +6459,7 @@ export default {
     normalizedImportFailed: '规范化导入失败',
     normalizedImportException: '规范化导入异常：{error}',
     pluginPathNotFound: '未找到插件文件路径',
-    vaultPathNotFound: '未找到保管库根路径',
+    vaultPathNotFound: '未找到资产库根路径',
     pluginFolderKeyNotFound: '未找到插件文件夹标识',
     pluginFolderEmpty: '插件文件夹为空',
     assetPathNotFound: '未找到资产路径',
@@ -6539,7 +6566,11 @@ export default {
     }
   },
   bridgeBanner: {
-    title: '引擎桥接启动失败'
+    title: '虚幻引擎连接不可用',
+    portInUse: '端口 {port} 已被占用。请关闭占用该端口的程序或其他虚幻盒子窗口，然后点击「重试」。',
+    noPermission: '没有权限使用端口 {port}。请重启虚幻盒子。',
+    retry: '重试',
+    retryFailed: '端口仍不可用'
   },
   modelViewer: {
     loading: '正在加载模型…',
@@ -6776,7 +6807,7 @@ export default {
     },
     matchCount: '{matched} / {total}',
     usageTitle: '本库有 {count} 个资产使用此标签',
-    unusedTitle: '当前保管库中没有资产使用此标签（其他库可能仍在使用）',
+    unusedTitle: '当前资产库中没有资产使用此标签（其他库可能仍在使用）',
     hint: {
       drag: '拖到左侧标签组即可归类',
       rename: '双击重命名，右键可删除',
@@ -6803,7 +6834,7 @@ export default {
       ungrouped: '未分组',
       favorite: '常用',
       unused: '本库未使用',
-      unusedTip: '当前保管库中没有资产使用这些标签。标签在各库间共享，其他库可能仍在使用。'
+      unusedTip: '当前资产库中没有资产使用这些标签。标签在各库间共享，其他库可能仍在使用。'
     },
     groupsTitle: '标签组',
     menu: {
@@ -6978,7 +7009,7 @@ export default {
       permanentConfirm: {
         title: '永久删除 {count} 项？',
         content:
-          '这 {count} 项将从「最近删除」中彻底移除，保管库中的备份副本和缩略图也将一并删除。',
+          '这 {count} 项将从「最近删除」中彻底移除，资产库中的备份副本和缩略图也将一并删除。',
         foldersIncluded: '其中的文件夹及其子文件夹和资产将一并删除。',
         irreversible: '删除后将无法以任何方式恢复。',
         okText: '永久删除'
@@ -7835,7 +7866,7 @@ export default {
       untitledAudio: '未命名音频'
     },
     vault: {
-      devFeature: '保管库管理功能开发中',
+      devFeature: '资产库管理功能开发中',
       switchedByAgent: '已切换到「{name}」'
     },
     refresh: {
@@ -7849,7 +7880,7 @@ export default {
       clearNotSupported: '网络回收站暂不支持清空',
       clearTitle: '清空最近删除',
       clearContent:
-        '确定要永久清空「最近删除」中的全部内容吗？已删除的文件夹及其中的资产、保管库中的备份副本和缩略图将一并清除，此操作不可撤销。',
+        '确定要永久清空「最近删除」中的全部内容吗？已删除的文件夹及其中的资产、资产库中的备份副本和缩略图将一并清除，此操作不可撤销。',
       okText: '清空',
       cancelText: '取消',
       cleared: '已清空最近删除',
@@ -7964,7 +7995,7 @@ export default {
     desc: '浏览百度网盘文件，支持下载到资产库和上传本地文件'
   },
   deleteVaultModal: {
-    systemNotDeletable: '系统内置保管库不可删除'
+    systemNotDeletable: '系统内置资产库不可删除'
   },
   assetManagementFileList: {
     importTaskFallbackName: '导入任务'
@@ -8002,7 +8033,7 @@ export default {
     sectionConflicts: '目标路径冲突',
     unconfirmedNote: '这些资产的依赖过多，未能全部检查；且本批次中确实存在问题，因此不能视为正常。',
     state: {
-      'not-in-vault': '保管库中不存在',
+      'not-in-vault': '资产库中不存在',
       'source-missing': '库中有记录，但源文件缺失',
       unresolved: '库中有记录且源文件存在，但无法定位'
     },
@@ -8159,7 +8190,7 @@ export default {
     modals: {
       editBrowsePathModal: {
         title: '编辑共享浏览路径',
-        pathPlaceholder: '例如：\\\\192.168.1.100\\Assets，仅用于跳转到服务器目录',
+        pathPlaceholder: '例如：{example}，仅用于跳转到服务器目录',
         tip: '仅用于“打开本地路径/定位文件”。资产服务器模式建议填写可访问的 SMB 共享路径。'
       },
       editServerAddressModal: {
@@ -8178,7 +8209,7 @@ export default {
       cancel: '取消'
     },
     labels: {
-      vault: '保管库',
+      vault: '资产库',
       networkAddress: '网络地址',
       browsePath: '共享浏览路径',
       currentAddress: '当前地址',
@@ -8221,10 +8252,10 @@ export default {
     systemBadge: {
       aigc: '存放 AI 生成资产的系统库',
       default: '存放本机资产的默认库',
-      system: '系统保管库'
+      system: '系统资产库'
     },
     messages: {
-      switchFailed: '切换保管库失败',
+      switchFailed: '切换资产库失败',
       browsePathUpdated: '共享浏览路径已更新',
       updateBrowsePathFailed: '更新共享浏览路径失败',
       adminKeySaveFailed: '管理员密钥保存失败',
@@ -8234,8 +8265,8 @@ export default {
       serverAddressUpdated: '服务器地址已更新',
       reconnectFailed: '服务器地址已更新，但重新连接失败：{error}',
       updateServerAddressFailed: '更新服务器地址失败',
-      systemVaultNotDeletable: '系统保管库无法删除',
-      saveOrderFailed: '保存保管库排序失败'
+      systemVaultNotDeletable: '系统资产库无法删除',
+      saveOrderFailed: '保存资产库排序失败'
     },
     browsePathError: {
       uncOrAbsolute: '共享浏览路径需为 UNC 或绝对路径'
@@ -8328,6 +8359,7 @@ export default {
   },
   miniChatWindow: {
     sendButton: '发送',
+    stopButton: '停止',
     /**
      * 「侧边问一句」承接主对话上下文时的横幅。
      *
@@ -8427,7 +8459,7 @@ export default {
     folderRequired: '未选择目标文件夹'
   },
   changeIconModal: {
-    title: '更换保管库图标',
+    title: '更换资产库图标',
     uploadText: '上传图标',
     hint: '建议上传 1:1 比例的图片，支持 JPG/PNG 格式',
     uploadImageFirst: '请先上传图片',
@@ -8452,7 +8484,7 @@ export default {
       repairDone: '修复完成：成功 {success} 个，失败 {failed} 个',
       repairFailedWithError: '修复失败：{error}',
       repairFailed: '修复失败：{error}',
-      backupVaultRequired: '请先切换到备份保管库',
+      backupVaultRequired: '请先切换到备份资产库',
       dragParseFailed: '解析拖拽数据失败',
       baiduyunNotAuthorized: '未连接百度网盘，请先登录授权',
       noVaultSelected: '未获取到当前资产库路径',

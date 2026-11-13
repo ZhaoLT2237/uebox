@@ -3,6 +3,7 @@ import {
   importProjectChoices,
   importFilterChips,
   importProjectConnection,
+  defaultImportProjectKey,
   projectDirectory
 } from './importProjectChoices'
 
@@ -120,5 +121,24 @@ describe('import search relevance', () => {
         ''
       ).map((p) => p.projectKey)
     ).toEqual(['pin', 'normal'])
+  })
+})
+
+describe('defaultImportProjectKey', () => {
+  const other = { projectKey: 'other', projectName: 'Desert', projectPath: 'H:\\Games\\Desert' }
+  it('selects the only connected project', () => {
+    expect(defaultImportProjectKey([other, ...saved], live, 'other')).toBe('saved')
+  })
+  it('falls back to the last imported project when none or several are connected', () => {
+    expect(defaultImportProjectKey([other, ...saved], [], 'other')).toBe('other')
+    const both = [
+      ...live,
+      { connectionId: '2', projectPath: 'H:/Games/Desert/Desert.uproject', isConnected: true }
+    ]
+    expect(defaultImportProjectKey([other, ...saved], both, 'other')).toBe('other')
+  })
+  it('selects nothing when the last project is gone', () => {
+    expect(defaultImportProjectKey([other, ...saved], [], 'removed')).toBeNull()
+    expect(defaultImportProjectKey([other], [], null)).toBeNull()
   })
 })

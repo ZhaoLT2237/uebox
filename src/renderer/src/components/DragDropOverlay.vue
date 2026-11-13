@@ -22,7 +22,7 @@
       </div>
       <div class="drag-text">
         <h3>{{ titleText }}</h3>
-        <p>{{ descText }}</p>
+        <p v-if="descText">{{ descText }}</p>
       </div>
     </div>
   </div>
@@ -49,7 +49,8 @@ const props = defineProps<Props>()
  * 就是这么来的：调用方不传时，中英文用户看到的都是中文。
  */
 const titleText = computed(() => props.title || t('actionToast.project.dropToImport'))
-const descText = computed(() => props.desc || t('actionToast.project.dropToImportDesc'))
+// 传空字符串表示不要说明行；不传才用默认那句
+const descText = computed(() => props.desc ?? t('actionToast.project.dropToImportDesc'))
 </script>
 
 <style lang="less" scoped>

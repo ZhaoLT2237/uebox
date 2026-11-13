@@ -761,7 +761,8 @@ ${Object.keys(SPHERE_HUES)
   --color-border: var(--n-300);
   --color-border-option: var(--n-90);
   --color-border-strong: var(--n-600);
-  --color-border-focus: var(--accent-600);
+  /* 焦点环在 #f7f7f7 页面底上要 ≥3:1（WCAG 1.4.11），600 档只有 2.8:1 */
+  --color-border-focus: var(--accent-700);
 
   --color-accent-text: var(--accent-text-light);
   --color-accent-bg: var(--accent-100);

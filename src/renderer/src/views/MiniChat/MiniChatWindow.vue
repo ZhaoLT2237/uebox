@@ -70,15 +70,31 @@
           class="input-box"
           :placeholder="inputPlaceholder"
           rows="1"
-          @keydown.enter.exact.prevent="sendMessage"
+          @keydown.enter.exact="handleEnterKey"
           @input="adjustInputHeight"
           @paste="handlePaste"
         />
+        <AppTooltip v-if="isGenerating" :title="t('miniChatWindow.stopButton')">
+          <AppButton
+            variant="primary"
+            size="small"
+            danger
+            class="stop-btn"
+            :aria-label="t('miniChatWindow.stopButton')"
+            @click="handleStopGenerating"
+          >
+            <template #icon>
+              <PhStop />
+            </template>
+          </AppButton>
+        </AppTooltip>
         <AppButton
+          v-else
           variant="primary"
           size="small"
+          class="send-btn"
           :disabled="isSendDisabled"
-          :loading="isGenerating || isUploading"
+          :loading="isUploading"
           @click="sendMessage"
         >
           {{ $t('miniChatWindow.sendButton') }}
@@ -91,6 +107,7 @@
 <script setup lang="ts">
 import { MINI_CHAT_SETTINGS_ENABLED } from '../../../../shared/miniChatPreferences'
 import AppButton from '@renderer/components/AppButton.vue'
+import AppTooltip from '@renderer/components/AppTooltip.vue'
 /**
  * Mini Chat 独立窗口主组件
  * 极简 AI 对话界面，支持多轮对话和 Agent 模式
@@ -105,6 +122,7 @@ import {
   PhPause,
   PhPlus,
   PhPushPin,
+  PhStop,
   PhX,
   PhXCircle
 } from '@phosphor-icons/vue'
@@ -584,6 +602,13 @@ const sideContextLabel = computed(() => {
 async function stopCurrentResponse(): Promise<void> {
   await stopAgent()
   currentTypingId.value = null
+}
+
+/** 回车发送。输入法选字的那一下回车是给输入法的 */
+function handleEnterKey(e: KeyboardEvent): void {
+  if (e.isComposing || e.keyCode === 229) return
+  e.preventDefault()
+  void sendMessage()
 }
 
 async function handleStopGenerating(): Promise<void> {

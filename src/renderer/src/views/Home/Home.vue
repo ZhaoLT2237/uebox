@@ -32,7 +32,7 @@
       <DragDropOverlay
         :visible="isDragOver"
         :title="overlayText || $t('page.home.project.dropHint')"
-        :desc="$t('page.home.project.dropHintDesc')"
+        desc=""
       />
     </div>
   </div>

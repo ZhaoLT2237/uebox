@@ -13,6 +13,7 @@ import { buildThumbnailUrl } from '@renderer/utils/thumbnails'
 import { toLocalResourceUrl } from '@renderer/utils/localResource'
 import { useVaultStore } from '@renderer/store/modules/vaultStore'
 import { useI18n } from 'vue-i18n'
+import { useTheme } from '@renderer/hooks/useTheme'
 import type { DependencyEdgeKind, DependencyNodeKind } from '@core/shared/assetDependency'
 
 // 导入UE图标资源
@@ -70,6 +71,8 @@ const resolveGraphColors = (): {
   dependsOn: string
   referencedBy: string
   highlight: string
+  label: string
+  edge: string
 } => ({
   missing: readToken('--color-warning-solid', '#EF4444'),
   root: readToken('--color-accent-solid', '#22D3EE'),
@@ -77,7 +80,10 @@ const resolveGraphColors = (): {
   // 「它引用的」和「引用它的」用两种颜色分开，方向一眼看得出
   dependsOn: readToken('--color-accent-solid', '#22D3EE'),
   referencedBy: readToken('--color-warning-solid', '#F59E0B'),
-  highlight: readToken('--color-accent-text', '#67E8F9')
+  highlight: readToken('--color-accent-text', '#67E8F9'),
+  // 节点下方的文字和默认连线画在画布底色上，要跟主题走
+  label: readToken('--color-text-primary', '#FFFFFF'),
+  edge: readToken('--color-border-strong', 'rgba(255,255,255,0.6)')
 })
 
 interface Props {
@@ -619,13 +625,14 @@ const initNetwork = async () => {
   nodesDataSet = new DataSet<any>(nodesData)
   edgesDataSet = new DataSet<any>(prepareEdges() as any[])
   const data = { nodes: nodesDataSet, edges: edgesDataSet }
+  const palette = resolveGraphColors()
 
   // 配置选项
   const options: Options = {
     nodes: {
       shape: 'image',
       font: {
-        color: '#FFFFFF',
+        color: palette.label,
         size: 12,
         face: 'Arial',
         multi: false,
@@ -649,9 +656,9 @@ const initNetwork = async () => {
         }
       },
       color: {
-        color: 'rgba(255,255,255,0.6)',
-        highlight: '#22D3EE',
-        hover: '#22D3EE'
+        color: palette.edge,
+        highlight: palette.highlight,
+        hover: palette.highlight
       },
       width: 2,
       smooth: {
@@ -823,8 +830,9 @@ const initNetwork = async () => {
 
     if (params.node) {
       const connectedEdges = network?.getConnectedEdges(params.node) || []
+      const highlight = resolveGraphColors().highlight
       connectedEdges.forEach((edgeId: IdType) => {
-        network?.updateEdge(edgeId, { color: { color: '#22D3EE' } })
+        network?.updateEdge(edgeId, { color: { color: highlight } })
       })
     }
 
@@ -849,9 +857,10 @@ const initNetwork = async () => {
 
     if (edgesDataSet) {
       const allEdges = edgesDataSet.get()
+      // 恢复成数据里按「依赖 / 引用 / 缺失」分好的颜色
       allEdges.forEach((edge: any) => {
         if (edge.id && network) {
-          network.updateEdge(edge.id, { color: { color: 'rgba(255,255,255,0.2)' } })
+          network.updateEdge(edge.id, { color: edge.color })
         }
       })
     }
@@ -966,6 +975,28 @@ watch(
   },
   { deep: true }
 )
+
+/**
+ * 换主题后重读 token：vis-network 只认具体色值，不会自己跟着 CSS 变量变。
+ * 等一帧，让 data-theme 生效后再读。
+ */
+const { currentTheme, customTheme } = useTheme()
+const applyThemeColors = (): void => {
+  if (!network) return
+  const palette = resolveGraphColors()
+  network.setOptions({
+    nodes: { font: { color: palette.label } },
+    edges: {
+      color: { color: palette.edge, highlight: palette.highlight, hover: palette.highlight }
+    }
+  })
+  if (edgesDataSet) {
+    const ids = edgesDataSet.getIds()
+    const fresh = prepareEdges()
+    edgesDataSet.update(fresh.map((edge, i) => ({ id: ids[i], color: edge.color })))
+  }
+}
+watch([currentTheme, customTheme], () => nextTick(applyThemeColors), { deep: true })
 
 // 处理窗口大小变化
 const handleResize = () => {

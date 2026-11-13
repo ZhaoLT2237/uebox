@@ -6,6 +6,7 @@
         <h2 class="section-title">{{ t('page.home.project.title') }}</h2>
         <AppButton
           :title="t('page.home.project.createFromTemplate')"
+          :aria-label="t('page.home.project.createFromTemplate')"
           @click="handleClickCreateProject"
         >
           <template #icon><PhStorefront /></template>
@@ -14,6 +15,7 @@
         <AppButton
           id="project-import-entry"
           :title="t('page.home.project.importExisting')"
+          :aria-label="t('page.home.project.importExisting')"
           @click="openImportModal()"
         >
           <template #icon><PhPlus /></template>
@@ -22,6 +24,7 @@
         <AppButton
           :loading="isRefreshingProjects"
           :title="t('page.home.project.refresh')"
+          :aria-label="t('page.home.project.refresh')"
           @click="handleRefreshProjects"
         >
           <template #icon><PhArrowClockwise /></template>
@@ -103,7 +106,6 @@
           :key="item.projectKey || item.id"
           class="project-card mixed-card draggable"
           :class="{ opening: openingProjects.has(item.projectKey) }"
-          :hoverable="true"
           draggable="true"
           @dragstart="(e) => handleDragStartProject(e, item)"
           @dragend="handleDragEndProject"
@@ -123,10 +125,9 @@
               <span
                 v-if="isProjectConnected(item.originPath || item.projectPath)"
                 class="connected-badge"
-                title="已连接"
               >
                 <span class="pulse-dot"></span>
-                <span class="label">LINK</span>
+                <span class="label">{{ t('page.home.project.connected') }}</span>
               </span>
               <img :src="getProjectImage(item)" alt="thumb" />
               <div class="project-meta">
@@ -140,6 +141,18 @@
               <span class="project-version" :title="item.EngineAssociation || ''">{{
                 engineLabel(item.EngineAssociation)
               }}</span>
+              <!-- 悬停或键盘聚焦时出现；双击卡片照样能打开 -->
+              <div class="open-area">
+                <button
+                  type="button"
+                  class="open-trigger"
+                  :aria-label="`${t('page.home.project.openAction')} ${item.projectName || t('page.home.project.unnamedProject')}`"
+                  @click.stop="handleOpenProject(item)"
+                  @dblclick.stop
+                >
+                  {{ t('page.home.project.openAction') }}
+                </button>
+              </div>
               <!-- 加载遮罩层 -->
               <div v-if="openingProjects.has(item.projectKey)" class="project-opening-overlay">
                 <div class="opening-content">
@@ -178,12 +191,24 @@
         v-else-if="loadFailed"
         :title="t('page.home.project.loadFailedTitle')"
         :description="t('page.home.project.loadFailedDesc')"
-      />
+      >
+        <template #action>
+          <AppButton :loading="isRefreshingProjects" @click="handleRefreshProjects">
+            {{ t('page.home.project.retry') }}
+          </AppButton>
+        </template>
+      </AppEmpty>
       <AppEmpty
         v-else
         :title="t('page.home.project.empty')"
         :description="t('page.home.project.emptyDesc')"
-      />
+      >
+        <template #action>
+          <AppButton variant="primary" @click="openImportModal()">
+            {{ t('page.home.project.import') }}
+          </AppButton>
+        </template>
+      </AppEmpty>
     </template>
   </section>
 
@@ -2008,6 +2033,53 @@ const doOpenProject = async (projectKey: string, target: string) => {
       }
       :deep(.app-card__body) {
         padding: 0;
+      }
+
+      /* 与引擎卡片的「启动」同一外观 */
+      .open-area {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--motion-fast) var(--easing-standard);
+      }
+
+      &:hover .open-area,
+      &:focus-within .open-area {
+        opacity: 1;
+      }
+
+      &:hover .open-trigger {
+        pointer-events: auto;
+      }
+
+      .open-trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 5px 24px;
+        border-radius: 999px;
+        font: inherit;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        background: var(--color-bg-surface-hover);
+        border: 1px solid var(--color-border);
+        cursor: pointer;
+      }
+
+      .open-trigger:hover {
+        filter: brightness(1.08);
+        border-color: var(--color-border-strong);
+      }
+
+      .open-trigger:focus-visible {
+        outline: 2px solid var(--color-border-focus);
+        outline-offset: 2px;
       }
 
       // 打开动效遮罩层

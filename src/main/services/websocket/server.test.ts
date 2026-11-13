@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WebSocket } from 'ws'
 
-import { describeListenError } from './server'
+import { classifyListenError, describeListenError } from './server'
 
 /**
  * WebSocket 服务端的行为回归。
@@ -564,6 +564,9 @@ describe('端口被占用', () => {
       expect(status.startError).toContain(String(taken))
       expect(status.startError).toContain('虚幻盒子')
       expect(status.startError).toMatch(/关闭|其他程序/)
+      // 界面按类别和端口拼本地化文案，不直接显示这句中文
+      expect(status.startErrorCode).toBe('EADDRINUSE')
+      expect(status.port).toBe(taken)
     } finally {
       await blocker.stopServer()
     }
@@ -575,6 +578,7 @@ describe('端口被占用', () => {
     await blocker.startServer(0)
     try {
       expect(blocker.getStatus().startError).toBeUndefined()
+      expect(blocker.getStatus().startErrorCode).toBeUndefined()
 
       const loser = new WebSocketService(onInbound)
       await loser.startServer(blocker.getStatus().port).catch(() => undefined)
@@ -607,5 +611,13 @@ describe('describeListenError', () => {
       17860
     )
     expect(message).toContain('一些没见过的错误')
+  })
+})
+
+describe('classifyListenError', () => {
+  it('端口占用和权限各自一类，其余归为 UNKNOWN', () => {
+    expect(classifyListenError({ code: 'EADDRINUSE' } as NodeJS.ErrnoException)).toBe('EADDRINUSE')
+    expect(classifyListenError({ code: 'EACCES' } as NodeJS.ErrnoException)).toBe('EACCES')
+    expect(classifyListenError({ code: 'EWEIRD' } as NodeJS.ErrnoException)).toBe('UNKNOWN')
   })
 })

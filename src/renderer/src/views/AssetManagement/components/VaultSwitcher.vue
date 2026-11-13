@@ -330,7 +330,11 @@
           <div class="browse-path-label">{{ t('vaultSwitcher.labels.browsePath') }}</div>
           <a-input
             v-model:value="editingBrowsePath"
-            :placeholder="t('vaultSwitcher.modals.editBrowsePathModal.pathPlaceholder')"
+            :placeholder="
+              t('vaultSwitcher.modals.editBrowsePathModal.pathPlaceholder', {
+                example: UNC_PATH_EXAMPLE
+              })
+            "
           />
           <div class="browse-path-tip">
             {{ t('vaultSwitcher.modals.editBrowsePathModal.tip') }}
@@ -551,7 +555,7 @@ import type { CatalogLibraryView } from '@core/shared/catalogLibrary'
 import ChangeIconModal from './ChangeIconModal.vue'
 import DeleteVaultModal from './DeleteVaultModal.vue'
 import Sortable from 'sortablejs'
-import { isBrowsableAbsolutePath } from '../utils/networkBrowsePath'
+import { isBrowsableAbsolutePath, UNC_PATH_EXAMPLE } from '../utils/networkBrowsePath'
 
 // 使用保管库store
 const vaultStore = useVaultStore()

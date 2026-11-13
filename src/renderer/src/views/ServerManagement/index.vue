@@ -2,6 +2,7 @@
 import { secureStorage } from '@renderer/utils/secureStorage'
 import { ref, onMounted, computed } from 'vue'
 import { message } from '@renderer/utils/messageManager'
+import { confirmDialog } from '@renderer/utils/dialog'
 import { useI18n } from 'vue-i18n'
 import {
   PhArrowClockwise,
@@ -392,9 +393,9 @@ const rootRequest = async (
       await loadVaultList()
       return true
     }
-    message.error(data.error || '操作失败')
+    message.error(data.error || t('serverManagement.toast.operationFailed'))
   } catch (e) {
-    message.error(e instanceof Error ? e.message : '操作失败')
+    message.error(e instanceof Error ? e.message : t('serverManagement.toast.operationFailed'))
   }
   return false
 }
@@ -409,7 +410,7 @@ const handleCreateRoot = async (): Promise<void> => {
   const ok = await rootRequest(
     'POST',
     { name: newRootName.value.trim() || undefined, path: p },
-    '资产路径已创建'
+    t('serverManagement.toast.rootCreated')
   )
   savingRoot.value = false
   if (ok) {
@@ -441,18 +442,29 @@ const commitRenameRoot = async (root: RootItem): Promise<void> => {
     cancelRenameRoot()
     return
   }
-  const ok = await rootRequest('PUT', { path: root.path, name }, '已重命名')
+  const ok = await rootRequest(
+    'PUT',
+    { path: root.path, name },
+    t('serverManagement.toast.renamed')
+  )
   if (ok) cancelRenameRoot()
 }
 
-const handleDeleteRoot = async (root: RootItem): Promise<void> => {
+const handleDeleteRoot = (root: RootItem): void => {
   if (root.vaultCount > 0) {
     message.warning(t('serverManagement.toast.rootHasVaults', { count: root.vaultCount }))
     return
   }
-  if (!window.confirm(`移除资产路径「${root.name}」？\n\n磁盘目录不会被删除，只是不再作为分组。`))
-    return
-  await rootRequest('DELETE', { path: root.path }, '资产路径已移除')
+  confirmDialog({
+    title: t('serverManagement.vault.removeTitle'),
+    content: t('serverManagement.vault.removeRootConfirm', { name: root.name }),
+    okText: t('serverManagement.vault.remove'),
+    danger: true,
+    focusCancel: true,
+    onOk: async () => {
+      await rootRequest('DELETE', { path: root.path }, t('serverManagement.toast.rootRemoved'))
+    }
+  })
 }
 
 /** 变更资产库归属——纯配置变更，不移动任何文件 */
@@ -469,19 +481,35 @@ const handleMoveVault = async (vault: VaultItem, rootPath: string | null): Promi
     })
     const data = await resp.json()
     if (data.success) {
-      message.success(rootPath ? '归属已变更' : '已恢复为按路径归属')
+      message.success(
+        rootPath ? t('serverManagement.toast.rootChanged') : t('serverManagement.toast.rootReset')
+      )
       await loadVaultList()
     } else {
-      message.error(data.error || '变更失败')
+      message.error(data.error || t('serverManagement.toast.rootChangeFailed'))
     }
   } catch (e) {
-    message.error(e instanceof Error ? e.message : '变更失败')
+    message.error(e instanceof Error ? e.message : t('serverManagement.toast.rootChangeFailed'))
   } finally {
     movingVaultId.value = null
   }
 }
 
-const handleDeleteVault = async (vault: VaultItem) => {
+const handleDeleteVault = (vault: VaultItem): void => {
+  const withFiles = Boolean(serverApiKey.value.trim())
+  confirmDialog({
+    title: t('serverManagement.vault.deleteTitle'),
+    content: withFiles
+      ? t('createVaultModal.confirm.deleteWithApiKey', { name: vault.name })
+      : t('createVaultModal.confirm.deleteWithoutApiKey', { name: vault.name }),
+    okText: t('serverManagement.vault.delete'),
+    danger: true,
+    focusCancel: true,
+    onOk: () => deleteVault(vault)
+  })
+}
+
+const deleteVault = async (vault: VaultItem): Promise<void> => {
   const url = getServerUrl()
   if (!url) return
   deletingVaultId.value = vault.vaultId
@@ -493,13 +521,13 @@ const handleDeleteVault = async (vault: VaultItem) => {
     })
     const data = await resp.json()
     if (data.success) {
-      message.success(`资产库 "${vault.name}" 已删除`)
+      message.success(t('serverManagement.toast.vaultDeleted', { name: vault.name }))
       loadVaultList()
     } else {
-      message.error(data.error || '删除失败')
+      message.error(data.error || t('serverManagement.toast.deleteFailed'))
     }
   } catch (e) {
-    message.error(e instanceof Error ? e.message : '删除失败')
+    message.error(e instanceof Error ? e.message : t('serverManagement.toast.deleteFailed'))
   } finally {
     deletingVaultId.value = null
   }

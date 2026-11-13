@@ -216,6 +216,7 @@ import {
   importProjectChoices,
   importFilterChips,
   importProjectConnection,
+  defaultImportProjectKey,
   IMPORT_FILTER_ALL,
   IMPORT_FILTER_UNGROUPED,
   type ImportFilterChip
@@ -861,6 +862,13 @@ watch(visible, async (v) => {
     // /asset-management 是 keepAlive 的，这个弹窗从挂上去到应用退出都不会重挂。
     // 所以只在还没拿到过的时候补一次，拿到过就不动（避免盖掉更新的推送）。
     if (connectedProjectsRaw.value === null) await retryConnectedProjects()
+    if (selectedProjectKey.value === null) {
+      selectedProjectKey.value = defaultImportProjectKey(
+        visibleProjects.value,
+        connectedProjects.value,
+        localStorage.getItem(LAST_IMPORT_PROJECT_KEY)
+      )
+    }
   }
 })
 
@@ -940,6 +948,8 @@ watch(
 
 const vaultStore = useVaultStore()
 const selectedProjectKey = ref<string | null>(null)
+/** 上次导入的工程，下次打开时默认选中（界面偏好） */
+const LAST_IMPORT_PROJECT_KEY = 'assetManagement.lastImportProject'
 
 /**
  * 将已连接 LINK 的项目排在前面的计算属性
@@ -2447,6 +2457,7 @@ const handleConfirm = async (): Promise<void> => {
   preparing.value = true
   try {
     if (needsLaunch.value && !(await openProjectAndWait(project, signal))) return
+    localStorage.setItem(LAST_IMPORT_PROJECT_KEY, project.projectKey)
     emit('confirm', project as ProjectRecord)
     const payloadProject = {
       projectKey: project.projectKey,

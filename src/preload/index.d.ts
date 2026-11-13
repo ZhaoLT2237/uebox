@@ -135,8 +135,10 @@ declare global {
     state: string
     port: number
     startedAt?: number
-    /** 服务没起来的原因，已经是一句能照做的话。起来之后会被擦掉 */
+    /** 服务没起来的原因（主进程拼的中文原文，作细节保留）。起来之后会被擦掉 */
     startError?: string
+    /** 服务没起来的类别，界面按它和 `port` 显示本地化文案 */
+    startErrorCode?: 'EADDRINUSE' | 'EACCES' | 'UNKNOWN'
   }
 
   /**

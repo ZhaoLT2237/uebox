@@ -9,12 +9,17 @@
     <header class="section-header">
       <div class="flex items-center gap-3">
         <h2 class="section-title">{{ t('page.home.engine.title') }}</h2>
-        <AppButton @click="handleClickAddEngine">
+        <AppButton
+          :title="t('page.home.engine.add')"
+          :aria-label="t('page.home.engine.add')"
+          @click="handleClickAddEngine"
+        >
           <template #icon><PhPlus /></template>
         </AppButton>
         <AppButton
           :loading="isRefreshingEngines"
           :title="t('page.home.engine.refresh')"
+          :aria-label="t('page.home.engine.refresh')"
           @click="handleRefreshEngines"
         >
           <template #icon><PhArrowClockwise /></template>
@@ -63,17 +68,28 @@
         </div>
         <!-- 底部主按钮：启动引擎 -->
         <div class="launch-area">
-          <span class="launch-trigger" @click.stop="() => handleEngineStart(engine)" @dblclick.stop>
+          <button
+            type="button"
+            class="launch-trigger"
+            @click.stop="() => handleEngineStart(engine)"
+            @dblclick.stop
+          >
             {{ t('page.home.engine.start') }}
-          </span>
+          </button>
         </div>
 
         <!-- 右下角更多菜单 -->
         <div class="more-menu">
-          <AppDropdown :trigger="['hover']" :overlay-style="{ marginTop: '4px' }">
-            <span class="more-icon" @dblclick.stop>
+          <AppDropdown :trigger="['click']" :overlay-style="{ marginTop: '4px' }">
+            <button
+              type="button"
+              class="more-icon"
+              :title="t('page.home.engine.more')"
+              :aria-label="t('page.home.engine.more')"
+              @dblclick.stop
+            >
               <PhDotsThree />
-            </span>
+            </button>
             <template #overlay>
               <AppMenu>
                 <AppMenuItem
@@ -130,7 +146,16 @@
       :description="
         scanFailed ? t('page.home.engine.scanFailedDesc') : t('page.home.engine.emptyDesc')
       "
-    />
+    >
+      <template #action>
+        <AppButton v-if="scanFailed" :loading="isRefreshingEngines" @click="handleRefreshEngines">
+          {{ t('page.home.engine.retry') }}
+        </AppButton>
+        <AppButton v-else variant="primary" @click="handleClickAddEngine">
+          {{ t('page.home.engine.add') }}
+        </AppButton>
+      </template>
+    </AppEmpty>
 
     <!-- 仅用于引擎区：拖入自编译/自定义引擎根目录 -->
     <DragDropOverlay
@@ -862,6 +887,7 @@ const animateTo = (version: string, from: number, to: number, duration: number):
   gap: 6px;
   padding: 5px 24px;
   border-radius: 999px;
+  font: inherit;
   font-size: 13px;
   font-weight: 500;
   color: var(--color-text-primary);
@@ -874,6 +900,12 @@ const animateTo = (version: string, from: number, to: number, duration: number):
 .launch-trigger:hover {
   filter: brightness(1.08);
   border-color: var(--color-border-strong);
+}
+
+.launch-trigger:focus-visible,
+.more-icon:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
 }
 
 .launch-trigger:active {
@@ -895,7 +927,10 @@ const animateTo = (version: string, from: number, to: number, duration: number):
   justify-content: center;
   width: 24px;
   height: 24px;
+  padding: 0;
+  border: none;
   border-radius: 6px;
+  background: transparent;
   color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.2s ease;

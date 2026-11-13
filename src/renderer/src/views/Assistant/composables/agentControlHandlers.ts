@@ -8,6 +8,7 @@ import { isCurrentRun, unregisterAgentHandler } from './agentEventDispatcher'
 import type { AgentModeHandlersDeps, ErrorEvent, StoppedEvent } from './agentHandlerShared'
 import {
   AGENT_RESUME_ACTION,
+  OPEN_MODEL_SETTINGS_ACTION,
   resolveAssistantMessage,
   resolveTargetChatSid
 } from './agentHandlerShared'
@@ -180,6 +181,11 @@ export function createAgentControlHandlers(deps: AgentModeHandlersDeps) {
     }
   }
 
+  /** 余额、鉴权错不改配置必然再错，按钮直接带用户去改 */
+  function openModelSettingsButton(): { label: string; action: string } {
+    return { label: t('assistant.agentMode.openModelSettings'), action: OPEN_MODEL_SETTINGS_ACTION }
+  }
+
   function getErrorInfo(data: {
     message: string
     code?: string
@@ -245,7 +251,8 @@ ${reason}`,
           'assistant.agentMode.providerOutOfCreditDesc'
         )}`,
         type: 'warning',
-        fatal: true
+        fatal: true,
+        actionButtons: [openModelSettingsButton()]
       }
     }
 
@@ -256,7 +263,8 @@ ${reason}`,
           'assistant.agentMode.providerAuthFailedDesc'
         )}`,
         type: 'error',
-        fatal: true
+        fatal: true,
+        actionButtons: [openModelSettingsButton()]
       }
     }
 

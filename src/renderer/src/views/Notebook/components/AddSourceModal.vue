@@ -926,7 +926,7 @@ const modeTitle = computed(() => {
           <div v-else class="mode-content">
             <div class="input-wrapper">
               <div v-if="currentMode === 'link'" class="input-group">
-                <label>网址</label>
+                <label>{{ t('notebook.addSource.urlLabel') }}</label>
                 <a-textarea
                   v-model:value="inputValue"
                   placeholder="https://example.com&#10;https://example.org&#10;https://example.net"
@@ -934,9 +934,6 @@ const modeTitle = computed(() => {
                   :auto-size="{ minRows: 3, maxRows: 8 }"
                   size="large"
                 />
-                <div class="input-hint">
-                  支持批量添加，每行输入一个公开网页 URL，将自动读取网页内容
-                </div>
               </div>
 
               <div v-else-if="currentMode === 'youtube'" class="input-group">
@@ -947,7 +944,6 @@ const modeTitle = computed(() => {
                   size="large"
                   @press-enter="handleAdd"
                 />
-                <div class="input-hint">输入 YouTube 视频链接</div>
               </div>
 
               <div v-else-if="currentMode === 'bilibili'" class="input-group">
@@ -961,23 +957,20 @@ const modeTitle = computed(() => {
               </div>
 
               <div v-else-if="currentMode === 'wechat'" class="input-group">
-                <label>微信公众号文章链接</label>
+                <label>{{ t('notebook.addSource.wechatLabel') }}</label>
                 <a-input
                   v-model:value="inputValue"
                   placeholder="https://mp.weixin.qq.com/s/..."
                   size="large"
                   @press-enter="handleAdd"
                 />
-                <div class="input-hint">
-                  输入微信公众号文章链接，将自动提取文章内容并转换为 Markdown 格式
-                </div>
               </div>
             </div>
 
             <div class="mode-actions">
-              <AppButton class="cancel-btn" @click="goBack">取消</AppButton>
+              <AppButton class="cancel-btn" @click="goBack">{{ t('common.cancel') }}</AppButton>
               <AppButton variant="primary" :disabled="!inputValue.trim()" @click="handleAdd">
-                添加
+                {{ t('common.add') }}
               </AppButton>
             </div>
           </div>
@@ -1274,11 +1267,6 @@ const modeTitle = computed(() => {
 
       label {
         font-size: 14px;
-        color: var(--color-text-secondary);
-      }
-
-      .input-hint {
-        font-size: 12px;
         color: var(--color-text-secondary);
       }
     }
