@@ -363,6 +363,8 @@ onBeforeUnmount(() => {
   position: absolute;
   inset: 0;
   overflow: auto;
+  /* 两侧都预留滚动条位置：内容变高、滚动条出现时弹窗不左右跳 */
+  scrollbar-gutter: stable both-edges;
   display: flex;
   justify-content: center;
   padding: 100px var(--space-4) var(--space-6);

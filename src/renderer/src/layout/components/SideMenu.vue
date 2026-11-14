@@ -20,7 +20,7 @@ import {
   getOpenMenuKeys,
   type MenuItem
 } from '../../common/routeUtils'
-import { chatSessionRoute, generateChatSessionId } from '../../common/chatRoute'
+import { chatSessionRoute, generateChatSessionId, newChatRoute } from '../../common/chatRoute'
 import { useAppInfo } from '@renderer/hooks/useAppInfo'
 import routes from '../../router/modules'
 import { useI18n } from 'vue-i18n'
@@ -393,6 +393,15 @@ const handleMouseLeave = (): void => {
  */
 const createNewChat = (projectName?: string, projectPath?: string): void => {
   emit('peek-close')
+  if (!projectName) {
+    router.push(
+      newChatRoute(
+        tabsStore.historyTabs.map((tab) => tab.path),
+        (id) => !chatStore.sessionById(id) && chatMsgStore.getMessages(id).length === 0
+      )
+    )
+    return
+  }
   const sid = generateChatSessionId()
   // 带上工程名时，这条新对话发第一条消息就会归到那个工程下（见 sessionProjectBinding）；
   // 同名工程有好几个时还会带上路径

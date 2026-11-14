@@ -44,3 +44,24 @@ export function generateChatSessionId(): string {
   const r = Math.random().toString(36).slice(2, 8)
   return `${t}${r}`
 }
+
+/**
+ * 「新对话」该跳到哪 —— 侧边栏、标签页头和托盘共用。
+ *
+ * 已经开着一个还没发过消息的新对话标签时，切过去，不再新开：连点几下「新对话」
+ * 会叠出一排空的「未命名对话」，标签多到标题只剩一个字。
+ * 带项目归属的新对话（`?project=`）不算空白可复用的那种，归属不能被顺手换掉。
+ */
+export function newChatRoute(
+  openTabPaths: string[],
+  isBlank: (sid: string) => boolean
+): RouteLocationRaw {
+  const blank = openTabPaths.find((path) => {
+    const sid = chatSidOfTab(path)
+    if (!sid) return false
+    const query = new URLSearchParams(path.split('?')[1] || '')
+    if (query.get('project')) return false
+    return isBlank(sid)
+  })
+  return blank ?? { name: 'AssistantWelcome', query: { sid: generateChatSessionId() } }
+}

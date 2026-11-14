@@ -1281,17 +1281,23 @@ function closeAgentModelDropdown(): void {
   showAgentModelDropdown.value = false
 }
 
-/** 模型面板可能是被拦截自动打开的，焦点不在面板里，Esc 在 document 上兜一层 */
+/**
+ * 模型面板可能是被拦截自动打开的，焦点不在面板里，Esc 在 document 上兜一层。
+ *
+ * 走捕获阶段并截住事件：面板是最上层，Esc 只关它。走冒泡的话，焦点所在的输入框
+ * （例如正在编辑的历史消息）先收到 Esc，把编辑框连同改过的文字一起关掉，面板反而还开着。
+ */
 function closeAgentModelDropdownOnEscape(event: KeyboardEvent): void {
   if (event.key !== 'Escape' || event.defaultPrevented) return
   event.preventDefault()
+  event.stopPropagation()
   closeAgentModelDropdown()
 }
 watch(showAgentModelDropdown, (visible) => {
-  if (visible) document.addEventListener('keydown', closeAgentModelDropdownOnEscape)
-  else document.removeEventListener('keydown', closeAgentModelDropdownOnEscape)
+  if (visible) document.addEventListener('keydown', closeAgentModelDropdownOnEscape, true)
+  else document.removeEventListener('keydown', closeAgentModelDropdownOnEscape, true)
 })
-onUnmounted(() => document.removeEventListener('keydown', closeAgentModelDropdownOnEscape))
+onUnmounted(() => document.removeEventListener('keydown', closeAgentModelDropdownOnEscape, true))
 
 function openModelSettings(): void {
   closeAgentModelDropdown()

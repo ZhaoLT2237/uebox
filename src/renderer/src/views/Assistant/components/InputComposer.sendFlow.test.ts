@@ -238,6 +238,21 @@ describe('输入框复验修复', () => {
       expect(wrapper.find('.agent-model-dropdown').exists()).toBe(true)
       await wrapper.get('textarea').trigger('keydown', { key: 'Escape' })
       expect(wrapper.find('.agent-model-dropdown').exists()).toBe(false)
+
+      // 焦点在别处的输入框（正在编辑的历史消息）：Esc 只关面板，不传给那个输入框
+      const editBox = document.createElement('textarea')
+      const editEsc = vi.fn()
+      editBox.addEventListener('keydown', editEsc)
+      document.body.appendChild(editBox)
+      ;(wrapper.vm as unknown as ComposerVm).requireAgentModel({ keepsDraft: false })
+      vi.runAllTimers()
+      await flushPromises()
+      editBox.focus()
+      editBox.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await flushPromises()
+      expect(wrapper.find('.agent-model-dropdown').exists()).toBe(false)
+      expect(editEsc).not.toHaveBeenCalled()
+      editBox.remove()
       wrapper.unmount()
     } finally {
       vi.useRealTimers()

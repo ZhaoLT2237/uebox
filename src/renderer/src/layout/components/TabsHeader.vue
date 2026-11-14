@@ -23,7 +23,9 @@ import {
 import type { Component } from 'vue'
 import { computed, watch, ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { generateChatSessionId, chatSidOfTab } from '@renderer/common/chatRoute'
+import { chatSidOfTab, newChatRoute } from '@renderer/common/chatRoute'
+import { useChatSessionsStore } from '@renderer/store/modules/chatSessions'
+import { useChatMessagesStore } from '@renderer/store/modules/chatMessages'
 import { chatWindowAPI } from '@renderer/api/chatWindow'
 import { useTabsStore, DEFAULT_TAB_KEY, isTabUserClosable } from '@renderer/store/modules/tabs'
 import { useI18n } from '@renderer/hooks/useI18n'
@@ -625,8 +627,14 @@ const handleMenuClick = (key: string) => {
  * 创建新对话
  */
 const createNewChat = (): void => {
-  const sid = generateChatSessionId()
-  router.push({ name: 'AssistantWelcome', query: { sid } })
+  const sessions = useChatSessionsStore()
+  const chatMessages = useChatMessagesStore()
+  router.push(
+    newChatRoute(
+      tabsStore.historyTabs.map((tab) => tab.path),
+      (id) => !sessions.sessionById(id) && chatMessages.getMessages(id).length === 0
+    )
+  )
 }
 
 // 暴露方法给父组件

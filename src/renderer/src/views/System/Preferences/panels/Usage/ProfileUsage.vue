@@ -295,16 +295,16 @@ onMounted(() => {
           <div class="total-label">{{ $t('profile.usage.totalTurns') }}</div>
           <div class="total-value">{{ formatCount(report.totals.turns) }}</div>
         </div>
-        <div class="total-card">
+        <div
+          class="total-card"
+          :title="
+            toolsPerTurn === null
+              ? undefined
+              : $t('profile.usage.toolsPerTurn', { count: toolsPerTurn.toFixed(1) })
+          "
+        >
           <div class="total-label">{{ $t('profile.usage.toolCallsTotal') }}</div>
           <div class="total-value">{{ formatCount(report.totals.toolCalls) }}</div>
-          <div class="total-hint">
-            {{
-              toolsPerTurn === null
-                ? '—'
-                : $t('profile.usage.toolsPerTurn', { count: toolsPerTurn.toFixed(1) })
-            }}
-          </div>
         </div>
         <div class="total-card" :title="$t('profile.usage.uncachedTotalHint')">
           <div class="total-label">{{ $t('profile.usage.uncachedTotal') }}</div>
@@ -588,15 +588,6 @@ onMounted(() => {
   font-size: var(--font-size-lg);
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
-}
-
-/* 副标题折行，不截断。同一排的卡片高度本来就会拉齐，多出来的那一行不额外占地方；
-   而截断截掉的恰恰是解释那一句 —— 留一个「单价通常低一个…」比不写更糟 */
-.total-hint {
-  margin-top: 2px;
-  font-size: 10px;
-  line-height: 1.5;
-  color: var(--color-text-muted);
 }
 
 .chart {

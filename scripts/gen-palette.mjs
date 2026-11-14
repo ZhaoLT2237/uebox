@@ -589,7 +589,7 @@ ${Object.entries(inverseAnchors)
   /* 表面 */
   --color-bg-page: var(--n-950);
   --color-bg-surface: var(--n-925);
-  --color-bg-surface-hover: var(--n-865);
+  --color-bg-surface-hover: var(--n-850);
   --color-bg-option: var(--n-910);
   --color-bg-option-hover: var(--n-880);
   --color-bg-option-selected: var(--n-865);
@@ -848,7 +848,7 @@ const roles = {
     bgPage: neutral[950],
     bgSurface: neutral[925],
     // 菜单浮在 bgRaised（n-900）上，悬停要比它亮一档，否则深色下菜单的悬停和键盘焦点都看不出来
-    bgSurfaceHover: neutral[865],
+    bgSurfaceHover: neutral[850],
     bgOption: neutral[910],
     bgOptionHover: neutral[880],
     bgOptionSelected: neutral[865],

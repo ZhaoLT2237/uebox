@@ -367,9 +367,6 @@
                   />
                   <PhFolderOpen class="input-icon" />
                 </div>
-                <div class="form-tip">
-                  {{ $t('createVaultModal.nas.browsePathTip') }}
-                </div>
                 <div v-if="errors.browsePath" class="error-message">{{ errors.browsePath }}</div>
               </div>
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { chatSessionRoute } from './chatRoute'
+import { chatSessionRoute, newChatRoute } from './chatRoute'
 
 describe('chatSessionRoute', () => {
   it('已经开着这条会话的标签页就复用它', () => {
@@ -45,5 +45,25 @@ describe('chatSessionRoute', () => {
       name: 'AssistantWelcome',
       query: { sid: '' }
     })
+  })
+})
+
+describe('newChatRoute', () => {
+  const tabs = [
+    '/',
+    '/dev-assistant?sid=used',
+    '/dev-assistant?sid=blank',
+    '/dev-assistant?sid=p&project=A'
+  ]
+  const blank = new Set(['blank', 'p'])
+
+  it('已有空白的新对话标签时切过去', () => {
+    expect(newChatRoute(tabs, (sid) => blank.has(sid))).toBe('/dev-assistant?sid=blank')
+  })
+
+  it('带项目归属的空标签不复用；没有空白标签就新开', () => {
+    const route = newChatRoute(['/dev-assistant?sid=p&project=A'], (sid) => blank.has(sid))
+    expect(route).toMatchObject({ name: 'AssistantWelcome' })
+    expect((route as { query: { sid: string } }).query.sid).toBeTruthy()
   })
 })

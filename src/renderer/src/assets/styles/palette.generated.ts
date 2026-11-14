@@ -11,7 +11,7 @@ export const palette = {
   dark: {
     bgPage: '#111111',
     bgSurface: '#1c1c1c',
-    bgSurfaceHover: '#2f2f2f',
+    bgSurfaceHover: '#343434',
     bgOption: '#222222',
     bgOptionHover: '#2a2a2a',
     bgOptionSelected: '#2f2f2f',

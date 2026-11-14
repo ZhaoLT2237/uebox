@@ -5813,8 +5813,7 @@ export default {
       apiKeyPlaceholder: '无 KEY 时仅可浏览，有 KEY 才能上传/覆盖',
       browsePathLabel: '共享浏览路径',
       optionalHint: '可选',
-      browsePathPlaceholder: '例如：{example}，仅用于跳转到服务器目录',
-      browsePathTip: '仅用于“打开本地路径/定位文件”。资产服务器模式建议填写可访问的 SMB 共享路径。'
+      browsePathPlaceholder: '例如：{example}，仅用于跳转到服务器目录'
     },
     remote: {
       selectVaultLabel: '选择资产库',

@@ -5985,9 +5985,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       apiKeyPlaceholder: 'Browse only without a key; a key is required to upload or overwrite',
       browsePathLabel: 'Shared browse path',
       optionalHint: 'optional',
-      browsePathPlaceholder: 'e.g. {example}, only used to jump to the server directory',
-      browsePathTip:
-        'Only used for "open local path / locate file". For asset server mode, an accessible SMB share path is recommended.'
+      browsePathPlaceholder: 'e.g. {example}, only used to jump to the server directory'
     },
     remote: {
       selectVaultLabel: 'Select vault',
