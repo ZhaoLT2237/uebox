@@ -5,14 +5,15 @@ import { useI18n } from 'vue-i18n'
 import { confirmDialog } from '@renderer/utils/dialog'
 import { message } from '@/utils/messageManager'
 import { useMaterialLibraryStore } from '@renderer/store/modules/materialLibraryStore'
+import { useTabsStore } from '@renderer/store/modules/tabs'
 import {
   getDependencyCount,
-  getMaterialCompileLabel,
   getParameterCount,
   type MaterialEntry,
   type MaterialEntryType
 } from './types/material'
 import { buildMaterialEditorRoute } from './utils/materialTabRoute'
+import { closeLibraryEditorTabs } from '@renderer/views/library-common/utils/closeEditorTabs'
 import LibraryFormModal from '@renderer/views/library-common/components/LibraryFormModal.vue'
 import MaterialMigrationWizard from './MaterialMigrationWizard.vue'
 import { LibraryBrowser } from '@renderer/views/library-common/browser'
@@ -85,7 +86,8 @@ function handleCreateMaterial(): void {
 }
 
 function handleOpen(id: string): void {
-  router.push(buildMaterialEditorRoute(id))
+  const openTabKeys = useTabsStore().historyTabs.map((tab) => tab.key)
+  router.push(buildMaterialEditorRoute(id, { router, openTabKeys }))
 }
 
 function handleFavorite(entry: MaterialEntry): void {
@@ -118,8 +120,9 @@ function handleDelete(entry: MaterialEntry): void {
     danger: true,
     cancelText: t('materialGallery.common.cancel'),
     centered: true,
-    onOk: () => {
+    onOk: async () => {
       store.deleteEntry(entry.id)
+      await closeLibraryEditorTabs({ router, routeName: 'MaterialEditor', id: entry.id })
       message.success(t('materialGallery.toast.removed'))
     }
   })
@@ -127,6 +130,10 @@ function handleDelete(entry: MaterialEntry): void {
 
 function compileTone(entry: MaterialEntry): string {
   return `status-${entry.compileStatus}`
+}
+
+function compileLabel(entry: MaterialEntry): string {
+  return t(`materialGallery.compileStatus.${entry.compileStatus}`)
 }
 
 // ========== 库浏览器 ==========
@@ -259,13 +266,20 @@ const vFocus = {
             {{ item.name.slice(0, 2).toUpperCase() }}
           </span>
           <span v-if="item.isFavorite" class="fav-badge">★</span>
-          <span class="status-badge" :class="compileTone(item.source as MaterialEntry)">
-            ● {{ getMaterialCompileLabel((item.source as MaterialEntry).compileStatus) }}
+          <span
+            v-if="(item.source as MaterialEntry).compileStatus !== 'unknown'"
+            class="status-badge"
+            :class="compileTone(item.source as MaterialEntry)"
+          >
+            ● {{ compileLabel(item.source as MaterialEntry) }}
           </span>
         </div>
       </template>
 
       <template #card-menu="{ item }">
+        <div class="menu-item" @click.stop="handleOpen(item.id)">
+          {{ $t('materialGallery.actions.open') }}
+        </div>
         <div class="menu-item" @click.stop="openEditModal(item.source as MaterialEntry)">
           {{ $t('materialGallery.actions.editInfo') }}
         </div>
@@ -296,7 +310,6 @@ const vFocus = {
       size="wide"
       icon="plus"
       :title="$t('materialGallery.actions.newMaterial')"
-      :advanced-hint="$t('materialGallery.form.advancedHint')"
       :advanced-label="$t('materialGallery.form.advancedToggle')"
       :cancel-text="$t('materialGallery.common.cancel')"
       :confirm-text="$t('materialGallery.actions.createMaterialConfirm')"

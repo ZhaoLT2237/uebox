@@ -355,8 +355,9 @@ export function useAssetTree() {
         title: folderName,
         type: 'folder',
         path: `${parentPath}/${folderName}`.replace(/\/+/, '/'),
-        childrenLoaded: false,
-        isLeaf: false
+        // 刚建的文件夹没有子文件夹：不显示展开箭头，往里建子文件夹时再翻成 false
+        childrenLoaded: true,
+        isLeaf: true
       }
 
       // 记录添加前是否已有子数据（用于决定是否首次拉取）

@@ -21,9 +21,9 @@ describe('助手页浅色主题', () => {
 
   it('用户气泡的复制、编辑图标带提示和可读名称', () => {
     const source = read('components/UserBubble.vue')
-    expect(source).toMatch(/<PhCopy class="tool" :aria-label="t\('assistant\.chat\.copy'\)"/)
+    expect(source).toMatch(/class="tool tool-button"\s+:aria-label="t\('assistant\.chat\.copy'\)"/)
     expect(source).toMatch(
-      /<PhPencilSimple\s+class="tool"\s+:aria-label="t\('assistant\.chat\.editMessage'\)"/
+      /class="tool tool-button"\s+:aria-label="t\('assistant\.chat\.editMessage'\)"/
     )
   })
 })

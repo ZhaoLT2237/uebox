@@ -1498,10 +1498,6 @@ onMounted(() => {
   &:hover:not(:disabled) {
     background: var(--color-bg-surface-hover);
   }
-  &:disabled {
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
   &.primary {
     background: var(--color-accent-bg);
     border-color: var(--color-accent-border);
@@ -1517,6 +1513,16 @@ onMounted(() => {
     &:hover:not(:disabled) {
       background: var(--color-accent-bg);
     }
+  }
+  // 放在各配色之后：primary / accent 的强调色不能盖掉禁用态
+  &:disabled,
+  &.primary:disabled,
+  &.accent:disabled {
+    background: var(--color-bg-surface-hover);
+    border-color: var(--color-border-subtle);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+    box-shadow: none;
   }
 }
 

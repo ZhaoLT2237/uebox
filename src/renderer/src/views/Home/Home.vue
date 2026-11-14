@@ -400,7 +400,9 @@ async function getDroppedEntries(event: DragEvent): Promise<
   gap: var(--space-4);
   overflow-x: hidden;
   position: relative;
-  overflow-y: overlay; /* 防止滚动条出现导致的布局抖动 */
+  overflow-y: auto;
+  /* overlay 已被 Chromium 当作 auto 处理，滚动条出现/消失时内容会左右跳；预留滚动条位置 */
+  scrollbar-gutter: stable;
   padding-bottom: 40px; /* 增加底部空间，容纳动画位移 */
 
   .section {

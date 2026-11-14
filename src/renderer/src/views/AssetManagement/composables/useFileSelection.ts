@@ -64,9 +64,9 @@ export function useFileSelection(
   const applyBoxSelection = (items: HTMLElement[]): void => {
     const ids: string[] = []
     for (const item of items) if (item.dataset.fileId) ids.push(item.dataset.fileId)
-    const candidates = dragStartModifiers.value.shiftKey
-      ? [...preSelectionSnapshot.value, ...ids]
-      : ids
+    const { shiftKey, ctrlKey, metaKey } = dragStartModifiers.value
+    const candidates =
+      shiftKey || ctrlKey || metaKey ? [...preSelectionSnapshot.value, ...ids] : ids
     selectedFiles.value = new Set(
       candidates.filter((id) => !validIds.value || validIds.value.has(id))
     )
@@ -113,9 +113,10 @@ export function useFileSelection(
     })
 
     // 在开始框选前拦截：如果鼠标在已选中元素上，则认定为拖拽，停止 DragSelect
-    dragSelectInstance.value!.subscribe('start:pre', (_payload: any) => {
-      const isOnSelected = getIsMouseOnSelectedFile()
-      const isOnFileItem = getIsMouseOnFileItem()
+    dragSelectInstance.value!.subscribe('start:pre', (payload: { event?: MouseEvent }) => {
+      const target = payload?.event?.target as HTMLElement | undefined
+      const isOnSelected = getIsMouseOnSelectedFile(target)
+      const isOnFileItem = getIsMouseOnFileItem(target)
       const selectedCount = selectedFiles.value.size
 
       console.log('[DragSelect] DS:start:pre 触发', {
@@ -140,9 +141,10 @@ export function useFileSelection(
         return
       }
 
-      // 当当前没有选择的数据且鼠标在某个文件项上，也需要打断框选
-      if (selectedCount === 0 && isOnFileItem) {
-        console.log('[DragSelect] DS:start:pre 拦截：无选中但在文件项上，break')
+      // 落在任意卡片上都不启动框选：选择交给卡片自己的点击处理（Ctrl/Shift 加选），
+      // 否则框选的 start 会先把原选择清掉。
+      if (isOnFileItem) {
+        console.log('[DragSelect] DS:start:pre 拦截：鼠标在文件项上，break')
         dragSelectInstance.value!.break()
         return
       }
@@ -172,8 +174,8 @@ export function useFileSelection(
         metaKey: event.metaKey
       }
 
-      // 如果按住Shift键，保存当前选择作为快照，用于累加选择
-      if (event.shiftKey) {
+      // 按住 Shift / Ctrl / Cmd：保存当前选择作为快照，框选结果累加到原选择上
+      if (event.shiftKey || event.ctrlKey || event.metaKey) {
         preSelectionSnapshot.value = new Set(selectedFiles.value)
       } else {
         // 非Shift键：若鼠标不在已选元素上，清空旧选择，开始新的框选
@@ -309,7 +311,8 @@ export function useFileSelection(
       }
     })
 
-    dragSelectInstance.value.setSelection(elements)
+    // 等 nextTick 期间组件可能已卸载、实例已销毁
+    dragSelectInstance.value?.setSelection(elements)
   }
 
   // 检查是否选中

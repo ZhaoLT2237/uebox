@@ -38,11 +38,11 @@ describe('偏好设置页标题', () => {
     ['zh-CN', zhCN],
     ['en-US', enUS]
   ] as const) {
-    it(`${name}：除 MCP 外，页标题与左栏名一致`, () => {
+    it(`${name}：页标题与左栏名一致`, () => {
       const mismatched: string[] = []
       for (const [page, titleKey] of titles) {
         const labelKey = labels.get(page)
-        if (!labelKey || page === 'mcp') continue
+        if (!labelKey) continue
         if (lookup(locale, titleKey) !== lookup(locale, labelKey)) mismatched.push(page)
       }
       expect(mismatched).toEqual([])

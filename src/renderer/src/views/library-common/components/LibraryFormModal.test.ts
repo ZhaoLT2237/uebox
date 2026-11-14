@@ -77,11 +77,10 @@ describe('LibraryFormModal', () => {
    */
   it('有 advanced 插槽时，折叠条按 advancedExpanded 显隐并发出翻转事件', async () => {
     const wrapper = mountModal(
-      { advancedExpanded: false, advancedHint: '蓝图类型、引擎版本、描述' },
+      { advancedExpanded: false },
       { default: '<span />', advanced: '<div class="advanced-body" />' }
     )
 
-    expect(wrapper.find('.toggle-hint').text()).toBe('蓝图类型、引擎版本、描述')
     expect(wrapper.find('.toggle-text').text()).toBe('高级设置')
     expect(wrapper.find('.toggle-icon').classes()).not.toContain('expanded')
     // v-show：元素在，但被 display:none 藏起来

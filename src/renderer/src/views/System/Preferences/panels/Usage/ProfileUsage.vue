@@ -291,10 +291,9 @@ onMounted(() => {
         不含缓存命中的那部分 —— 它才是按全价计费的东西。
       -->
       <div v-if="report" class="totals">
-        <div class="total-card">
+        <div class="total-card" :title="$t('profile.usage.totalTurnsHint')">
           <div class="total-label">{{ $t('profile.usage.totalTurns') }}</div>
           <div class="total-value">{{ formatCount(report.totals.turns) }}</div>
-          <div class="total-hint">{{ $t('profile.usage.totalTurnsHint') }}</div>
         </div>
         <div class="total-card">
           <div class="total-label">{{ $t('profile.usage.toolCallsTotal') }}</div>
@@ -307,37 +306,31 @@ onMounted(() => {
             }}
           </div>
         </div>
-        <div class="total-card">
+        <div class="total-card" :title="$t('profile.usage.uncachedTotalHint')">
           <div class="total-label">{{ $t('profile.usage.uncachedTotal') }}</div>
           <div class="total-value">{{ formatCount(uncachedTokens) }}</div>
-          <div class="total-hint">{{ $t('profile.usage.uncachedTotalHint') }}</div>
         </div>
-        <div class="total-card">
+        <div class="total-card" :title="$t('profile.usage.perTurnHint')">
           <div class="total-label">{{ $t('profile.usage.perTurn') }}</div>
           <div class="total-value">
             {{ tokensPerTurn === null ? '—' : formatCount(tokensPerTurn) }}
           </div>
-          <div class="total-hint">{{ $t('profile.usage.perTurnHint') }}</div>
         </div>
-        <div class="total-card">
+        <div class="total-card" :title="$t('profile.usage.inputHint')">
           <div class="total-label">{{ $t('profile.usage.input') }}</div>
           <div class="total-value">{{ formatCount(report.totals.input) }}</div>
-          <div class="total-hint">{{ $t('profile.usage.inputHint') }}</div>
         </div>
-        <div class="total-card">
+        <div class="total-card" :title="$t('profile.usage.outputHint')">
           <div class="total-label">{{ $t('profile.usage.output') }}</div>
           <div class="total-value">{{ formatCount(report.totals.output) }}</div>
-          <div class="total-hint">{{ $t('profile.usage.outputHint') }}</div>
         </div>
-        <div class="total-card">
+        <div class="total-card" :title="$t('profile.usage.cacheReadHint')">
           <div class="total-label">{{ $t('profile.usage.cacheRead') }}</div>
           <div class="total-value">{{ formatCount(report.totals.cacheRead) }}</div>
-          <div class="total-hint">{{ $t('profile.usage.cacheReadHint') }}</div>
         </div>
-        <div class="total-card">
+        <div class="total-card" :title="$t('profile.usage.cacheHitRateHint')">
           <div class="total-label">{{ $t('profile.usage.cacheHitRate') }}</div>
           <div class="total-value">{{ formatPercent(hitRate) }}</div>
-          <div class="total-hint">{{ $t('profile.usage.cacheHitRateHint') }}</div>
         </div>
       </div>
     </section>
@@ -371,9 +364,6 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      <p v-if="metric === 'uncached'" class="section-note">
-        {{ $t('profile.usage.uncachedMetricNote') }}
-      </p>
     </section>
 
     <!-- 一年热力图：柱状图只看得见最近一个月，长期节奏得靠它 -->
@@ -415,7 +405,6 @@ onMounted(() => {
           </span>
         </div>
       </div>
-      <p class="section-note">{{ $t('profile.usage.heatmapNote') }}</p>
     </section>
 
     <!-- 明细：输入/输出/缓存 -->
@@ -431,9 +420,6 @@ onMounted(() => {
           <span class="rank-share">{{ formatPercent(shareOf(row.value)) }}</span>
         </li>
       </ul>
-      <p class="section-note">
-        {{ $t('profile.usage.breakdownNote', { total: formatCount(report.totals.tokens) }) }}
-      </p>
     </section>
 
     <!--
@@ -447,22 +433,19 @@ onMounted(() => {
       <p v-if="!hasChanges" class="section-note">{{ $t('profile.usage.changesEmpty') }}</p>
       <template v-else-if="report">
         <div class="totals totals-three">
-          <div class="total-card">
+          <div class="total-card" :title="$t('profile.usage.changesAppliedHint')">
             <div class="total-label">{{ $t('profile.usage.changesApplied') }}</div>
             <div class="total-value">{{ formatCount(report.changes.total) }}</div>
-            <div class="total-hint">{{ $t('profile.usage.changesAppliedHint') }}</div>
           </div>
-          <div class="total-card">
+          <div class="total-card" :title="$t('profile.usage.changesTargetsHint')">
             <div class="total-label">{{ $t('profile.usage.changesTargets') }}</div>
             <div class="total-value">{{ formatCount(report.changes.targets) }}</div>
-            <div class="total-hint">{{ $t('profile.usage.changesTargetsHint') }}</div>
           </div>
-          <div class="total-card">
+          <div class="total-card" :title="$t('profile.usage.changesPerTurnHint')">
             <div class="total-label">{{ $t('profile.usage.changesPerTurn') }}</div>
             <div class="total-value">
               {{ changesPerTurn === null ? '—' : changesPerTurn.toFixed(1) }}
             </div>
-            <div class="total-hint">{{ $t('profile.usage.changesPerTurnHint') }}</div>
           </div>
         </div>
 
@@ -472,7 +455,6 @@ onMounted(() => {
             <span class="rank-count">{{ formatCount(entry.count) }}</span>
           </li>
         </ul>
-        <p class="section-note">{{ $t('profile.usage.changesNote') }}</p>
         <p v-if="report.changes.failed > 0" class="section-note">
           {{ $t('profile.usage.changesFailedNote', { count: report.changes.failed }) }}
         </p>
@@ -500,7 +482,6 @@ onMounted(() => {
             <span class="rank-count">{{ formatDuration(tool.medianMs) }}</span>
           </div>
         </div>
-        <p class="section-note">{{ $t('profile.usage.toolsNote') }}</p>
       </template>
     </section>
 
@@ -537,7 +518,6 @@ onMounted(() => {
           <span class="rank-count">{{ formatCount(project.changes) }}</span>
         </div>
       </div>
-      <p class="section-note">{{ $t('profile.usage.uncachedMetricNote') }}</p>
     </section>
   </div>
 </template>

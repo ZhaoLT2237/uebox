@@ -198,7 +198,6 @@ export default {
   },
   mcp: {
     client: {
-      title: '接入外部 MCP 服务',
       description: '连接第三方 MCP 服务，扩展助手能力；可粘贴 Claude Desktop 格式的配置。',
       empty: '尚未配置 MCP 服务。',
       configPath: '配置文件：{path}',
@@ -1048,7 +1047,6 @@ export default {
       details: '详细信息',
       path: '路径',
       selectPrompt: '请选择文件或文件夹',
-      selectPromptDesc: '查看详细信息、标签和备注',
       file: '文件',
       fileSuffix: ' 文件',
       selectPreview: '选择预览图',
@@ -3024,7 +3022,7 @@ export default {
         asset_library_manager: '资产库管理',
         library_overview: '资产库概况',
         library_search: '搜索资产库',
-        switch_vault: '切换保管库',
+        switch_vault: '切换资产库',
         list_local_dir: '查看目录',
         read_local_file: '读取文件',
         find_local_files: '查找文件',
@@ -3310,7 +3308,7 @@ export default {
       failed: '3D 模型生成失败：{error}',
       timeout: '3D 模型生成超时：{error}',
       processingError: '处理生成结果时出错',
-      vaultPathNotFound: '未找到当前保管库路径',
+      vaultPathNotFound: '未找到当前资产库路径',
       successMessage:
         '✅ 3D 模型生成完成\n\n📝 提示词: {optimizedPrompt}\n{originalPromptLine}🆔 任务ID: {taskId}\n\n📦 模型已自动导入到 **AIGC\\模型\\taskId** 文件夹中。',
       originalPromptLine: '📋 原始提示词: {originalPrompt}\n',
@@ -3542,7 +3540,6 @@ export default {
       learningAutoHint: '经验和技能均自动记录，保存后通知。',
       // 清单
       listTitle: '技能列表',
-      listNote: '查看、编辑或启用技能。启用状态下次任务生效。',
       searchPlaceholder: '搜索名称或说明',
       openFolder: '打开技能目录',
       loading: '正在读取…',
@@ -3697,8 +3694,6 @@ export default {
       cacheReadHint: '单价通常低一个量级',
       cacheHitRate: '缓存命中率',
       cacheHitRateHint: '命中部分不按全价计费',
-      uncachedMetricNote:
-        '此处 Token 不含缓存命中。缓存命中单价低一个量级，计入后图表将主要反映缓存读取量。',
       toolsPerTurn: '平均每轮 {count} 次',
       barTooltip:
         '{date}：{tokens} Token（另有 {cached} 缓存命中）· {turns} 轮 · 改动 {changes} 处',
@@ -3706,14 +3701,11 @@ export default {
       heatmapActive: '一年内使用了 {count} 天',
       heatmapLess: '少',
       heatmapMore: '多',
-      heatmapNote: '每格代表一天，颜色深浅表示所选指标的多少。',
       breakdownTitle: '构成',
       input: '新输入',
       output: '输出',
       cacheRead: '缓存命中',
       cacheWrite: '写入缓存',
-      breakdownNote:
-        '四项合计 {total} Token。各项单价不同：缓存命中最低，写入缓存略高于新输入，具体以服务商计费为准。',
       changesTitle: '完成的改动',
       changesApplied: '已完成操作',
       changesAppliedHint: '成功修改项目的操作数',
@@ -3721,7 +3713,6 @@ export default {
       changesTargetsHint: '同一资产多次修改只计一次',
       changesPerTurn: '平均每轮',
       changesPerTurnHint: '每轮完成的平均改动数',
-      changesNote: '只统计成功修改；脚本改动计入操作数，但不计入涉及资产数。',
       changesFailedNote: '另有 {count} 次修改失败，详情见操作记录。',
       changesEmpty: '该时间段内无改动记录。',
       toolsTitle: '操作记录',
@@ -3729,7 +3720,6 @@ export default {
       colCalls: '调用',
       colFailed: '失败',
       colMedian: '中位耗时',
-      toolsNote: '耗时包含等待确认的时间。',
       skillsTitle: '用过的技能',
       skillSource: {
         builtin: '内置',
@@ -3774,7 +3764,7 @@ export default {
       showAssetVersion: '显示资产版本',
       showAssetVersionDesc: '鼠标悬停在资产卡片上时，在左上角显示保存该资产所用的引擎版本。',
       crossVaultSearch: '跨库搜索',
-      crossVaultSearchDesc: 'AI 助手查找素材时同时搜索其他保管库。关闭后仅搜索当前保管库。',
+      crossVaultSearchDesc: 'AI 助手查找素材时同时搜索其他资产库。关闭后仅搜索当前资产库。',
       defaultApps: '默认应用',
       selectApp: '选择应用程序',
       selectAppSuccess: '设置成功',
@@ -3909,8 +3899,7 @@ export default {
       bridgeChecking: '读取中',
       bridgeUnknown: '正在读取桥接状态…',
       connectedProjects: '已连接的项目',
-      connectedProjectsDesc:
-        '插件自动连接，断开后每 5 秒重试一次，无需手动连接。若项目已打开但数量始终为 0，通常是该项目未安装插件。',
+      connectedProjectsDesc: '项目已打开但未连接时，通常是该项目未安装插件。',
       injectionBehavior: '安装方式',
       resources: '相关资源',
       autoEnableUnrealAgentLink: '自动安装连接插件',
@@ -4514,8 +4503,6 @@ export default {
       },
       researchComplete: '研究完成，笔记已添加到知识库',
       researchFailed: '深度研究失败',
-      // 空状态
-      emptyTitle: '工作台输出将保存在此处',
       // 菜单操作
       rename: '重命名',
       renameSuccess: '重命名成功',
@@ -4528,8 +4515,8 @@ export default {
       briefFailedShort: '设计要点提炼失败',
       briefFailed: '提炼设计要点失败，请检查「轻量任务」模型配置后重试',
       outputsSaveFailed:
-        '产出保存到保管库失败，当前仅存于内存中，重启后将丢失。请检查保管库是否可写',
-      outputsInterruptedByVaultSwitch: '切换保管库已中断正在生成的产出，如有需要请重新生成',
+        '产出保存到资产库失败，当前仅存于内存中，重启后将丢失。请检查资产库是否可写',
+      outputsInterruptedByVaultSwitch: '切换资产库已中断正在生成的产出，如有需要请重新生成',
       sourcesOverBudgetShort: '来源超出模型上下文',
       sourcesOverBudget:
         '所有来源均超出当前模型的上下文预算（{budget} 字），无法送入。请更换上下文窗口更大的模型，或将来源拆分后重试',
@@ -4697,13 +4684,13 @@ export default {
       detected: '粘贴的内容为 Markdown 格式',
       convert: '转换格式'
     },
-    saveFailedAlert: '该段内容保存失败。请检查保管库是否存在、是否被其他程序占用，然后重试。',
+    saveFailedAlert: '该段内容保存失败。请检查资产库是否存在、是否被其他程序占用，然后重试。',
     retrySave: '重试保存',
     emptyTitle: '没有打开任何笔记',
     emptyDesc: '从资产库或知识库中打开笔记',
     video: {
       unsupportedFormat: '不支持播放此格式（{ext}），请先转换为 MP4 或 WebM',
-      saveFailed: '视频保存到保管库失败',
+      saveFailed: '视频保存到资产库失败',
       playFailed: '视频无法播放，文件可能已被移动或删除'
     },
     newNote: '新笔记',
@@ -5209,8 +5196,8 @@ export default {
   },
   libraryBrowser: {
     saveAlert: {
-      title: '{count} 项保存到保管库失败',
-      desc: '后续编辑也将无法保存。常见原因：已切换保管库，或包目录在资源管理器中被重命名或移动。',
+      title: '{count} 项保存到资产库失败',
+      desc: '后续编辑也将无法保存。常见原因：已切换资产库，或包目录在资源管理器中被重命名或移动。',
       retry: '重试保存'
     },
     allFolders: '全部',
@@ -5282,7 +5269,6 @@ export default {
       modalTitle: '新建蓝图',
       nameLabel: '蓝图名称',
       namePlaceholder: '默认：新建蓝图节点',
-      advancedHint: '蓝图类型、引擎版本、描述',
       advancedToggle: '高级设置',
       typeLabel: '蓝图类型',
       engineLabel: '引擎版本',
@@ -5605,6 +5591,7 @@ export default {
     actions: {
       newMaterial: '新建材质',
       createMaterialConfirm: '创建材质',
+      open: '打开',
       favorite: '收藏',
       unfavorite: '取消收藏',
       textures: '贴图',
@@ -5638,7 +5625,6 @@ export default {
     form: {
       nameLabel: '材质名称',
       namePlaceholder: '默认：新建材质节点',
-      advancedHint: '材质类型、描述',
       advancedToggle: '高级设置',
       typeLabel: '材质类型',
       descriptionLabel: '描述 (可选)',
@@ -6068,6 +6054,7 @@ export default {
       empty: '暂无可用的 Agent 模型',
       configure: '前往模型设置',
       required: '请先选择可用模型，草稿和附件已保留',
+      requiredNoDraft: '请先选择可用模型',
       loadFailed: '模型列表读取失败，点击重试',
       busy: '当前任务结束后可切换 Agent 模型',
       switched: '已切换至 {model}',
@@ -7248,6 +7235,7 @@ export default {
     editorPlaceholder: '开始编写 Markdown 笔记...'
   },
   materialEditor: {
+    localDraft: '本地草稿',
     copiedLibraryPath: '已复制库路径',
     copiedTexturePath: '已复制贴图路径',
     sections: {

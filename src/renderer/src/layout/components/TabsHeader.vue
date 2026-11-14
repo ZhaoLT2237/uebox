@@ -4,6 +4,7 @@ import {
   PhArrowSquareOut,
   PhBooks,
   PhChatCircle,
+  PhCubeFocus,
   PhCubeTransparent,
   PhGear,
   PhCube,
@@ -116,6 +117,10 @@ const getTabIcon = (path: string): Component => {
   // 材质库 (与 routeUtils.ts 保持一致)
   if (path.includes('material-library')) {
     return PhSphere
+  }
+  // 3D 查看器
+  if (path.includes('model-3d-viewer')) {
+    return PhCubeFocus
   }
   // 3D工作室
   if (path.includes('model-3d-studio')) {

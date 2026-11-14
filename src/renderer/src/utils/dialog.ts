@@ -93,7 +93,15 @@ function toAntdConfig(options: ConfirmDialogOptions | AlertDialogOptions): Recor
   const { danger, ...rest } = options
   const { focusCancel, ...antdRest } = rest as ConfirmDialogOptions
   const config: Record<string, unknown> = { ...antdRest }
-  if (danger) config.okType = 'danger'
+  // okType: 'danger' 出来的是默认样式按钮，红色又被 antd-override 的 !important 盖掉；
+  // 用 primary + danger 才是红底的确认按钮
+  if (danger) {
+    config.okButtonProps = {
+      ...((antdRest as { okButtonProps?: Record<string, unknown> }).okButtonProps ?? {}),
+      type: 'primary',
+      danger: true
+    }
+  }
   if (focusCancel) config.autoFocusButton = 'cancel'
   return config
 }

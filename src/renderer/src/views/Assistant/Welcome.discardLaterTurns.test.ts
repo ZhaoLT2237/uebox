@@ -155,7 +155,8 @@ describe('Welcome 没配模型时重新生成 / 编辑', () => {
     })
     await flushPromises()
 
-    expect(mocks.requireAgentModel).toHaveBeenCalled()
+    // 重新生成不碰输入框：提示里不提草稿
+    expect(mocks.requireAgentModel).toHaveBeenCalledWith({ keepsDraft: false })
     expect(mocks.ask).not.toHaveBeenCalled()
     expect(ids()).toEqual(['u1', 'a1', 'u2', 'a2'])
   })

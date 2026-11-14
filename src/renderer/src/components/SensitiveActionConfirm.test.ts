@@ -393,5 +393,13 @@ describe('SensitiveActionConfirm 参数与高风险样式', () => {
 
     expect(wrapper.get('.btn-confirm').classes()).toContain('app-button--danger')
     expect(document.activeElement).toBe(wrapper.get('.btn-reject').element)
+    // 「不可撤销」只在描述里说一次，不再单列一行操作类型
+    expect(wrapper.find('.action-type').exists()).toBe(false)
+    expect(
+      wrapper
+        .get('.confirm-body')
+        .text()
+        .match(/不可撤销/g)
+    ).toHaveLength(1)
   })
 })

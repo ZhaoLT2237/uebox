@@ -11,7 +11,7 @@ export const palette = {
   dark: {
     bgPage: '#111111',
     bgSurface: '#1c1c1c',
-    bgSurfaceHover: '#272727',
+    bgSurfaceHover: '#2f2f2f',
     bgOption: '#222222',
     bgOptionHover: '#2a2a2a',
     bgOptionSelected: '#2f2f2f',
@@ -73,7 +73,7 @@ export const palette = {
     borderOption: '#efefef',
     borderStrong: '#7a7a7a',
     accentText: '#343434',
-    accentBg: '#f7f7f7',
+    accentBg: '#ededed',
     accentBorder: '#949494',
     accentSolid: '#1a73e2',
     accentSolidHover: '#1665c8',

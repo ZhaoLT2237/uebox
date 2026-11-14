@@ -105,14 +105,16 @@ describe('ModelViewer 的空状态', () => {
     wrapper.unmount()
   })
 
-  it('加载失败显示原因，不退回空状态', async () => {
-    fbxError = new Error('文件坏了')
+  it('加载失败显示本地化提示，原始报错只进悬浮提示，不退回空状态', async () => {
+    fbxError = new Error('fetch failed 404: Not Found')
     const wrapper = mountViewer({ filePath: 'H:/素材/坏的.fbx' })
     await settle()
 
-    expect(wrapper.find('.load-reason').text()).toBe('文件坏了')
+    const text = wrapper.find('.load-overlay .load-text')
+    expect(text.text()).not.toContain('404')
+    expect(text.attributes('title')).toBe('fetch failed 404: Not Found')
     expect(wrapper.find('.empty-state').exists()).toBe(false)
-    expect(wrapper.emitted('error')?.[0]).toEqual(['文件坏了'])
+    expect(wrapper.emitted('error')?.[0]).toEqual(['fetch failed 404: Not Found'])
     wrapper.unmount()
   })
 

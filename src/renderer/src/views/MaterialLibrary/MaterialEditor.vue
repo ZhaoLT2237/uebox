@@ -25,7 +25,6 @@ import { compressBlueprintCode } from '@renderer/views/BlueprintLibrary/utils/bl
 import MaterialRenderer from './MaterialRenderer.vue'
 import {
   formatMaterialValue,
-  getMaterialCompileLabel,
   getMaterialEntryLabel,
   getParameterCount,
   type MaterialDependency,
@@ -43,6 +42,12 @@ const route = useRoute()
 const router = useRouter()
 const store = useMaterialLibraryStore()
 const { t } = useI18n()
+
+/** 本地新建的草稿没有引擎版本（存的是 'Local Draft'），显示「本地草稿」 */
+const engineChipLabel = computed(() => {
+  const version = entry.value?.engineVersion
+  return !version || version === 'Local Draft' ? t('materialEditor.localDraft') : `UE ${version}`
+})
 
 const section = ref<EditorSection>('graph')
 const isParameterGroupCollapsed = ref(false)
@@ -415,11 +420,15 @@ watch(() => entry.value?.name, syncMaterialTabTitle, { immediate: true })
       @subtitle-click="copyAssetPath"
     >
       <template #chips>
-        <span class="topbar-chip">{{ getMaterialEntryLabel(entry.entryType) }}</span>
-        <span class="topbar-chip" :class="`status-${entry.compileStatus}`">
-          {{ getMaterialCompileLabel(entry.compileStatus) }}
+        <span class="topbar-chip">{{ $t(`materialGallery.entryType.${entry.entryType}`) }}</span>
+        <span
+          v-if="entry.compileStatus !== 'unknown'"
+          class="topbar-chip"
+          :class="`status-${entry.compileStatus}`"
+        >
+          {{ $t(`materialGallery.compileStatus.${entry.compileStatus}`) }}
         </span>
-        <span class="topbar-chip">UE {{ entry.engineVersion }}</span>
+        <span class="topbar-chip">{{ engineChipLabel }}</span>
       </template>
 
       <template #actions>

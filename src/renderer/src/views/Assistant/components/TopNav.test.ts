@@ -5,8 +5,10 @@ import TopNav from './TopNav.vue'
 
 const passthrough = { template: '<div><slot /><slot name="overlay" /></div>' }
 const menuItem = {
+  props: { disabled: Boolean },
   emits: ['click'],
-  template: '<button class="menu-item" @click="$emit(\'click\')"><slot /></button>'
+  template:
+    '<button class="menu-item" :disabled="disabled" @click="$emit(\'click\')"><slot /></button>'
 }
 
 function mountTopNav(props: Record<string, unknown> = {}): ReturnType<typeof mount> {
@@ -30,6 +32,12 @@ describe('TopNav exports', () => {
     expect(more.element.tagName).toBe('BUTTON')
     expect(more.attributes('aria-label')).toBe('更多')
     expect(more.attributes('title')).toBe('更多')
+  })
+
+  it('还没有消息时，侧边提问、清空和导出都置灰', () => {
+    const items = mountTopNav({ empty: true }).findAll('.menu-item')
+    expect(items.length).toBeGreaterThan(0)
+    expect(items.every((item) => item.attributes('disabled') !== undefined)).toBe(true)
   })
 
   it('点击“导出图片”会触发图片导出', async () => {

@@ -84,7 +84,6 @@
       <div class="empty-state-content">
         <div class="empty-icon">📄</div>
         <div class="empty-text">{{ $t('assetLib.details.selectPrompt') }}</div>
-        <div class="empty-desc">{{ $t('assetLib.details.selectPromptDesc') }}</div>
       </div>
     </div>
   </div>

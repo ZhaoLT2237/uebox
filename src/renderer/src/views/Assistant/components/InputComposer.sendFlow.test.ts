@@ -173,3 +173,74 @@ describe('输入框首次发送与恢复', () => {
     wrapper.unmount()
   })
 })
+
+describe('输入框复验修复', () => {
+  type ComposerVm = {
+    requireAgentModel: (options?: { keepsDraft?: boolean }) => boolean
+    submitText: (text: string) => void
+  }
+
+  it('重新生成、编辑重发被拦时只提示选模型，不提草稿', async () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = await composer()
+      const vm = wrapper.vm as unknown as ComposerVm
+      expect(vm.requireAgentModel({ keepsDraft: false })).toBe(false)
+      vi.runAllTimers()
+      expect(mocks.info).toHaveBeenLastCalledWith('请先选择可用模型')
+      expect(vm.requireAgentModel()).toBe(false)
+      vi.runAllTimers()
+      expect(mocks.info).toHaveBeenLastCalledWith('请先选择可用模型，草稿和附件已保留')
+      wrapper.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('同一张建议卡片点两次，文字只插到草稿前面一次', async () => {
+    const wrapper = await composer()
+    const vm = wrapper.vm as unknown as ComposerVm
+    await wrapper.get('textarea').setValue('我自己的草稿')
+    vm.submitText('撤销这次替换')
+    vm.submitText('撤销这次替换')
+    await flushPromises()
+    expect(wrapper.get('textarea').element.value).toBe('撤销这次替换\n\n我自己的草稿')
+    wrapper.unmount()
+  })
+
+  it('输入为空按回车什么都不做，不弹模型选择', async () => {
+    const wrapper = await composer()
+    await wrapper.get('textarea').trigger('keydown', { key: 'Enter' })
+    await flushPromises()
+    expect(wrapper.find('.agent-model-dropdown').exists()).toBe(false)
+    expect(mocks.info).not.toHaveBeenCalled()
+    expect(wrapper.emitted('send')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('模型面板被拦截自动打开后，Esc 能关掉', async () => {
+    vi.useFakeTimers()
+    try {
+      const wrapper = await composer()
+      ;(wrapper.vm as unknown as ComposerVm).requireAgentModel({ keepsDraft: false })
+      vi.runAllTimers()
+      await flushPromises()
+      expect(wrapper.find('.agent-model-dropdown').exists()).toBe(true)
+      ;(document.activeElement as HTMLElement | null)?.blur()
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+      await flushPromises()
+      expect(wrapper.find('.agent-model-dropdown').exists()).toBe(false)
+
+      // 焦点在输入框里时同样先关面板
+      ;(wrapper.vm as unknown as ComposerVm).requireAgentModel({ keepsDraft: false })
+      vi.runAllTimers()
+      await flushPromises()
+      expect(wrapper.find('.agent-model-dropdown').exists()).toBe(true)
+      await wrapper.get('textarea').trigger('keydown', { key: 'Escape' })
+      expect(wrapper.find('.agent-model-dropdown').exists()).toBe(false)
+      wrapper.unmount()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})

@@ -1717,12 +1717,8 @@ function handleEditTaskPrompt(type: string, label: string, e: Event): void {
           </div>
         </div>
         <!-- 产出列表 -->
-        <!-- 空状态 -->
-        <div v-if="outputs.length === 0 && isOutputsReady" class="empty-state">
-          <div class="info-title">{{ t('notebook.studio.emptyTitle') }}</div>
-        </div>
         <!-- 加载中占位 -->
-        <div v-else-if="!isOutputsReady" class="output-list">
+        <div v-if="!isOutputsReady" class="output-list">
           <div v-for="i in 3" :key="i" class="output-item loading-placeholder">
             <div class="output-icon" style="background: rgba(255, 255, 255, 0.1)"></div>
             <div class="output-info">
@@ -1749,7 +1745,7 @@ function handleEditTaskPrompt(type: string, label: string, e: Event): void {
           </div>
         </div>
         <!-- 产出列表 -->
-        <div v-else class="output-workbench" @click.stop>
+        <div v-else-if="outputs.length > 0" class="output-workbench" @click.stop>
           <div class="output-toolbar">
             <div id="output-filter-panel" class="output-filter-panel">
               <label class="output-filter-field output-type-filter">

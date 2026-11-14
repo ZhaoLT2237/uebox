@@ -285,8 +285,20 @@ export async function startVoiceIn(sid: string): Promise<void> {
   if (sid !== boundSid) workerOrder = []
   boundSid = sid
   // 和打字那条路用同一个占位标题，用户说第一句时照 `nameVoiceSession` 换掉
-  useChatSessionsStore().ensureSession(sid, t('assistant.chatFlow.unnamedChat'))
+  const sessions = useChatSessionsStore()
+  const existed = Boolean(sessions.sessionById(sid))
+  sessions.ensureSession(sid, t('assistant.chatFlow.unnamedChat'))
   await voice.start()
+  // 没连上（例如没配实时语音模型）：为这次通话新建的空对话不留在侧边栏里
+  if (
+    !existed &&
+    Boolean(voice.error.value) &&
+    !voice.active.value &&
+    !voice.connecting.value &&
+    useChatMessagesStore().getMessages(sid).length === 0
+  ) {
+    sessions.removeSession(sid)
+  }
 }
 
 /**
@@ -682,8 +694,9 @@ function createVoiceAssistant(): RealtimeVoiceState {
   })
 
   // 报错弹一次就够。原先每个页面各挂一个 watcher，开几条对话就弹几个
+  // 未配置实时语音模型时，面板上已经有一句话和「打开模型设置」，不再另弹一条长报错
   watch(shared.error, (value) => {
-    if (value) message.error(value)
+    if (value && shared?.errorCode.value !== 'unconfigured') message.error(value)
   })
 
   /*

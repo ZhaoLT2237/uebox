@@ -9,8 +9,18 @@
 export interface LibraryTabRouteFactory {
   /** 生成一次性的 `_tab_id`（前缀 + 时间戳 + 随机串） */
   createTabId: () => string
-  /** 构造打开编辑器并独占 tab 的路由位置对象（供 router.push 使用） */
-  buildEditorRoute: (id: string) => LibraryEditorRouteLocation
+  /**
+   * 构造打开编辑器并独占 tab 的路由位置对象（供 router.push 使用）。
+   * 传了 reuse 且该条目已有打开的编辑器标签页时，沿用那个标签页的 `_tab_id`，
+   * 打开同一条目只激活已有标签页，不再新开。
+   */
+  buildEditorRoute: (id: string, reuse?: LibraryEditorTabReuse) => LibraryEditorRouteLocation
+}
+
+export interface LibraryEditorTabReuse {
+  router: { resolve: (to: { name: string; params: { id: string } }) => { path: string } }
+  /** 当前所有标签页的 key（形如 `path?_tab_id=xxx`） */
+  openTabKeys: readonly string[]
 }
 
 export interface LibraryEditorRouteLocation {
@@ -31,12 +41,23 @@ export function createLibraryTabRouteFactory(options: {
     return `${tabIdPrefix}-${timestamp}-${randomSuffix}`
   }
 
-  function buildEditorRoute(id: string): LibraryEditorRouteLocation {
+  function findOpenTabId(id: string, reuse: LibraryEditorTabReuse): string | null {
+    const editorPath = reuse.router.resolve({ name: routeName, params: { id } }).path
+    for (const key of reuse.openTabKeys) {
+      const [path, query = ''] = key.split('?')
+      if (path !== editorPath) continue
+      const tabId = new URLSearchParams(query).get('_tab_id')
+      if (tabId) return tabId
+    }
+    return null
+  }
+
+  function buildEditorRoute(id: string, reuse?: LibraryEditorTabReuse): LibraryEditorRouteLocation {
     return {
       name: routeName,
       params: { id },
       query: {
-        _tab_id: createTabId()
+        _tab_id: (reuse && findOpenTabId(id, reuse)) || createTabId()
       }
     }
   }

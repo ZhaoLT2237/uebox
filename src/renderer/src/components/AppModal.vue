@@ -41,6 +41,7 @@ import {
 import { useI18n } from 'vue-i18n'
 
 import AppButton from './AppButton.vue'
+import { nextModalId, openModalStack as openStack } from './modalStack'
 
 // Teleport 无法自动继承属性，统一交给实际的弹窗面板。
 defineOptions({ inheritAttrs: false })
@@ -152,6 +153,13 @@ function unlockScroll(): void {
 
 /** 关掉之后焦点要还回去 */
 let previouslyFocused: HTMLElement | null = null
+const stackId = nextModalId()
+
+function leaveStack(): void {
+  const index = openStack.indexOf(stackId)
+  if (index !== -1) openStack.splice(index, 1)
+  document.removeEventListener('keydown', onDocumentKeydown)
+}
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
@@ -175,6 +183,23 @@ function onOk(): void {
 
 function onMaskClick(): void {
   if (props.maskClosable) close()
+}
+
+/**
+ * 焦点丢到 body 上时（弹窗里的按钮切步骤被卸载、叠在上面的确认框关掉后没还焦点），
+ * 面板自己的 keydown 收不到键盘事件：Esc 关不掉、Tab 跑到弹窗外。只有最上面那个
+ * 弹窗在 document 上接住这两种情况，焦点在任何元素上时都不插手，免得和别的浮层抢。
+ */
+function onDocumentKeydown(event: KeyboardEvent): void {
+  if (openStack[openStack.length - 1] !== stackId || deactivated.value) return
+  const target = event.target
+  if (target !== document.body && target !== document.documentElement) return
+  if (event.key === 'Escape' && props.keyboard) {
+    close()
+  } else if (event.key === 'Tab') {
+    event.preventDefault()
+    panelRef.value?.focus()
+  }
 }
 
 function onKeydown(event: KeyboardEvent): void {
@@ -211,6 +236,8 @@ watch(
 
     if (isOpen) {
       previouslyFocused = document.activeElement as HTMLElement | null
+      openStack.push(stackId)
+      document.addEventListener('keydown', onDocumentKeydown)
       mounted.value = true
       if (!deactivated.value) lockScroll()
       await nextTick()
@@ -220,6 +247,7 @@ watch(
       return
     }
 
+    leaveStack()
     unlockScroll()
     if (props.destroyOnClose) mounted.value = false
     previouslyFocused?.focus?.()
@@ -240,6 +268,7 @@ onActivated(() => {
 
 // 弹窗开着的时候组件被卸载（路由跳走等），锁不解就整个应用滚不动了
 onBeforeUnmount(() => {
+  leaveStack()
   unlockScroll()
 })
 </script>

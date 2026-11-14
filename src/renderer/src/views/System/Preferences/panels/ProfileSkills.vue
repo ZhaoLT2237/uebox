@@ -329,7 +329,6 @@ onMounted(refresh)
           </AppButton>
         </div>
       </div>
-      <p class="section-note">{{ $t('profile.skills.listNote') }}</p>
 
       <div class="filters">
         <a-input

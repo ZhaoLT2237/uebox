@@ -46,12 +46,16 @@ describe('dialog 对 antd Modal 的封装', () => {
   })
 
   // antd 里同一件事有 okType 和 okButtonProps 两种写法，对外统一成 danger
-  it('danger: true 翻译成 antd 的 okType: danger', () => {
+  it('danger: true 翻译成红底确认按钮（primary + danger）', () => {
     const spy = vi.spyOn(Modal, 'confirm').mockReturnValue({ destroy: vi.fn() } as never)
 
     confirmDialog({ title: '删除', danger: true })
 
-    expect(spy.mock.calls[0][0]).toMatchObject({ title: '删除', okType: 'danger' })
+    expect(spy.mock.calls[0][0]).toMatchObject({
+      title: '删除',
+      okButtonProps: { type: 'primary', danger: true }
+    })
+    expect(spy.mock.calls[0][0]).not.toHaveProperty('okType')
     // danger 是我们自己的名字，不该原样漏给 antd
     expect(spy.mock.calls[0][0]).not.toHaveProperty('danger')
   })

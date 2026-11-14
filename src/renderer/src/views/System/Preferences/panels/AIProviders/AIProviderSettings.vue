@@ -487,10 +487,6 @@ async function handleRoleChange(role: ModelRole, value: string | undefined): Pro
           {{ $t('aiProvider.list.add') }}
         </button>
       </div>
-
-      <p v-if="!initialLoading && providers.length === 0" class="setting-desc">
-        {{ $t('aiProvider.list.empty') }}
-      </p>
     </div>
 
     <!-- 二、角色绑定 -->

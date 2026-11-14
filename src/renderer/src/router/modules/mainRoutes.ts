@@ -361,7 +361,7 @@ const mainRoutes: RouteRecordRaw = {
       name: 'ServerManagement',
       component: () => import('../../views/ServerManagement/index.vue'),
       meta: {
-        title: 'menu.serverManagement',
+        title: 'serverManagement.header.title',
         isShowInTab: true,
         fixed: false,
         sort: 14.9,

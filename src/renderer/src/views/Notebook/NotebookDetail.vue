@@ -2508,11 +2508,13 @@ onUnmounted(() => {
 
       <div class="header-right">
         <AppButton class="header-action-btn" shape="round" @click="handleSwitchToAIChat">
-          <PhChatCircle /> {{ t('notebook.detail.aiChat') }}
+          <template #icon><PhChatCircle /></template>
+          {{ t('notebook.detail.aiChat') }}
         </AppButton>
 
         <AppButton class="header-action-btn" shape="round" @click="openSettings">
-          <PhGear /> {{ t('notebook.detail.settings') }}
+          <template #icon><PhGear /></template>
+          {{ t('notebook.detail.settings') }}
         </AppButton>
       </div>
     </div>

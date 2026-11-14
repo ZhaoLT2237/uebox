@@ -107,6 +107,8 @@ describe('asset review fixes', () => {
         assetDataAPI: { restoreMany },
         assetFolderAPI: { restore: restoreFolder },
         assetContext: { removeFiles, refreshTree },
+        setSelected: vi.fn(),
+        emit: vi.fn(),
         message: {
           success: (text: string) => messages.push(text),
           warning: (text: string) => messages.push(text),
@@ -150,6 +152,8 @@ describe('asset review fixes', () => {
         },
         assetFolderAPI: { restore: vi.fn() },
         assetContext: { removeFiles: vi.fn(), refreshTree: vi.fn() },
+        setSelected: vi.fn(),
+        emit: vi.fn(),
         message: {
           success: (text: string) => messages.push(`success:${text}`),
           warning: (text: string) => messages.push(`warning:${text}`),

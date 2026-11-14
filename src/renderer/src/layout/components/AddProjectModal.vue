@@ -369,8 +369,8 @@ const filteredImportedProjects = computed<ImportedProject[]>(() => {
   justify-content: center;
 
   &.checked {
-    border-color: var(--color-border);
-    box-shadow: inset 0 0 0 4px var(--color-border);
+    border-color: var(--color-accent-solid);
+    box-shadow: inset 0 0 0 4px var(--color-accent-solid);
   }
 }
 

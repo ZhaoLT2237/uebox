@@ -1826,11 +1826,13 @@ const handleCreate = async (): Promise<void> => {
     }
 
     &:hover:not(.active) {
-      background: var(--color-bg-selected);
+      border-color: var(--color-border-strong);
+      color: var(--color-text-primary);
     }
 
     &.active {
       background: var(--color-bg-selected);
+      border-color: var(--color-accent-solid);
       color: var(--color-text-selected);
     }
   }

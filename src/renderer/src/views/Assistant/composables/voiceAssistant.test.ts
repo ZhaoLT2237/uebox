@@ -36,6 +36,7 @@ vi.mock('./useRealtimeVoice', () => ({
       outputLevel: ref(0),
       inputLevel: ref(0),
       error: ref(null),
+      errorCode: ref(null),
       speaking: ref(false),
       start: vi.fn(),
       stop: vi.fn(),
@@ -63,6 +64,7 @@ import { voiceCallActive } from './voiceCallState'
 import { answerAgentQuestion, recordUserSteer } from './agentEventDispatcher'
 import { agentV3API } from '@renderer/api/agentV3'
 import { VOICE_MAX_WORKERS } from '@core/shared/voiceFrontDesk'
+import { message } from '@renderer/utils/messageManager'
 
 function host(sid: string): VoiceHost {
   return {
@@ -157,6 +159,23 @@ describe('voiceAssistant', () => {
     ])
     // 空数组是「你看着办」→ decline，不是 accept 一个空答案
     expect(answerAgentQuestion).toHaveBeenNthCalledWith(2, 'agent-1', 'call-10', 'decline', [])
+  })
+
+  it('没配实时语音模型：不另弹报错，为这次通话新建的空对话不留在侧边栏', async () => {
+    const voice = useVoiceAssistant() as unknown as {
+      start: ReturnType<typeof vi.fn>
+      error: { value: string | null }
+      errorCode: { value: string | null }
+    }
+    voice.start.mockImplementationOnce(async () => {
+      voice.errorCode.value = 'unconfigured'
+      voice.error.value = '未配置实时语音模型'
+    })
+    vi.mocked(message.error).mockClear()
+    await startVoiceIn('fail-1')
+    await nextTick()
+    expect(useChatSessionsStore().sessionById('fail-1')).toBeFalsy()
+    expect(message.error).not.toHaveBeenCalled()
   })
 
   /*

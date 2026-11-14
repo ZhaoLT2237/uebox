@@ -197,7 +197,6 @@ export default {
   },
   mcp: {
     client: {
-      title: 'Connect external MCP servers',
       description:
         'Connect third-party MCP services to extend the assistant. Paste configurations in Claude Desktop format.',
       empty: 'No MCP servers configured yet.',
@@ -1069,7 +1068,6 @@ First work out why the install failed from the output above. If you can run comm
       details: 'Details',
       path: 'Path',
       selectPrompt: 'Select a file or folder',
-      selectPromptDesc: 'View details, tags and notes',
       file: 'File',
       fileSuffix: ' File',
       selectPreview: 'Select Preview',
@@ -3648,7 +3646,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       learningAutoHint: 'Save both automatically and notify afterwards.',
       // The list
       listTitle: 'Skills',
-      listNote: 'View, edit, or enable skills. Enablement changes apply to the next task.',
       searchPlaceholder: 'Search names and descriptions',
       openFolder: 'Open skills folder',
       loading: 'Loading…',
@@ -3809,8 +3806,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       cacheReadHint: 'Usually an order of magnitude cheaper',
       cacheHitRate: 'Cache hit rate',
       cacheHitRateHint: 'Hits are not billed at full price',
-      uncachedMetricNote:
-        'Tokens here exclude cache reads — they cost an order of magnitude less, and including them would make this chart show cache activity instead of spending.',
       toolsPerTurn: '{count} per turn',
       barTooltip:
         '{date}: {tokens} Tokens (plus {cached} from cache) · {turns} turns · {changes} changes',
@@ -3818,15 +3813,11 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       heatmapActive: 'Used on {count} days this year',
       heatmapLess: 'Less',
       heatmapMore: 'More',
-      heatmapNote:
-        'Each square is one day; darker colors indicate higher values for the selected metric.',
       breakdownTitle: 'Breakdown',
       input: 'Fresh input',
       output: 'Output',
       cacheRead: 'Cache read',
       cacheWrite: 'Cache write',
-      breakdownNote:
-        '{total} Tokens across all four. They are not priced alike: cache reads are the cheapest, cache writes cost slightly more than fresh input. Pricing depends on your provider.',
       changesTitle: 'Completed changes',
       changesApplied: 'Completed operations',
       changesAppliedHint: 'Operations that successfully changed the project',
@@ -3834,8 +3825,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       changesTargetsHint: 'Each asset is counted once, even if changed multiple times',
       changesPerTurn: 'Per turn',
       changesPerTurnHint: 'Average completed changes per turn',
-      changesNote:
-        'Counts successful changes only. Script changes count as operations, but not as affected assets.',
       changesFailedNote: 'Another {count} changes failed. See operation records for details.',
       changesEmpty: 'No changes recorded for this period.',
       toolsTitle: 'Operation records',
@@ -3843,7 +3832,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       colCalls: 'Calls',
       colFailed: 'Failed',
       colMedian: 'Median time',
-      toolsNote: 'Duration includes time spent waiting for your approval.',
       skillsTitle: 'Skills used',
       skillSource: {
         builtin: 'Built-in',
@@ -4112,7 +4100,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       bridgeUnknown: 'Reading bridge status…',
       connectedProjects: 'Connected projects',
       connectedProjectsDesc:
-        'The plugin connects automatically and retries every 5 seconds after a disconnect; no manual connection is needed. If a project is open but this stays at 0, the plugin is most likely not installed in that project.',
+        'If an open project does not connect, the plugin is usually not installed in it.',
       injectionBehavior: 'Installation',
       resources: 'Resources',
       autoEnableUnrealAgentLink: 'Automatically install the connection plugin',
@@ -4662,8 +4650,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       },
       researchComplete: 'Research complete! Notes added to notebook',
       researchFailed: 'Deep research failed',
-      // Empty state
-      emptyTitle: 'Studio outputs will be saved here',
       // Menu actions
       rename: 'Rename',
       renameSuccess: 'Renamed successfully',
@@ -5446,7 +5432,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       modalTitle: 'New blueprint',
       nameLabel: 'Blueprint name',
       namePlaceholder: 'Default: New blueprint node',
-      advancedHint: 'Type, engine version, description',
       advancedToggle: 'Advanced settings',
       typeLabel: 'Blueprint type',
       engineLabel: 'Engine version',
@@ -5770,6 +5755,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     actions: {
       newMaterial: 'New material',
       createMaterialConfirm: 'Create material',
+      open: 'Open',
       favorite: 'Favorite',
       unfavorite: 'Unfavorite',
       textures: 'Textures',
@@ -5803,7 +5789,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     form: {
       nameLabel: 'Material name',
       namePlaceholder: 'Default: New material node',
-      advancedHint: 'Material type, description',
       advancedToggle: 'Advanced settings',
       typeLabel: 'Material type',
       descriptionLabel: 'Description (optional)',
@@ -6243,6 +6228,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       empty: 'No Agent models available',
       configure: 'Open model settings',
       required: 'Select an available model first. Your draft and attachments are preserved',
+      requiredNoDraft: 'Select an available model first',
       loadFailed: 'Could not load models — click to retry',
       busy: 'You can switch Agent models when this task finishes',
       switched: 'Switched to {model}',
@@ -7445,6 +7431,7 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
     editorPlaceholder: 'Start writing your Markdown notes...'
   },
   materialEditor: {
+    localDraft: 'Local draft',
     copiedLibraryPath: 'Library path copied',
     copiedTexturePath: 'Texture path copied',
     sections: {

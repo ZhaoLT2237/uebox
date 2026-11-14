@@ -865,8 +865,8 @@ defineExpose({
     </div>
     <div v-else-if="loadState === 'error'" class="load-overlay">
       <PhWarningCircle :size="28" class="load-error-icon" />
-      <p class="load-text">{{ $t('modelViewer.loadFailed') }}</p>
-      <p class="load-reason">{{ loadError }}</p>
+      <!-- 原始报错多是英文技术串（fetch … 404），只放进悬浮提示 -->
+      <p class="load-text" :title="loadError">{{ $t('modelViewer.loadFailed') }}</p>
     </div>
 
     <!-- 没有模型时才是空状态：这里写 v-else 会在加载成功后糊在模型上 -->
@@ -928,16 +928,6 @@ defineExpose({
 .load-text {
   margin: 0;
   font-size: var(--font-size-sm);
-}
-
-.load-reason {
-  margin: 0;
-  max-width: 70%;
-  font-size: var(--font-size-xs);
-  font-family: var(--font-family-mono);
-  color: var(--color-text-muted);
-  text-align: center;
-  word-break: break-all;
 }
 
 .load-error-icon {

@@ -1446,7 +1446,6 @@ onMounted(load)
                 胶囊那个类在这一页是「连上了没有」的专用词汇，借过来用会让
                 「没找到 Blender」和一条 server 的连接状态长得一样。
               -->
-                <span v-else class="section-note">{{ t('mcp.blenderSetup.noBlender') }}</span>
                 <!--
                 自动探测只认标准安装位置。没有这个按钮的话，便携版和装在
                 别处的用户看到的是一个永远点不了的按钮，没有任何出路。

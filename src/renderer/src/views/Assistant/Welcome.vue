@@ -16,6 +16,7 @@
           :chat-sid="sid"
           :pending-project-name="pendingProjectName"
           :hide-project-chip="!conversationMode"
+          :empty="messages.length === 0"
           @side-question="handleSideQuestion"
           @clear="handleClearSession"
           @export-image="exportAsImage"
@@ -943,8 +944,12 @@ const voiceStatusText = computed(() =>
         `assistantInputComposer.voice.status.${voice.phase.value === 'idle' ? 'listening' : voice.phase.value}`
       )
 )
+// 没连上的报错只在点麦克风的那条对话里显示；新开的对话不带上一条的报错
 const showVoiceStatus = computed(
-  () => voice.connecting.value || voice.active.value || Boolean(voice.error.value)
+  () =>
+    voice.connecting.value ||
+    voice.active.value ||
+    (Boolean(voice.error.value) && voiceChatSid() === sid.value)
 )
 
 /** 没连上的那条语音报错只属于点麦克风那一刻：换了对话或离开页面就收起 */
@@ -1746,9 +1751,12 @@ function isImageGenerationMessage(content: string): boolean {
  * 停不干净（卡在审批框、工具没退出）就别发，如实说一声让他稍后再试 ——
  * 硬发下去撞到的还是那句话，只是这次是我们自己撞上去的。
  */
-/** 输入框认为 Agent 模型可用。没挂输入框时不拦，交给后面的报错 */
+/**
+ * 输入框认为 Agent 模型可用。没挂输入框时不拦，交给后面的报错。
+ * 只给重新生成、编辑重发用，它们不动输入框，提示里不提草稿。
+ */
 function agentModelReady(): boolean {
-  return composerRef.value?.requireAgentModel?.() ?? true
+  return composerRef.value?.requireAgentModel?.({ keepsDraft: false }) ?? true
 }
 
 async function ensureIdleBeforeResend(): Promise<boolean> {
@@ -2904,6 +2912,19 @@ function selectBrowserPage(): void {
   width: 100%;
   z-index: 10;
   justify-content: center;
+}
+
+/*
+ * 对话页的顶栏浮在消息列表上。透明时滚上去的消息（「本轮改动」的「审查」）
+ * 和右上角的项目胶囊叠在一起，点到的是胶囊。铺上内容区的底色，让消息藏到顶栏下面；
+ * 右边让出消息列表的滚动条。
+ */
+.assistant-welcome.is-conversation .sticky-header {
+  top: 0;
+  left: 0;
+  width: calc(100% - var(--space-2));
+  padding-top: var(--space-3);
+  background: var(--color-bg-surface);
 }
 
 .hero {

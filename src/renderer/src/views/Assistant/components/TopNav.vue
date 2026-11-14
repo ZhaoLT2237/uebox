@@ -34,17 +34,19 @@
               侧边问一句：把当前上下文复制给小窗口，在那边只读地问。
               **跑着的时候也能开** —— 那正是最想问「它现在在干嘛」的时刻
             -->
-            <AppMenuItem @click="emitSideQuestion">
+            <AppMenuItem :disabled="empty" @click="emitSideQuestion">
               {{ t('assistant.sideQuestion.open') }}
             </AppMenuItem>
-            <AppMenuItem @click="emitClear"> {{ t('assistant.topNav.clearChat') }} </AppMenuItem>
-            <AppMenuItem @click="emitExportImage">
+            <AppMenuItem :disabled="empty" @click="emitClear">
+              {{ t('assistant.topNav.clearChat') }}
+            </AppMenuItem>
+            <AppMenuItem :disabled="empty" @click="emitExportImage">
               {{ t('assistant.topNav.exportImage') }}
             </AppMenuItem>
-            <AppMenuItem @click="emitExportJSON">
+            <AppMenuItem :disabled="empty" @click="emitExportJSON">
               {{ t('assistant.topNav.exportJSON') }}
             </AppMenuItem>
-            <AppMenuItem @click="emitExportMarkdown">
+            <AppMenuItem :disabled="empty" @click="emitExportMarkdown">
               {{ t('assistant.topNav.exportMarkdown') }}
             </AppMenuItem>
           </AppMenu>
@@ -75,6 +77,8 @@ defineProps<{
   pendingProjectName?: string
   /** 欢迎页把工程胶囊挪到问候语下面，顶栏就不再重复放一个 */
   hideProjectChip?: boolean
+  /** 还没有任何消息：侧边提问、清空和导出都没有对象，菜单项置灰 */
+  empty?: boolean
 }>()
 
 const emit = defineEmits<{

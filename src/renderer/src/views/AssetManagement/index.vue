@@ -514,6 +514,7 @@
               @folder-click="handleFolderClick"
               @folder-select="handleFolderSelect"
               @empty-click="handleEmptyClick"
+              @items-removed="handleItemsRemoved"
               @drag-overlay-start="onDragOverlayStart"
               @drag-overlay-end="onDragOverlayEnd"
               @load-more="handleLoadMore"
@@ -4442,6 +4443,21 @@ const handleEmptyClick = () => {
 }
 
 /**
+ * 列表里的资产 / 文件夹被删除、恢复或彻底删除后，详情面板不再停在其中任何一项上。
+ */
+const handleItemsRemoved = (keys: string[]): void => {
+  const removed = new Set(keys.map(String))
+  const asset = selectedAsset.value
+  if (asset && [asset.assetKey, asset.id].some((k) => k != null && removed.has(String(k)))) {
+    selectedAsset.value = null
+  }
+  if (selectedListFolder.value && removed.has(String(selectedListFolder.value.key))) {
+    folderSelectionRequestToken++
+    selectedListFolder.value = null
+  }
+}
+
+/**
  * 收藏 / 最近删除里，详情面板上的资产已经不在列表里（恢复了、彻底删了、回收站清空了）：
  * 面板不再停在它身上。
  */
@@ -8301,6 +8317,14 @@ const handleUploadProjectArchive = async (): Promise<void> => {
 
             &.active {
               color: var(--color-text-primary);
+            }
+
+            // 「清空」这类当前不可用的动作：看得出点不了
+            &:disabled,
+            &:disabled:hover {
+              background: transparent;
+              color: var(--color-text-disabled);
+              cursor: not-allowed;
             }
 
             svg {

@@ -289,9 +289,10 @@ const { onMenuEnter, onMenuLeave, onMenuKeydown } = useMenuEscape()
 }
 
 .library-card :deep(.status-badge) {
+  // 放左下角：右上角是「⋯」菜单，左上角是收藏星标
   position: absolute;
-  top: 8px;
-  right: 8px;
+  bottom: 8px;
+  left: 8px;
   font-size: 10px;
   font-weight: var(--font-weight-semibold);
   letter-spacing: 0.3px;

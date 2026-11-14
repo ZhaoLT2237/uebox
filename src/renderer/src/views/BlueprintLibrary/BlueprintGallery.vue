@@ -136,7 +136,8 @@ function handleMoveToFolder(items: BrowserItem[], folderKey: string): void {
 }
 
 function handleOpen(id: string): void {
-  router.push(buildBlueprintEditorRoute(id))
+  const openTabKeys = useTabsStore().historyTabs.map((tab) => tab.key)
+  router.push(buildBlueprintEditorRoute(id, { router, openTabKeys }))
 }
 
 function handleCreate(): void {
@@ -623,7 +624,6 @@ const vFocus = {
       size="wide"
       icon="plus"
       :title="$t('blueprintGallery.create.modalTitle')"
-      :advanced-hint="$t('blueprintGallery.create.advancedHint')"
       :advanced-label="$t('blueprintGallery.create.advancedToggle')"
       :cancel-text="$t('blueprintGallery.create.cancel')"
       :confirm-text="$t('blueprintGallery.create.confirm')"

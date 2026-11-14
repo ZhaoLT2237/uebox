@@ -177,3 +177,20 @@ describe('AIBubble 消息动作', () => {
     expect(tools[1].attributes('aria-label')).toBe('重新生成')
   })
 })
+
+describe('AIBubble 操作按钮', () => {
+  it('复制、重新生成、分支是能 Tab 到的按钮，带可读名称', async () => {
+    const wrapper = mountBubble('open-preview')
+    const buttons = wrapper.findAll('.tools button')
+    const labels = buttons.map((button) => button.attributes('aria-label'))
+    expect(labels).toEqual(expect.arrayContaining(['复制', '重新生成', '朗读回复']))
+    expect(labels.every(Boolean)).toBe(true)
+    expect(buttons.length).toBe(4)
+
+    await buttons[1].trigger('click')
+    expect(wrapper.emitted('retry')).toHaveLength(1)
+    await buttons[2].trigger('click')
+    expect(wrapper.emitted('branch')).toHaveLength(1)
+    wrapper.unmount()
+  })
+})

@@ -66,14 +66,24 @@
         <div class="tools">
           <PhCheck v-if="isCopied" class="tool copied" />
           <AppTooltip v-else :title="t('assistant.chat.copy')">
-            <PhCopy class="tool" :aria-label="t('assistant.chat.copy')" @click="handleCopy" />
+            <AppButton
+              variant="text"
+              class="tool tool-button"
+              :aria-label="t('assistant.chat.copy')"
+              @click="handleCopy"
+            >
+              <PhCopy aria-hidden="true" />
+            </AppButton>
           </AppTooltip>
           <AppTooltip :title="t('assistant.chat.editMessage')">
-            <PhPencilSimple
-              class="tool"
+            <AppButton
+              variant="text"
+              class="tool tool-button"
               :aria-label="t('assistant.chat.editMessage')"
               @click="startEdit"
-            />
+            >
+              <PhPencilSimple aria-hidden="true" />
+            </AppButton>
           </AppTooltip>
         </div>
       </template>
@@ -214,9 +224,13 @@ function handleCopy(): void {
  * 开始编辑
  */
 function startEdit(): void {
-  editingContent.value = textContent.value
+  openEditor(textContent.value)
+}
+
+/** 进入编辑态并把焦点放进编辑框，光标在末尾 */
+function openEditor(text: string): void {
+  editingContent.value = text
   isEditing.value = true
-  // 聚焦到输入框
   nextTick(() => {
     if (editTextareaRef.value) {
       editTextareaRef.value.focus()
@@ -247,19 +261,17 @@ function confirmEdit(): void {
     return
   }
 
+  // 先收起编辑态再交出去：父组件可能同步调 reopen（没选模型被拦下），
+  // 收起放在后面会把刚重开的编辑态和文字一起清掉
+  isEditing.value = false
+  editingContent.value = ''
+
   emit('confirm-edit', {
     id: props.id,
     newContent,
     originalContent: props.content,
-    reopen: () => {
-      editingContent.value = newContent
-      isEditing.value = true
-    }
+    reopen: () => openEditor(newContent)
   })
-
-  // 重置编辑状态
-  isEditing.value = false
-  editingContent.value = ''
 }
 
 /**
@@ -418,6 +430,11 @@ function handleKeydown(e: KeyboardEvent): void {
   pointer-events: auto;
 }
 
+.bubble-container:focus-within .tools {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 .tool {
   font-size: 14px;
   cursor: pointer;
@@ -429,6 +446,13 @@ function handleKeydown(e: KeyboardEvent): void {
   &.copied {
     color: var(--color-success-text);
   }
+}
+
+.tool-button {
+  padding: 0;
+  min-width: 0;
+  height: auto;
+  line-height: 1;
 }
 
 // 编辑模式样式

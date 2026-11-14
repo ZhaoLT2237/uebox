@@ -870,7 +870,7 @@ const modeTitle = computed(() => {
                 <div class="ue-status disconnected">
                   <span>{{ t('notebook.addSource.ue.notConnected') }}</span>
                   <AppButton size="small" @click="checkUEConnection">
-                    <PhArrowClockwise />
+                    <template #icon><PhArrowClockwise /></template>
                     {{ t('notebook.addSource.ue.refresh') }}
                   </AppButton>
                 </div>

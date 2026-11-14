@@ -34,10 +34,6 @@
         </div>
       </div>
       <div class="confirm-body">
-        <div class="action-type">
-          <span class="label">{{ t('assistant.sensitiveAction.actionType') }}:</span>
-          <span class="value">{{ pendingAction.typeLabel }}</span>
-        </div>
         <div class="action-description">
           {{ pendingAction.description }}
           <span v-if="aiExplanation" class="ai-explanation">{{ aiExplanation }}</span>
@@ -484,22 +480,6 @@ Please explain what this operation means and does.`
 
 .confirm-body {
   margin-bottom: 12px;
-}
-
-.action-type {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 6px;
-  font-size: 13px;
-
-  .label {
-    color: var(--color-text-secondary);
-  }
-
-  .value {
-    color: var(--color-text-primary);
-    font-weight: 500;
-  }
 }
 
 .action-description {

@@ -716,7 +716,6 @@
       <div class="empty-state-content">
         <PhCursorClick class="empty-icon" />
         <div class="empty-text">{{ $t('assetLib.details.selectPrompt') }}</div>
-        <div class="empty-desc">{{ $t('assetLib.details.selectPromptDesc') }}</div>
       </div>
     </div>
 

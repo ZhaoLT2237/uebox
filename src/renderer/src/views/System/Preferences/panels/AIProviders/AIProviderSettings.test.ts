@@ -189,7 +189,9 @@ describe('AIProviderSettings 的首屏加载', () => {
     await flushPromises()
 
     expect(wrapper.find('.provider-banner').exists()).toBe(true)
-    expect(wrapper.text()).toContain('暂无服务商')
+    // 空态就是「添加服务商」那张卡，不再另配一句「暂无服务商」
+    expect(wrapper.find('.source-add').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('暂无服务商')
     // 真的没配就是不回落角色的真用不了，徽标该出现还是要出现
     expect(wrapper.findAll('.role-missing').length).toBeGreaterThan(0)
   })

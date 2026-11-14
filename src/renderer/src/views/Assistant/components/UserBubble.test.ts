@@ -110,3 +110,38 @@ describe('UserBubble command modes', () => {
     wrapper.unmount()
   })
 })
+
+describe('UserBubble edit and toolbar', () => {
+  it('keeps the edit draft when the parent reopens synchronously', async () => {
+    const wrapper = mount(UserBubble, {
+      props: { id: 'blocked-edit', content: '原来的话' },
+      // 父组件在 emit 里同步重开（没选模型被拦下）
+      attrs: { onConfirmEdit: (payload: { reopen: () => void }) => payload.reopen() },
+      attachTo: document.body
+    })
+    const editButton = wrapper
+      .findAll('button')
+      .find((button) => button.findComponent(PhPencilSimple).exists())
+    await editButton!.trigger('click')
+    await wrapper.get('textarea').setValue('改过的话')
+    await wrapper.get('textarea').trigger('keydown', { key: 'Enter', ctrlKey: true })
+    await nextTick()
+    await nextTick()
+
+    const textarea = wrapper.get('textarea').element as HTMLTextAreaElement
+    expect(textarea.value).toBe('改过的话')
+    expect(document.activeElement).toBe(textarea)
+    expect(textarea.selectionStart).toBe('改过的话'.length)
+    wrapper.unmount()
+  })
+
+  it('renders copy and edit as focusable buttons with accessible names', () => {
+    const wrapper = mount(UserBubble, { props: { id: 'toolbar', content: '一句话' } })
+    const buttons = wrapper.findAll('.tools button')
+    expect(buttons).toHaveLength(2)
+    for (const button of buttons) {
+      expect(button.attributes('aria-label')).toBeTruthy()
+    }
+    wrapper.unmount()
+  })
+})

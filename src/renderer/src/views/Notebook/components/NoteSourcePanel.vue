@@ -622,7 +622,7 @@ const handleDrop = async (e: DragEvent): Promise<void> => {
           :disabled="isTraining || sources.length === 0"
           @click="$emit('train')"
         >
-          <PhBrain />
+          <template #icon><PhBrain /></template>
           {{ t('notebook.source.trainKnowledge') }}
         </AppButton>
 
@@ -660,11 +660,13 @@ const handleDrop = async (e: DragEvent): Promise<void> => {
     >
       <div class="add-btn-wrapper">
         <AppButton class="main-add-btn" block @click="openAddSource?.()">
-          <PhPlus /> {{ t('notebook.source.addSource') }}
+          <template #icon><PhPlus /></template>
+          {{ t('notebook.source.addSource') }}
         </AppButton>
       </div>
       <AppButton class="add-note-btn" block @click="openNoteEditor?.()">
-        <PhFileText /> {{ t('notebook.source.addNote') }}
+        <template #icon><PhFileText /></template>
+        {{ t('notebook.source.addNote') }}
       </AppButton>
     </div>
 

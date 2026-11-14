@@ -1281,6 +1281,18 @@ function closeAgentModelDropdown(): void {
   showAgentModelDropdown.value = false
 }
 
+/** 模型面板可能是被拦截自动打开的，焦点不在面板里，Esc 在 document 上兜一层 */
+function closeAgentModelDropdownOnEscape(event: KeyboardEvent): void {
+  if (event.key !== 'Escape' || event.defaultPrevented) return
+  event.preventDefault()
+  closeAgentModelDropdown()
+}
+watch(showAgentModelDropdown, (visible) => {
+  if (visible) document.addEventListener('keydown', closeAgentModelDropdownOnEscape)
+  else document.removeEventListener('keydown', closeAgentModelDropdownOnEscape)
+})
+onUnmounted(() => document.removeEventListener('keydown', closeAgentModelDropdownOnEscape))
+
 function openModelSettings(): void {
   closeAgentModelDropdown()
   void router.push({ path: '/preferences', query: { tab: 'models' } })
@@ -3127,18 +3139,28 @@ function submitText(text: string): void {
     pendingExcelFiles.value.length > 0 ||
     pendingDocFiles.value.length > 0
   if (hasDraft) {
-    restoreText(text)
+    // 同一张卡片点第二次：草稿已经以这段文字开头，不再插一遍
+    if (!content.value.trimStart().startsWith(text.trim())) restoreText(text)
     return
   }
   content.value = text
   window.setTimeout(() => handleSend(), 0)
 }
 
-/** 没选模型时的拦截：打开模型选择并提示。发送和重新生成、编辑重发共用 */
-function promptAgentModelRequired(): void {
+/**
+ * 没选模型时的拦截：打开模型选择并提示。发送和重新生成、编辑重发共用。
+ * 重新生成、编辑重发不碰输入框，提示里不提草稿。
+ */
+function promptAgentModelRequired(keepsDraft = true): void {
   showAgentModelDropdown.value = true
   syncAgentModelDropdownHeight()
-  message.info(t('assistantInputComposer.model.required'))
+  message.info(
+    t(
+      keepsDraft
+        ? 'assistantInputComposer.model.required'
+        : 'assistantInputComposer.model.requiredNoDraft'
+    )
+  )
   void loadAgentModels()
 }
 
@@ -3148,9 +3170,10 @@ function promptAgentModelRequired(): void {
  *
  * 打开面板推迟到这次点击冒泡完：面板挂着 click-outside，同一下点击会把它当场关掉。
  */
-function requireAgentModel(): boolean {
+function requireAgentModel(options: { keepsDraft?: boolean } = {}): boolean {
   if (agentModelCatalog.value?.selected) return true
-  window.setTimeout(promptAgentModelRequired, 0)
+  const keepsDraft = options.keepsDraft ?? true
+  window.setTimeout(() => promptAgentModelRequired(keepsDraft), 0)
   return false
 }
 
@@ -3183,10 +3206,11 @@ function handleKeydown(e: KeyboardEvent): void {
 
   // Esc：有菜单先关菜单，没有菜单而在跑就停下这一轮
   if (e.key === 'Escape') {
-    if (showMentionPopover.value || showWikiPopover.value) {
+    if (showMentionPopover.value || showWikiPopover.value || showAgentModelDropdown.value) {
       e.preventDefault()
       showMentionPopover.value = false
       showWikiPopover.value = false
+      showAgentModelDropdown.value = false
       return
     }
     if (props.isGenerating) {

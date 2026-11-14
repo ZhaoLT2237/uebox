@@ -77,10 +77,9 @@ const pageHeaders: Record<string, { titleKey: string }> = {
   team: {
     titleKey: 'profile.team.title'
   },
-  // 面板里已经有「对外暴露虚幻引擎能力」这个小标题，页面 Header 用
-  // client 的标题会在同一屏出现两次一模一样的文字（上一版就是这样）。
+  // 面板里每一节都有自己的小标题，页面标题与左栏一致即可
   mcp: {
-    titleKey: 'mcp.client.title'
+    titleKey: 'profile.menu.mcp'
   },
   agentV3Debug: {
     titleKey: 'profile.menu.agentV3Debug'

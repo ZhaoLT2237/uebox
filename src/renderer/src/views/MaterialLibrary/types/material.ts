@@ -116,13 +116,6 @@ export const MATERIAL_ENTRY_LABELS: Record<MaterialEntryType, string> = {
   function: '材质函数'
 }
 
-export const MATERIAL_COMPILE_LABELS: Record<MaterialCompileStatus, string> = {
-  success: '正常',
-  warning: '警告',
-  error: '错误',
-  unknown: '未知'
-}
-
 const MATERIAL_COVER_STYLES: Record<MaterialEntryType, string> = {
   material: 'background: #131920; box-shadow: inset 0 -3px 0 0 #f59e0b;',
   instance: 'background: #131920; box-shadow: inset 0 -3px 0 0 #06b6d4;',
@@ -135,10 +128,6 @@ export function getMaterialCoverStyle(entryType: MaterialEntryType): string {
 
 export function getMaterialEntryLabel(entryType: MaterialEntryType): string {
   return MATERIAL_ENTRY_LABELS[entryType]
-}
-
-export function getMaterialCompileLabel(status: MaterialCompileStatus): string {
-  return MATERIAL_COMPILE_LABELS[status]
 }
 
 export function createEmptyGraphSummary(): MaterialGraphSummary {

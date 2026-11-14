@@ -179,10 +179,12 @@ async function repairEngineResidue(): Promise<void> {
           <div class="setting-info">
             <div class="setting-label">{{ $t('profile.plugin.connectedProjects') }}</div>
             <!--
-              连接方向是反的：插件主动连过来，断了每 5 秒自己重试。
-              这里把它说出来，省得用户去找一个不存在的「连接」按钮。
+              连接方向是反的：插件主动连过来，断了每 5 秒自己重试，界面上没有「连接」按钮。
+              只在一个都没连上时说原因；连上了就没什么要解释的。
             -->
-            <div class="setting-desc">{{ $t('profile.plugin.connectedProjectsDesc') }}</div>
+            <div v-if="connectedProjects?.length === 0" class="setting-desc">
+              {{ $t('profile.plugin.connectedProjectsDesc') }}
+            </div>
           </div>
           <AppTag>{{ connectedProjects?.length ?? '—' }}</AppTag>
         </div>

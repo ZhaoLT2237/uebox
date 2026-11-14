@@ -915,6 +915,8 @@ interface Emits {
   (e: 'import-files'): void
   (e: 'import-folder'): void
   (e: 'clear-filters'): void
+  /** 这些资产 / 文件夹已从当前列表移除（删除、恢复、彻底删除成功） */
+  (e: 'items-removed', keys: string[]): void
 }
 const emit = defineEmits<Emits>()
 
@@ -3312,6 +3314,17 @@ const handleItemClick = (file: AssetDataRow | FolderItem, event: MouseEvent): vo
   // 调用选择逻辑（处理多选等）
   handleSelectionClick(fileId, event)
 
+  // Ctrl+点击取消了这一项：详情面板改显示剩余选中里最后选的那一项，没有剩余就清空
+  if (!isSelected(fileId)) {
+    const remainingIds = getSelectedIds()
+    const lastId = remainingIds[remainingIds.length - 1]
+    const remaining = lastId ? props.files.find((item) => getItemId(item) === lastId) : undefined
+    if (!remaining) emit('empty-click')
+    else if (remaining.type === 'folder') emit('folder-select', remaining as FolderItem)
+    else emit('file-click', remaining as AssetDataRow)
+    return
+  }
+
   // 根据类型触发不同事件更新详情面板
   if ((file as FolderItem).type === 'folder') {
     // Some drag/selection flows swallow native dblclick on folder cards.
@@ -5195,6 +5208,7 @@ const handleRenameFolderConfirm = async (folderKey: string, newName: string) => 
 
 // 执行混合批量删除（文件与文件夹）
 const performMixedDelete = async (assetKeys: string[], folderKeys: string[]) => {
+  const removedKeys: string[] = []
   try {
     // 局域网协作库使用硬删除，避免 UNIQUE 约束冲突
     const isNetworkVault = currentVault.value?.vaultType === VaultType.NETWORK
@@ -5234,6 +5248,7 @@ const performMixedDelete = async (assetKeys: string[], folderKeys: string[]) => 
               )
             }
             assetContext.removeFiles(successKeys)
+            removedKeys.push(...successKeys)
           } else {
             message.error(
               resolveErrorText(results[0]?.result?.error, t('assetFileList.delete.batchFailed'))
@@ -5260,6 +5275,7 @@ const performMixedDelete = async (assetKeys: string[], folderKeys: string[]) => 
               )
             }
             assetContext.removeFiles(assetKeys)
+            removedKeys.push(...assetKeys)
           } else {
             message.error(result.error || t('assetFileList.delete.batchFailed'))
           }
@@ -5268,6 +5284,7 @@ const performMixedDelete = async (assetKeys: string[], folderKeys: string[]) => 
           const result = await assetDataAPI.batchDelete(assetKeys)
           const deletedCount = (result as any)?.deleted ?? assetKeys.length
           message.success(t('assetFileList.delete.filesDeleted', { count: deletedCount }))
+          removedKeys.push(...assetKeys)
         }
       } catch (err) {
         console.error('批量删除文件失败:', err)
@@ -5337,6 +5354,7 @@ const performMixedDelete = async (assetKeys: string[], folderKeys: string[]) => 
             assetContext.removeTreeNodes(successfullyDeletedKeys)
             // 乐观移除右侧列表中的文件夹条目
             assetContext.removeFiles(successfullyDeletedKeys)
+            removedKeys.push(...successfullyDeletedKeys)
           }
           if (failedKey) {
             message.warning(
@@ -5351,6 +5369,7 @@ const performMixedDelete = async (assetKeys: string[], folderKeys: string[]) => 
           await assetFolderAPI.batchDelete(folderKeys.map(String))
           // 本地库：全部成功才走到这里，移除所有选中的文件夹
           assetContext.removeTreeNodes(folderKeys.map(String))
+          removedKeys.push(...folderKeys.map(String))
         }
       } catch (err) {
         console.error('批量删除文件夹失败:', err)
@@ -5364,6 +5383,7 @@ const performMixedDelete = async (assetKeys: string[], folderKeys: string[]) => 
     }
   } finally {
     clearSelection()
+    if (removedKeys.length > 0) emit('items-removed', removedKeys)
   }
 }
 
@@ -5430,6 +5450,8 @@ const performRestoreInTrash = async (assetKeys: string[], folderKeys: string[]):
 
     if (restoredKeys.length > 0) {
       assetContext.removeFiles(restoredKeys)
+      setSelected(restoredKeys, false)
+      emit('items-removed', restoredKeys)
       // 文件夹回来了，树上得看得见
       if (folderKeys.length > 0) await assetContext.refreshTree()
     }
@@ -5484,6 +5506,8 @@ const performPermanentDeleteInTrash = async (
           )
         }
         assetContext.removeFiles(successKeys)
+        setSelected(successKeys, false)
+        emit('items-removed', successKeys)
       } else {
         message.error(
           resolveErrorText(
@@ -5526,6 +5550,8 @@ const performPermanentDeleteInTrash = async (
         )
       }
       assetContext.removeFiles(successKeys)
+      setSelected(successKeys, false)
+      emit('items-removed', successKeys)
       if (folderKeys.length > 0) await assetContext.refreshTree()
     } else {
       message.error(t('assetFileList.delete.permanentDeleteFailed'))

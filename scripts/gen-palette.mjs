@@ -589,7 +589,7 @@ ${Object.entries(inverseAnchors)
   /* 表面 */
   --color-bg-page: var(--n-950);
   --color-bg-surface: var(--n-925);
-  --color-bg-surface-hover: var(--n-900);
+  --color-bg-surface-hover: var(--n-865);
   --color-bg-option: var(--n-910);
   --color-bg-option-hover: var(--n-880);
   --color-bg-option-selected: var(--n-865);
@@ -765,8 +765,8 @@ ${Object.keys(SPHERE_HUES)
   --color-border-focus: var(--accent-700);
 
   --color-accent-text: var(--accent-text-light);
-  --color-accent-bg: var(--accent-100);
-  --color-accent-bg-hover: var(--accent-200);
+  --color-accent-bg: var(--accent-200);
+  --color-accent-bg-hover: var(--accent-300);
   --color-accent-border: var(--accent-600);
   --color-accent-solid: var(--accent-solid);
   --color-accent-solid-hover: var(--accent-solid-hover);
@@ -847,7 +847,8 @@ const roles = {
   dark: {
     bgPage: neutral[950],
     bgSurface: neutral[925],
-    bgSurfaceHover: neutral[900],
+    // 菜单浮在 bgRaised（n-900）上，悬停要比它亮一档，否则深色下菜单的悬停和键盘焦点都看不出来
+    bgSurfaceHover: neutral[865],
     bgOption: neutral[910],
     bgOptionHover: neutral[880],
     bgOptionSelected: neutral[865],
@@ -909,7 +910,7 @@ const roles = {
     borderOption: neutral[90],
     borderStrong: neutral[600],
     accentText: lightText.accent,
-    accentBg: ramps.accent[100],
+    accentBg: ramps.accent[200],
     accentBorder: ramps.accent[600],
     accentSolid: solid.accent,
     accentSolidHover: solidHover.accent,

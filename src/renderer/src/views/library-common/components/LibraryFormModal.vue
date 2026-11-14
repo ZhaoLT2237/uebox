@@ -34,8 +34,6 @@ const props = withDefaults(
     confirmDisabled?: boolean
     /** 高级区是否展开（v-model:advancedExpanded），有 advanced 插槽时才有意义 */
     advancedExpanded?: boolean
-    /** 高级区折叠条上的次要提示，如「蓝图类型、引擎版本、描述」 */
-    advancedHint?: string
     /** 高级区折叠条主文案，默认「高级设置」 */
     advancedLabel?: string
   }>(),
@@ -46,7 +44,6 @@ const props = withDefaults(
     cancelText: '',
     confirmDisabled: false,
     advancedExpanded: false,
-    advancedHint: '',
     advancedLabel: ''
   }
 )
@@ -127,7 +124,6 @@ function toggleAdvanced(): void {
 
             <div v-if="$slots.advanced" class="advanced-section">
               <button type="button" class="advanced-toggle" @click="toggleAdvanced">
-                <span v-if="advancedHint" class="toggle-hint">{{ advancedHint }}</span>
                 <span class="toggle-text">{{ advancedLabelText }}</span>
                 <span class="toggle-icon" :class="{ expanded: advancedExpanded }">
                   <svg
@@ -318,13 +314,6 @@ function toggleAdvanced(): void {
 
   &:hover {
     color: var(--color-text-primary);
-  }
-
-  .toggle-hint {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    margin-right: auto;
-    order: 1;
   }
 
   .toggle-text {

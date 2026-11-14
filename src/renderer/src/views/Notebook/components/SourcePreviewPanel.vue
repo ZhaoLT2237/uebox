@@ -145,14 +145,12 @@ const handleOpenUrl = (): void => {
           class="action-btn"
           @click="showingRaw = !showingRaw"
         >
-          <PhFileText />
-          <span>{{
-            showingRaw ? $t('notebook.source.viewCleaned') : $t('notebook.source.viewRaw')
-          }}</span>
+          <template #icon><PhFileText /></template>
+          {{ showingRaw ? $t('notebook.source.viewCleaned') : $t('notebook.source.viewRaw') }}
         </AppButton>
         <AppButton v-if="source.sourceUrl" variant="text" class="action-btn" @click="handleOpenUrl">
-          <PhLink />
-          <span>{{ $t('notebookSourcePreviewPanel.openOriginalLink') }}</span>
+          <template #icon><PhLink /></template>
+          {{ $t('notebookSourcePreviewPanel.openOriginalLink') }}
         </AppButton>
       </div>
     </div>

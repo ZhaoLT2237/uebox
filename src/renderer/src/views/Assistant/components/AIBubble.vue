@@ -519,22 +519,39 @@
     >
       <PhCheck v-if="status === 'done' && isCopied" class="tool copied" />
       <AppTooltip v-else-if="status === 'done'" :title="t('assistant.chat.copy')">
-        <PhCopy class="tool" :aria-label="t('assistant.chat.copy')" @click="emitCopy" />
+        <AppButton
+          variant="text"
+          class="tool tool-button"
+          :aria-label="t('assistant.chat.copy')"
+          @click="emitCopy"
+        >
+          <PhCopy aria-hidden="true" />
+        </AppButton>
       </AppTooltip>
       <AppTooltip v-if="status === 'done'" :title="t('assistant.chat.regenerate')">
-        <PhArrowClockwise
-          class="tool"
+        <AppButton
+          variant="text"
+          class="tool tool-button"
           :aria-label="t('assistant.chat.regenerate')"
           @click="emitRetry"
-        />
+        >
+          <PhArrowClockwise aria-hidden="true" />
+        </AppButton>
       </AppTooltip>
       <AppTooltip v-if="status === 'done'" :title="t('assistant.branch.tooltip')">
-        <PhGitBranch class="tool" @click="emitBranch" />
+        <AppButton
+          variant="text"
+          class="tool tool-button"
+          :aria-label="t('assistant.branch.tooltip')"
+          @click="emitBranch"
+        >
+          <PhGitBranch aria-hidden="true" />
+        </AppButton>
       </AppTooltip>
       <AppTooltip v-if="status === 'done'" :title="readAloud.label.value">
         <AppButton
           variant="text"
-          class="tool read-aloud-tool"
+          class="tool tool-button read-aloud-tool"
           :aria-label="readAloud.label.value"
           :aria-pressed="readAloud.active.value"
           :class="{ 'read-aloud-active': readAloud.active.value }"
@@ -2156,7 +2173,7 @@ function toggleChanges(): void {
   color: var(--color-text-primary);
 }
 
-.read-aloud-tool {
+.tool-button {
   padding: 0;
   min-width: 0;
   height: auto;
@@ -2308,7 +2325,8 @@ function toggleChanges(): void {
   transition: opacity 0.15s ease;
 }
 
-.ai-bubble:hover .tools.hover-done {
+.ai-bubble:hover .tools.hover-done,
+.ai-bubble:focus-within .tools.hover-done {
   opacity: 1;
   pointer-events: auto;
 }

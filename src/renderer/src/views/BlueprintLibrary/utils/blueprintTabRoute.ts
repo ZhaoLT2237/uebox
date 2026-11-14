@@ -1,4 +1,8 @@
-import { createLibraryTabRouteFactory } from '@renderer/views/library-common/utils/libraryTabRoute'
+import {
+  createLibraryTabRouteFactory,
+  type LibraryEditorRouteLocation,
+  type LibraryEditorTabReuse
+} from '@renderer/views/library-common/utils/libraryTabRoute'
 
 /** 蓝图编辑器"专用 tab"路由工具（实现见 library-common 工厂） */
 const factory = createLibraryTabRouteFactory({
@@ -10,6 +14,9 @@ export function createBlueprintTabId(): string {
   return factory.createTabId()
 }
 
-export function buildBlueprintEditorRoute(id: string) {
-  return factory.buildEditorRoute(id)
+export function buildBlueprintEditorRoute(
+  id: string,
+  reuse?: LibraryEditorTabReuse
+): LibraryEditorRouteLocation {
+  return factory.buildEditorRoute(id, reuse)
 }

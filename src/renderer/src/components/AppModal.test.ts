@@ -179,6 +179,16 @@ describe('AppModal', () => {
     expect(locked.emitted('update:open')).toBeUndefined()
   })
 
+  it('焦点丢到 body 上时 Esc 只关最上面那个弹窗', async () => {
+    const lower = mountModal({ title: '下层' })
+    const upper = mountModal({ title: '上层' })
+    await Promise.resolve()
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
+    expect(upper.emitted('update:open')).toEqual([[false]])
+    expect(lower.emitted('update:open')).toBeUndefined()
+  })
+
   it('确定按钮发 ok，取消按钮发 cancel', async () => {
     const wrapper = mountModal()
     const buttons = document.querySelectorAll<HTMLElement>('.app-modal__footer button')
