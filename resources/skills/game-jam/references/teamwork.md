@@ -51,7 +51,6 @@ Unreal assets are binary; two people editing the same asset cannot be merged.
 ## Each member and UE Box
 
 - Each member runs UE Box on their own machine, connected to their own copy of the project.
-- Each member claims their own MegaJam plan with their own account and itch.io profile.
 - Agent work lands in the project like any other change: commit it, push it, tell the team.
 - `/team` inside one member's UE Box is a different thing from the human team: it spawns agent
   teammates in that one project. Use it for parallel agent work on one machine, not to

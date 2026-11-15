@@ -1462,7 +1462,7 @@ export function buildAllTools(deps: BuildToolsDeps = {}): UnrealAgentTool<never>
     ...projectPackageTools(),
     // 录玩法视频：录打包版窗口或 PIE 窗口，不依赖编辑器连接
     createRecordGameplayTool() as unknown as UnrealAgentTool<never>,
-    // 对话里替用户连接 Box Plan、领 MegaJam 套餐、导入模型。登录和「允许」仍由用户在浏览器里点
+    // 对话里替用户连接 Box Plan、导入模型。登录和「允许」仍由用户在浏览器里点
     createBoxPlanTool() as unknown as UnrealAgentTool<never>,
     // 装 / 更新工程里的插件。插件太旧或没装上时引擎正连不上，所以同样不在 ue.* 下
     createProjectUpdatePluginTool() as unknown as UnrealAgentTool<never>,

@@ -74,7 +74,7 @@ Judges play many entries; most decide in the first minute.
 
 ## Audio list
 
-Write this list with the player on day 2 and fill it on day 3:
+Write this list with the player on day 2 and fill it in the middle days:
 
 - Music: menu loop, gameplay loop (60–120 s, seamless), win sting, lose sting.
 - Player: footsteps, jump, land, hurt, death.
@@ -87,7 +87,7 @@ Balance: music lower than effects; nothing clips; mute option in the menu if che
 
 ## Playtesting
 
-- Day 3: one person who has never seen the game plays it without help while the player watches
+- Middle days: one person who has never seen the game plays it without help while the player watches
   silently. Note where they get stuck, what they ignore, when they smile.
 - Fix the top three problems only.
-- Day 4: one last full playthrough of the packaged build before uploading.
+- Last day: one last full playthrough of the packaged build before uploading.

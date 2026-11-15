@@ -8,7 +8,7 @@
 - The smoke test fails
 - The video is empty, black or shows the editor
 - The English check still lists text
-- Box Plan and the MegaJam plan
+- Box Plan
 - Running out of time
 
 ## UE Box does not see the editor
@@ -70,13 +70,10 @@ Package once on day two so these surface early.
 - Text built at runtime from Blueprints (Append, Format Text) shows up through its pieces;
   fix the literals.
 
-## Box Plan and the MegaJam plan
+## Box Plan
 
 | Message | Meaning | What to do |
 | --- | --- | --- |
-| Wrong link format | Not an itch.io profile URL | Use `https://name.itch.io` |
-| Already claimed | This account has a MegaJam plan | Each person claims with their own account |
-| All claimed / claiming ended | No plans left, or past the deadline | Use another provider in Settings → Models |
 | Authorization expired | The Box Plan key is no longer valid | Box Plan → Connect again |
 | Quota used up | The plan's quota is spent | Switch the model in Settings → Models |
 

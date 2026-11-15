@@ -36,7 +36,7 @@ Judges open many pages; the page decides whether they download.
 
 ## Upload the build
 
-- Zip from `project_zip_build`, named `TeamName_GameName.zip`, under 1 GB.
+- Zip from `project_zip_build`, named the way the rules ask (often `TeamName_GameName.zip`).
 - Under 1 GB: upload in the browser on the project's edit page, tick "Windows" for the file.
   Upload hours before the deadline; large uploads from China can be slow or stall — retry on a
   stable connection.
@@ -58,12 +58,12 @@ Judges open many pages; the page decides whether they download.
 | 40–55 s | The ending or a win, then the title card |
 
 Record several takes with `record_gameplay_video`, pick the best. If the player wants cuts or
-a title card, a simple editor is enough; keep the music from the game. No other trademarks or
-logos in the video.
+a title card, a simple editor is enough; keep the music from the game. Keep out any trademarks
+or logos the rules forbid.
 
 ## Host the video
 
-The rules ask for a video link. Pick a host judges outside China can open:
+If the rules ask for a video link, pick a host the judges can open:
 
 - YouTube (unlisted is fine) — safest for judges.
 - Bilibili — opens abroad but can be slow; acceptable if YouTube is unavailable.
@@ -73,15 +73,16 @@ Check before submitting: the link opens in a private browser window without logg
 
 ## The jam submission form
 
-On the jam page → Submit your project → choose the itch project, then fill in English:
+On the jam page → Submit your project → choose the itch project, then fill in what the jam's
+form asks for, in the language the rules require. A typical set:
 
 ```
 Team name: <Team>
 Members:
-- <Full name> — <email of their Epic Games account> (Team Owner)
-- <Full name> — <email of their Epic Games account>
+- <Full name> — <email or account the rules ask for> (Team Owner)
+- <Full name> — <email or account the rules ask for>
 Game name: <Game>
-Gameplay video (30–60 s): <link>
+Gameplay video: <link>
 Dev log: <link to DevLog page or itch devlog post>
 Sourced assets: <list, or "None">
 Tools prepared before the jam: <see declaration below>
@@ -89,13 +90,15 @@ Tools prepared before the jam: <see declaration below>
 
 ## Declaration of tools prepared before the jam
 
+If the rules ask for one:
+
 ```
-Prepared before the jam (allowed by the Official Rules, declared here):
+Prepared before the jam (declared here):
 - UE Box <version> (open-source AI agent for Unreal Editor) and its built-in skills,
   including the game-jam skill.
 - AI models used through UE Box: <providers / plans>.
 - MCP configuration for <Claude Code / Codex>, if used.
-- Prompt libraries or scripts written before Nov 12: <list, or "None">.
+- Prompt libraries or scripts written before the jam started: <list, or "None">.
 All gameplay, levels and art were created during the jam period. Git history is available on
 request.
 ```
@@ -114,7 +117,7 @@ Keep `DevLog.md` in the project root and publish it as an itch devlog post or a 
 from the entry.
 
 ```
-# <Game> — Dev Log (2026 Epic AI MegaJam)
+# <Game> — Dev Log (<Jam name>)
 
 Team: <names and roles>
 Theme: <theme> — our take: <one sentence>
@@ -136,12 +139,13 @@ Tools: UE Box <version>, <models>, <other tools>
 ## Final checklist
 
 - [ ] `project_smoke_test` passed on the final build.
-- [ ] `project_find_non_english_text` shows nothing players can see; voice lines are English.
-- [ ] Zip named `TeamName_GameName`, under 1 GB, uploaded and marked Windows.
-- [ ] itch page public, English, screenshots, video embedded.
-- [ ] Video 30–60 s, gameplay in the first five seconds, link opens without login.
-- [ ] Form filled in English with every member's Epic email and the Team Owner.
-- [ ] Sourced assets and tools prepared before the jam declared.
-- [ ] Submitted before 2026-11-16 09:59 Beijing time; the entry appears on the jam page.
-- [ ] On Box Plan: `box_plan` `submit_megajam_entry` with the public game page, for every team
-      member's own UE Box (this is what makes their jam usage refundable).
+- [ ] If the jam requires English: `project_find_non_english_text` shows nothing players can
+      see; voice lines are English.
+- [ ] Zip named as the rules ask, uploaded and marked with the right platform.
+- [ ] itch page public, screenshots, video embedded.
+- [ ] Video at the length the rules ask, gameplay in the first five seconds, link opens without
+      login.
+- [ ] Form filled with everything the jam asks for, for every member.
+- [ ] Sourced assets and tools prepared before the jam declared, if the rules ask.
+- [ ] Submitted before the deadline (checked in the player's time zone); the entry appears on
+      the jam page.

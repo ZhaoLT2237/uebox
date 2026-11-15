@@ -77,9 +77,9 @@ Cut first: <ordered list>
 
 - **Must-have** — the loop, controls, win/lose, restart, a menu, an end screen. Day 1–2.
 - **Should-have** — feedback and juice, a difficulty ramp, art pass, music and sound on every
-  action, onboarding. Day 3.
-- **Nice-to-have** — extra levels, extra enemy or item types, cosmetic extras. Only if day 3 ends
-  ahead.
+  action, onboarding. Middle days.
+- **Nice-to-have** — extra levels, extra enemy or item types, cosmetic extras. Only if the middle
+  days end ahead.
 
 Anything with networking, save systems, procedural generation from scratch, or more than one
 camera mode is nice-to-have at best.
@@ -90,19 +90,21 @@ camera mode is nice-to-have at best.
   by playing the loop start to finish.
 - **Day 2**: main menu, end screen, the level in its final shape (still simple). Package. Create
   the itch page as a draft.
-- **Day 3**: everything in `craft.md` on what the player sees most; music and sound; the English
-  pass; one playtest with someone who has never seen the game.
-- **Day 4**: freeze features at noon. Bug fixing, balance, final package, video, dev log,
+- **Middle days**: everything in `craft.md` on what the player sees most; music and sound; the
+  English pass; one playtest with someone who has never seen the game.
+- **Last day**: freeze features at noon. Bug fixing, balance, final package, video, dev log,
   upload, submit.
 
 ## Scoring against the judging criteria
+
+Use the jam's own criteria. Common ones:
 
 | Criterion | Cheapest way to score |
 | --- | --- |
 | Ambition and innovation | One unexpected rule; say in the dev log what agents made possible |
 | Theme | The theme changes a rule of play; name it on the itch page |
 | Fun factor | Short loop, instant restart, clear goal, a moment that makes people laugh or gasp |
-| Gameplay | Responsive controls; tune speed, timing and forgiveness on day 3 |
+| Gameplay | Responsive controls; tune speed, timing and forgiveness in the middle days |
 | Visuals | One consistent style beats many detailed assets |
 | Level design and progression | First 30 seconds teach the mechanic; then raise the stakes |
 | Audio | A sound for every player action, music in menu and game, nothing silent |

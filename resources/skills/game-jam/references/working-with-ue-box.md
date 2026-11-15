@@ -43,10 +43,10 @@ guessing.
 - **Day 1**: 读一下设计里的核心循环，先只做玩家能拾取发光球、计数、集满 5 个算赢。做完跑试玩。
 - **Day 1**: 加失败条件：90 秒倒计时，到时间显示 Game Over，按 R 重开。
 - **Day 2**: 做主菜单（Play / Quit）和结束界面，开局进主菜单。然后打一次包、冒烟、压 zip。
-- **Day 3**: 按手感清单给拾取、受伤、胜利各加一个反馈：音效、屏幕抖动、粒子。
-- **Day 3**: 给拾取、跳跃、受伤、胜利、失败各生成一个音效，再生成一段 90 秒循环的紧张电子乐。
-- **Day 3**: 扫一下工程里还没换成英文的文字，玩家看得到的全部改成英文。
-- **Day 4**: 用打包版录 45 秒玩法视频，跳过前 3 秒加载，我来玩。
+- **Middle days**: 按手感清单给拾取、受伤、胜利各加一个反馈：音效、屏幕抖动、粒子。
+- **Middle days**: 给拾取、跳跃、受伤、胜利、失败各生成一个音效，再生成一段 90 秒循环的紧张电子乐。
+- **Middle days**: 扫一下工程里还没换成英文的文字，玩家看得到的全部改成英文。
+- **Last day**: 用打包版录 45 秒玩法视频，跳过前 3 秒加载，我来玩。
 
 ## Who does what
 
@@ -71,9 +71,9 @@ Generated assets vary in quality; generate a few, let the player pick, and keep 
 
 ## Keeping the quota and the context healthy
 
-- The MegaJam plan has a fixed quota for 7 days. Strong models cost more per request; use them
-  for design questions and hard bugs, and a cheaper model for routine edits if the player has
-  one configured.
+- Watch the model quota; check it before a big `/team` run. Strong models cost more per
+  request; use them for design questions and hard bugs, and a cheaper model for routine edits
+  if the player has one configured.
 - Long conversations get slow and expensive. Start a new conversation per feature or per day;
   `DevLog.md` carries the context across.
 - When the plan quota runs out, switch models in Settings → Models. Nothing in the project is

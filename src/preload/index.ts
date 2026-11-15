@@ -2397,13 +2397,6 @@ const api = {
     disconnect: () => ipcRenderer.invoke('creator-plan:disconnect'),
     /** 打开清单里的 manage_url。对话里的套餐错误提示用 */
     openManage: () => ipcRenderer.invoke('creator-plan:open-manage'),
-    /** 活动状态（MegaJam）。没连接时不联网 */
-    campaign: () => ipcRenderer.invoke('creator-plan:campaign'),
-    /** 参赛登记，填 itch.io 主页 */
-    claimCampaign: (itchUrl: string) => ipcRenderer.invoke('creator-plan:campaign-claim', itchUrl),
-    /** 交卷，填 itch 作品页 */
-    submitCampaignEntry: (entryUrl: string) =>
-      ipcRenderer.invoke('creator-plan:campaign-submit', entryUrl),
     onDeviceCode: (listener: (prompt: { userCode: string; verificationUri: string }) => void) => {
       const handler = (_: Electron.IpcRendererEvent, prompt: unknown): void =>
         listener(prompt as { userCode: string; verificationUri: string })

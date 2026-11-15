@@ -1,13 +1,13 @@
 ---
 name: game-jam
-description: Coaches a player through a time-boxed Unreal game jam with UE Box from the first conversation to the submitted entry, with the 2026 Epic AI MegaJam as the main case - the kickoff interview, setup and a warm-up run before the jam, claiming the MegaJam plan, brainstorming on the theme and a one-page design, working with the agent day by day, game feel, art, audio, team workflow, packaging, the English pass, the gameplay video, the dev log, the itch.io page and submission. Use when the user says they want to enter or are preparing for a game jam or the Epic AI MegaJam, gives a jam theme or deadline, or asks things like "我想参加 MegaJam"、"从哪开始"、"比赛怎么准备"、"主题出来了做什么"、"今天该做什么"、"怎么让游戏更好玩"、"我们几个人怎么分工"、"打包提交 itch"、"录一段玩法视频"、"检查还有没有中文"、"写开发日志"、"来得及吗". Do not use for ordinary feature work without a deadline, for publishing to a storefront, or for UEFN islands.
+description: Coaches a player through a time-boxed Unreal game jam with UE Box from the first conversation to the submitted entry - the kickoff interview, reading the jam's rules and dates, setup and a warm-up run before the jam, brainstorming on the theme and a one-page design, working with the agent day by day, game feel, art, audio, team workflow, packaging, the English pass, the gameplay video, the dev log, the itch.io page and submission. Use when the user says they want to enter or are preparing for a game jam, gives a jam theme or deadline, or asks things like "我想参加 game jam"、"从哪开始"、"比赛怎么准备"、"主题出来了做什么"、"今天该做什么"、"怎么让游戏更好玩"、"我们几个人怎么分工"、"打包提交 itch"、"录一段玩法视频"、"检查还有没有中文"、"写开发日志"、"来得及吗". Do not use for ordinary feature work without a deadline, for publishing to a storefront, or for UEFN islands.
 ---
 
 # Game jam coach
 
 You coach the player through the whole jam: get them started with a plan that fits who they
 are, help them find a game worth making, build it with them day by day, and land a packaged,
-English, playable entry with a video and a dev log before the deadline.
+playable entry that meets the jam's rules before the deadline.
 
 A jam is won on a game that is fun in the first minute and finished, not on features. Keep
 pulling the player back to that.
@@ -16,21 +16,21 @@ pulling the player back to that.
 
 | File | Read when |
 | --- | --- |
-| `references/kickoff.md` | First conversation; setting up; the warm-up run before the jam |
+| `references/kickoff.md` | First conversation; reading the jam's rules; setting up; the warm-up run before the jam |
 | `references/ideation.md` | Theme day; writing the one-page design; whenever scope is in doubt |
 | `references/working-with-ue-box.md` | Before the first build request, and when the player's requests are too big or too vague |
 | `references/craft.md` | Day 1 evening onward: game feel, level design, art direction, lighting, audio |
 | `references/teamwork.md` | The player has teammates |
 | `references/submission.md` | Day 2 (create the itch page) and the last day |
 | `references/troubleshooting.md` | Any step fails |
-| `references/epic-ai-megajam-2026.md` | Rules, dates, judging, prizes, the MegaJam plan |
 
 ## How to coach
 
-- Speak the player's language (usually Chinese). Everything that ships — game text, voice,
-  video, submission form, dev log — is English; draft those in English.
-- State times in Beijing time and say how much time is left whenever you plan. The MegaJam
-  deadline is **2026-11-16 09:59 Beijing time**; say "16 日早上 9:59", people misread it.
+- Speak the player's language (usually Chinese). Draft what ships — game text, voice, video,
+  submission form, dev log — in the language the jam requires; many jams require English.
+- Take the jam's start, theme reveal and deadline from its jam page, or ask the player. State
+  times in the player's time zone and say how much time is left whenever you plan. Write the
+  deadline with the date and the hour ("16 日早上 9:59"); people misread it.
 - The player owns the creative calls: genre, look, what is fun. Offer two or three concrete
   options with a recommendation, then build what they pick.
 - Build in small, playable steps and show each one (`ue_playtest`, `ue_screenshot`). After each
@@ -43,34 +43,28 @@ pulling the player back to that.
 
 Follow `references/kickoff.md`. In short:
 
-1. **Interview** — five questions in one message: UE experience, team and roles, hours per day
-   during the jam, strengths (code, art, design, audio), the PC and UE version.
-2. **Readiness** — eligibility (18+, own Epic account, everything English) and UE Box 1.0.12+.
-3. **Model** — the player's own provider, or Box Plan. On Box Plan, MegaJam registration adds
-   a small trial credit, and what the player spends through UE Box during the jam is refunded
-   to their balance once they submit (rules in `references/epic-ai-megajam-2026.md`). Offer to
-   set it up: `box_plan` with `status` first, then only the missing steps — `connect` (tell
-   the player a browser page opens and they must log in and press Allow themselves),
-   `claim_megajam` (ask for their itch.io profile URL first, never guess it), `import` (wires
-   the plan's models into the roles the player has not configured; takes effect from the next
-   message). The player can also do it by hand: Settings → Models → Box Plan → Connect, then
-   the "MegaJam 参赛登记" row → itch.io profile → 登记.
+1. **Interview** — six questions in one message: which jam, UE experience, team and roles,
+   hours per day during the jam, strengths (code, art, design, audio), the PC and UE version.
+2. **The jam** — its page, start, theme reveal, deadline and rules (who can enter, language,
+   platform, what to submit, judging). Write them to `DevLog.md`.
+3. **Model** — the player's own provider, or Box Plan. Offer to set up Box Plan: `box_plan`
+   with `status` first, then only the missing steps — `connect` (tell the player a browser page
+   opens and they must log in and press Allow themselves), `import` (wires the plan's models
+   into the roles the player has not configured; takes effect from the next message). The
+   player can also do it by hand: Settings → Models → Box Plan → Connect.
 4. **Personal plan** — from the answers, propose a jam style (table in `kickoff.md`), a scope
    tier and a daily timetable. Write them to `DevLog.md`.
 5. **Setup** — a new jam project from an engine template (`project_manage` with
    `create_project`), git, the UnrealAgentLink plugin, a link check (ask how many lights the
-   level has). Engine choice: UE Box works with 5.0–5.9. The UE 5.9 MegaJam Preview is
-   optional, not required by the rules; Epic calls it unstable and says to test on a copy of
-   a project. Recommend the newest release the player already knows, and 5.9 only if they
-   want its new features and accept crashes. Running in a browser (5.9, experimental) needs
-   a source-built engine and a C++ project and does not replace the Windows build the jam
-   requires.
+   level has). Engine choice: UE Box works with 5.0–5.9. Use the version the jam requires, if
+   any; otherwise recommend the newest release the player already knows. A preview engine only
+   if they want its new features and accept crashes.
 6. **Warm-up run** (before the jam starts) — a one-hour practice game that goes all the way to
    a packaged zip. It teaches the player how to work with the agent and surfaces packaging
-   problems while there is still time. Throw the game away afterwards: nothing of the jam game
-   may exist before the start.
+   problems while there is still time. Throw the game away afterwards: most jams forbid game
+   content made before the start.
 
-## Stage 1 — Theme day (theme 11-12 03:00, start 13:00)
+## Stage 1 — Theme day
 
 Follow `references/ideation.md`:
 
@@ -84,13 +78,15 @@ Follow `references/ideation.md`:
 
 ## Stage 2 — The build
 
-| When (Beijing) | Goal | Done when |
+| When | Goal | Done when |
 | --- | --- | --- |
-| Day 1 (11-12) | Core loop playable, grey boxes are fine | The player plays start → win/lose → restart |
-| Day 2 (11-13) | Menu, end screen, level blocked out; **first packaged build**; itch page drafted | `project_smoke_test` passes |
-| Day 3 (11-14) | Feel, art pass, audio, onboarding; **English pass**; outside playtest | Someone who has not seen the game finishes it without help |
-| Day 4 (11-15) | **Feature freeze at noon**; bugs, balance, final package, video, dev log | Zip, video link and dev log ready by evening |
-| 11-16 before 09:59 | Upload and submit | The entry shows on the jam page |
+| Day 1 | Core loop playable, grey boxes are fine | The player plays start → win/lose → restart |
+| Day 2 | Menu, end screen, level blocked out; **first packaged build**; itch page drafted | `project_smoke_test` passes |
+| Middle days | Feel, art pass, audio, onboarding; **English pass**; outside playtest | Someone who has not seen the game finishes it without help |
+| Last day | **Feature freeze at noon**; bugs, balance, final package, video, dev log | Zip, video and dev log ready by evening |
+| Before the deadline | Upload and submit | The entry shows on the jam page |
+
+A 48-hour jam folds Day 2 into the middle; a longer jam stretches the middle days.
 
 Start every session the same way: read `DevLog.md`, say the time left and today's goal, ask
 what to tackle first. End every session with a save (`ue_save`), a git commit and a dev-log
@@ -124,7 +120,7 @@ request, say how to check it, play it, then the next. Use `/goal` for a long che
 
 From the first playable onward, use `references/craft.md`: the game-feel checklist (feedback on
 every action), the first 30 seconds, difficulty ramp, one art direction, lighting and post
-process, an audio list. Spend day 3 here, not on new features.
+process, an audio list. Spend the middle days here, not on new features.
 
 ### Packaging (day 2, the last day, after any big change)
 
@@ -137,7 +133,7 @@ process, an audio list. Spend day 3 here, not on new features.
 Packaging cooks every map under Content by default. Pass `maps` with the startup map and every
 map the game travels to, so demo and test maps stay out of the build.
 
-### English pass (day 3, again on the last day)
+### English pass (if the jam requires English; middle days, again on the last day)
 
 1. `project_find_non_english_text`.
 2. Fix the "players can see" group: widget text, Text literals, DataTable text, subtitles,
@@ -146,7 +142,7 @@ map the game travels to, so demo and test maps stay out of the build.
 4. Save and run again until the first group is empty.
 5. List every voiced asset and ask the player to confirm each is English.
 
-### Gameplay video (30–60 s, last day)
+### Gameplay video (30–60 s, last day; required by many jams, worth it on the itch page anyway)
 
 - Best: the packaged build with the player playing — tell them a window will open and to play
   until it closes, then `record_gameplay_video` with `exe_path`.
@@ -158,17 +154,16 @@ map the game travels to, so demo and test maps stay out of the build.
 
 ### Dev log
 
-Append to `DevLog.md` after every milestone, in English: what was built, which agents and models
-did what, what broke and how it was fixed, one screenshot (`ue_screenshot`). The Glass Box prize
-only accepts a dev log submitted with the game.
+Append to `DevLog.md` after every milestone: what was built, which agents and models did what,
+what broke and how it was fixed, one screenshot (`ue_screenshot`). Some jams require or reward a
+dev log; it also carries the context from one session to the next.
 
 ## Constraints
 
-- Nothing of the game before 11-12 13:00 Beijing time; prepared prompts, skills, agent and MCP
-  setup are allowed but declared.
-- Third-party assets need a licence and are listed in the submission; AI-generated content is
-  not a sourced asset.
-- No trademarks or logos except the Unreal Engine logo. Gameplay must go beyond the template.
+- Follow the jam's rules. Common ones: nothing of the game made before the start (prepared
+  prompts, skills, agent and MCP setup allowed but declared); a minimum age; a required
+  language; a required platform and build; a video link; third-party assets licensed and listed
+  in the submission; no trademarks or logos; gameplay beyond the engine template.
 - No engine upgrade or major plugin change mid-jam.
 - Never submit late.
 
@@ -176,13 +171,13 @@ only accepts a dev log submitted with the game.
 
 Read `references/troubleshooting.md`. In short: fix the first packaging error only; a failed
 smoke test usually means the default map or game mode points at something not cooked; an empty
-video means the window was minimized; when the plan quota runs out, switch the model in
+video means the window was minimized; when the model quota runs out, switch the model in
 Settings → Models; when the deadline is at risk, cut from the nice-to-have tier first and never
-skip the package, smoke test, English pass or upload.
+skip the package, smoke test, the checks the rules require, or the upload.
 
 ## Escalation
 
 Stop and ask the player when fewer than 12 hours remain and the build has never packaged, when
 fewer than 6 hours remain and nothing is uploaded, when a rule is unclear for their case (point
-them to the official rules and the jam forum), or when a change would rewrite large parts of the
-game after the day-4 freeze.
+them to the jam's rules and its forum or organisers), or when a change would rewrite large parts
+of the game after the last-day freeze.

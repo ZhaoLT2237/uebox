@@ -894,29 +894,7 @@ First work out why the install failed from the output above. If you can run comm
         bad_response: 'The Box Plan service sent an unexpected response',
         not_connected: 'Not connected yet',
         encryption_unavailable: "Can't store the key securely",
-        invalid_itch_url: 'Enter your itch.io profile URL, for example https://yourname.itch.io',
-        itch_not_found: 'No such itch.io profile',
-        itch_taken: 'This itch.io profile is registered to another account',
-        already_claimed: 'This account is already registered',
-        sold_out: 'All spots are taken',
-        campaign_closed: 'Closed',
-        invalid_entry_url:
-          'Enter your itch.io game page, for example https://yourname.itch.io/game',
-        entry_not_found: 'No such itch.io game page',
         unknown: 'Something went wrong: {error}'
-      },
-      campaign: {
-        title: 'MegaJam registration',
-        itchLabel: 'itch.io profile',
-        claim: 'Register',
-        claimed: 'Registered. Trial credit added',
-        claimedShort: 'Registered',
-        expires: 'Trial expires {date}',
-        entryLabel: 'itch.io game page',
-        submit: 'Submit',
-        resubmit: 'Resubmit',
-        submitted: 'Entry submitted',
-        entry: 'Submitted: {url}'
       },
       chat: {
         subscription_inactive: {
@@ -2590,12 +2568,6 @@ Places to start: whether this .uproject can be read at all and which EngineAssoc
       greetingPrompt: '{greeting}'
     },
     suggestions: {
-      // Replaces the first card until 2026-11-16 10:00, see megaJamSuggestion.ts
-      megaJam: {
-        title: 'Join MegaJam',
-        desc: '2026 Epic AI MegaJam',
-        prompt: "I'm entering the 2026 Epic AI MegaJam. Walk me through the entry process."
-      },
       blueprintDebug: {
         title: 'Performance Analysis',
         desc: 'One-click performance check, display FPS and GPU time',

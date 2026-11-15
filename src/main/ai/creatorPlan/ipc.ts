@@ -12,9 +12,6 @@
  *   creator-plan:open-manage 打开清单里的 manage_url（对话里的套餐错误提示用）
  *   creator-plan:link-preview  网页链接带来的导入预览（没有回 null）
  *   creator-plan:link-dismiss  关掉链接导入的预览，丢掉那把 Key
- *   creator-plan:campaign    活动状态（campaign.ts）；没连接时回 open:false，不发请求
- *   creator-plan:campaign-claim 参赛登记（送试用套餐），成功后刷新清单
- *   creator-plan:campaign-submit 交卷（itch 作品页）
  *
  * 业务逻辑在 service.ts，agent 工具 box_plan 也走它。没连接时不发任何请求：
  * 连接只能由用户发起（点按钮，或让 agent 去连），浏览器里的登录和「允许」仍由用户自己点。
@@ -25,7 +22,6 @@ import { findMainWindow } from '../../appWindows'
 import type { ModelRole } from '../../../shared/aiProvider'
 import type {
   CreatorPlanApplyOptions,
-  CreatorPlanCampaign,
   CreatorPlanDisconnectResult,
   CreatorPlanLinkImportResult,
   CreatorPlanPreview,
@@ -34,10 +30,7 @@ import type {
 } from '../../../shared/creatorPlan'
 import {
   applyPlanRoles,
-  campaignStatus,
   cancelConnect,
-  claimPlanCampaign,
-  submitPlanCampaignEntry,
   connectPlan,
   disconnectPlan,
   dismissLinkImport,
@@ -133,23 +126,6 @@ export function registerCreatorPlanIPC(): void {
   ipcMain.handle(
     'creator-plan:disconnect',
     (): Promise<CreatorPlanResult<CreatorPlanDisconnectResult>> => wrap(disconnectPlan)
-  )
-
-  ipcMain.handle(
-    'creator-plan:campaign',
-    (): Promise<CreatorPlanResult<CreatorPlanCampaign>> => campaignStatus()
-  )
-
-  ipcMain.handle(
-    'creator-plan:campaign-claim',
-    (_event, itchUrl: string): Promise<CreatorPlanResult<{ expiresAt: string | null }>> =>
-      claimPlanCampaign(itchUrl)
-  )
-
-  ipcMain.handle(
-    'creator-plan:campaign-submit',
-    (_event, entryUrl: string): Promise<CreatorPlanResult<{ entryUrl: string | null }>> =>
-      submitPlanCampaignEntry(entryUrl)
   )
 
   ipcMain.handle('creator-plan:open-manage', () => openPlanManage())
