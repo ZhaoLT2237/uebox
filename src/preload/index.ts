@@ -2409,6 +2409,18 @@ const api = {
         listener(prompt as { userCode: string; verificationUri: string })
       ipcRenderer.on('creator-plan:device-code', handler)
       return () => ipcRenderer.removeListener('creator-plan:device-code', handler)
+    },
+    /** 网页链接 unrealbox://box-plan?key=… 带来的导入预览，没有回 null */
+    linkPreview: () => ipcRenderer.invoke('creator-plan:link-preview'),
+    linkDismiss: () => ipcRenderer.invoke('creator-plan:link-dismiss'),
+    /** 链接导入拉完清单（ok）或失败时推过来 */
+    onLinkImport: (
+      listener: (result: import('../shared/creatorPlan').CreatorPlanLinkImportResult) => void
+    ) => {
+      const handler = (_: Electron.IpcRendererEvent, result: unknown): void =>
+        listener(result as import('../shared/creatorPlan').CreatorPlanLinkImportResult)
+      ipcRenderer.on('creator-plan:link-import', handler)
+      return () => ipcRenderer.removeListener('creator-plan:link-import', handler)
     }
   },
   /**

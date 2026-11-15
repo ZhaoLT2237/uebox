@@ -12,6 +12,7 @@ import type {
   CreatorPlanCampaign,
   CreatorPlanDevicePrompt,
   CreatorPlanDisconnectResult,
+  CreatorPlanLinkImportResult,
   CreatorPlanPreview,
   CreatorPlanResult,
   CreatorPlanState
@@ -62,5 +63,13 @@ export const creatorPlanAPI = {
     await bridge()?.cancel()
   },
   onDeviceCode: (listener: (prompt: CreatorPlanDevicePrompt) => void): (() => void) =>
-    bridge()?.onDeviceCode(listener) ?? (() => {})
+    bridge()?.onDeviceCode(listener) ?? (() => {}),
+  /** 网页链接带来、还没处理的导入预览 */
+  linkPreview: async (): Promise<CreatorPlanPreview | null> =>
+    (await bridge()?.linkPreview()) ?? null,
+  linkDismiss: async (): Promise<void> => {
+    await bridge()?.linkDismiss()
+  },
+  onLinkImport: (listener: (result: CreatorPlanLinkImportResult) => void): (() => void) =>
+    bridge()?.onLinkImport(listener) ?? (() => {})
 }

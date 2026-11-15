@@ -10,6 +10,8 @@
  *                            勾了「对象存储」就换成套餐的存储（storage.ts）
  *   creator-plan:disconnect  在服务端吊销 Key → 删来源、还原绑定、删本机 Key
  *   creator-plan:open-manage 打开清单里的 manage_url（对话里的套餐错误提示用）
+ *   creator-plan:link-preview  网页链接带来的导入预览（没有回 null）
+ *   creator-plan:link-dismiss  关掉链接导入的预览，丢掉那把 Key
  *   creator-plan:campaign    活动状态（campaign.ts）；没连接时回 open:false，不发请求
  *   creator-plan:campaign-claim 参赛登记（送试用套餐），成功后刷新清单
  *   creator-plan:campaign-submit 交卷（itch 作品页）
@@ -19,11 +21,13 @@
  */
 
 import { ipcMain } from 'electron'
+import { findMainWindow } from '../../appWindows'
 import type { ModelRole } from '../../../shared/aiProvider'
 import type {
   CreatorPlanApplyOptions,
   CreatorPlanCampaign,
   CreatorPlanDisconnectResult,
+  CreatorPlanLinkImportResult,
   CreatorPlanPreview,
   CreatorPlanResult,
   CreatorPlanState
@@ -36,6 +40,9 @@ import {
   submitPlanCampaignEntry,
   connectPlan,
   disconnectPlan,
+  dismissLinkImport,
+  importPlanKey,
+  linkImportPreview,
   failResult,
   openPlanManage,
   planStateNow,
@@ -49,6 +56,41 @@ async function wrap<T>(run: () => Promise<T>): Promise<CreatorPlanResult<T>> {
   } catch (error) {
     return failResult(error)
   }
+}
+
+export const CREATOR_PLAN_LINK_CHANNEL = 'creator-plan:link-import'
+
+const KEY_PATTERN = /^(sk-)?[A-Za-z0-9_-]{16,128}$/
+
+/**
+ * 中转站网页「聊天 → UEBox」：`unrealbox://box-plan?key=sk-…`。
+ * 拉到清单后通知界面打开设置页的导入预览，用户在预览里点了导入才算连上。
+ */
+export function handlePlanDeepLink(raw: string): boolean {
+  if (!/^unrealbox:\/\/box-plan/i.test(raw)) return false
+  const notify = (payload: CreatorPlanLinkImportResult): void => {
+    const window = findMainWindow()
+    if (!window || window.isDestroyed()) return
+    window.webContents.send(CREATOR_PLAN_LINK_CHANNEL, payload)
+    if (window.isMinimized()) window.restore()
+    window.show()
+    window.focus()
+  }
+  let key = ''
+  try {
+    key = new URL(raw).searchParams.get('key')?.trim() ?? ''
+  } catch {
+    /* 下面按 Key 无效处理 */
+  }
+  if (!KEY_PATTERN.test(key)) {
+    notify({ ok: false, code: 'unauthorized', error: '' })
+    return true
+  }
+  if (!key.startsWith('sk-')) key = `sk-${key}`
+  importPlanKey(key)
+    .then(() => notify({ ok: true }))
+    .catch((error: unknown) => notify(failResult(error)))
+  return true
 }
 
 export function registerCreatorPlanIPC(): void {
@@ -70,6 +112,9 @@ export function registerCreatorPlanIPC(): void {
   )
 
   ipcMain.handle('creator-plan:cancel', () => cancelConnect())
+
+  ipcMain.handle('creator-plan:link-preview', () => linkImportPreview())
+  ipcMain.handle('creator-plan:link-dismiss', () => dismissLinkImport())
 
   ipcMain.handle(
     'creator-plan:preview',

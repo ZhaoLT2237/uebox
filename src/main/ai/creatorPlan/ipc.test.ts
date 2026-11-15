@@ -47,7 +47,10 @@ vi.mock('../store', () => ({
 vi.mock('../credentials', () => ({
   EncryptionUnavailableError: class extends Error {},
   resolveApiKey: async () => 'ubx-sk-local',
-  saveLiteralKey: async (id: string) => ({ kind: 'literal', id }),
+  saveLiteralKey: async (id: string, key: string) => {
+    log.push(`save:${key}`)
+    return { kind: 'literal', id }
+  },
   deleteLiteralKey: async (id: string) => {
     log.push(`delete:${id}`)
   }
@@ -80,7 +83,22 @@ const storage = {
 const restoredAt: string[][] = []
 vi.mock('./storage', () => storage)
 
-const { registerCreatorPlanIPC } = await import('./ipc')
+/** 链接导入推给主窗口的通知 */
+const sent: { channel: string; payload: unknown }[] = []
+vi.mock('../../appWindows', () => ({
+  findMainWindow: () => ({
+    isDestroyed: () => false,
+    isMinimized: () => false,
+    restore: () => {},
+    show: () => {},
+    focus: () => {},
+    webContents: {
+      send: (channel: string, payload: unknown) => sent.push({ channel, payload })
+    }
+  })
+}))
+
+const { registerCreatorPlanIPC, handlePlanDeepLink } = await import('./ipc')
 const { PLAN_KEY_ID, PLAN_PROVIDER_ID } = await import('./apply')
 const { CREATOR_PLAN_KEYS_URL } = await import('./endpoint')
 registerCreatorPlanIPC()
@@ -387,5 +405,80 @@ describe('对象存储这一项', () => {
     await invoke('creator-plan:disconnect')
     expect(restoredAt).toEqual([['revoke']])
     expect(log).toEqual(['revoke', `delete:${PLAN_KEY_ID}`])
+  })
+})
+
+describe('网页链接导入（unrealbox://box-plan）', () => {
+  // 拼出来的假 Key：整串写死会被密钥扫描当成真的
+  const KEY = `sk-${'test'.repeat(8)}`
+  const link = `unrealbox://box-plan?key=${KEY}`
+
+  /** 等链接导入拉完清单、推出通知 */
+  async function follow(raw: string): Promise<unknown> {
+    sent.length = 0
+    expect(handlePlanDeepLink(raw)).toBe(true)
+    await vi.waitFor(() => expect(sent).toHaveLength(1))
+    return sent[0]!.payload
+  }
+
+  afterEach(async () => {
+    await invoke('creator-plan:link-dismiss')
+  })
+
+  it('不认别的 unrealbox 链接', () => {
+    expect(handlePlanDeepLink('unrealbox://install-skill?id=x')).toBe(false)
+  })
+
+  it('Key 不对：不联网，直接回授权失败', async () => {
+    const { calls } = stubFetch({})
+    expect(await follow('unrealbox://box-plan?key=bad key')).toMatchObject({
+      ok: false,
+      code: 'unauthorized'
+    })
+    expect(calls).toHaveLength(0)
+  })
+
+  it('拉到清单后给出预览；确认导入前不保存 Key', async () => {
+    const { calls } = stubFetch({ '/plan': () => ok(manifest) })
+    expect(await follow(link)).toEqual({ ok: true })
+    expect(calls[0]!.init).toMatchObject({ headers: { authorization: `Bearer ${KEY}` } })
+    expect(await invoke('creator-plan:link-preview')).toMatchObject({ changes: expect.any(Array) })
+    expect(log).toEqual([])
+  })
+
+  it('关掉预览就丢掉这把 Key', async () => {
+    stubFetch({ '/plan': () => ok(manifest) })
+    await follow(link)
+    await invoke('creator-plan:link-dismiss')
+    expect(await invoke('creator-plan:link-preview')).toBeNull()
+    expect(await invoke('creator-plan:apply', ['chat'])).toMatchObject({ ok: false })
+    expect(log).toEqual([])
+  })
+
+  it('确认导入才保存 Key；断开时不在服务端删掉用户自己的令牌', async () => {
+    stubFetch({ '/plan': () => ok(manifest) })
+    await follow(link)
+    expect(await invoke('creator-plan:apply', ['chat'])).toMatchObject({ ok: true })
+    expect(log).toEqual([`save:${KEY}`])
+    expect(planState.imported).toBe(true)
+
+    log.length = 0
+    stubFetch({ '/auth/revoke': () => new Response(null, { status: 204 }) })
+    expect(await invoke('creator-plan:disconnect')).toMatchObject({
+      ok: true,
+      data: { revoked: true }
+    })
+    expect(log).toEqual([`delete:${PLAN_KEY_ID}`])
+  })
+
+  it('已经用设备授权连着：导入新 Key 时吊销原来那把', async () => {
+    settings = { ...settings, providers: [...settings.providers, planProvider] }
+    stubFetch({
+      '/plan': () => ok(manifest),
+      '/auth/revoke': () => new Response(null, { status: 204 })
+    })
+    await follow(link)
+    await invoke('creator-plan:apply', ['chat'])
+    expect(log).toEqual(['revoke', `save:${KEY}`])
   })
 })

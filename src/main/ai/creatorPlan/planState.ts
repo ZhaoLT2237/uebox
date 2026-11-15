@@ -10,6 +10,8 @@
  *   unauthorized  上次拉清单回了 401（Key 被吊销或删掉）
  *   storageOriginal  导入时对象存储被换成套餐存储之前的配置，断开时照着还原（见 storage.ts）；
  *                 没有这一项 = 对象存储不归套餐管
+ *   imported     Key 是从中转站网页「聊天 → UEBox」带过来的用户自己的令牌，不是设备授权签发的。
+ *                断开时不在服务端吊销它，免得把用户网页上的令牌删掉
  *
  * 读坏了按空状态处理 —— 丢的只是还原信息和缓存，不该让设置页打不开。
  */
@@ -30,6 +32,7 @@ export interface PlanState {
   manifest: CreatorPlanManifest | null
   unauthorized: boolean
   storageOriginal?: ObjectStorageConfig
+  imported?: boolean
 }
 
 export const EMPTY_PLAN_STATE: PlanState = Object.freeze({
@@ -82,6 +85,7 @@ export function normalizePlanState(raw: unknown): PlanState {
         ? manifest
         : null,
     unauthorized: source.unauthorized === true,
+    ...(source.imported === true ? { imported: true } : {}),
     // 形状交给对象存储服务的 sanitize 去校，这里只保证是个对象
     ...(source.storageOriginal && typeof source.storageOriginal === 'object'
       ? { storageOriginal: source.storageOriginal as ObjectStorageConfig }

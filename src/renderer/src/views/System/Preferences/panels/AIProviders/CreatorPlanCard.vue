@@ -44,6 +44,8 @@ const selected = ref<ModelRole[]>([])
 /** 预览里「对象存储」勾没勾。套餐不带存储时预览里没有这一行，也就不传 */
 const storageSelected = ref(false)
 const applying = ref(false)
+/** 当前预览来自网页链接（unrealbox://box-plan）。取消时要让主进程丢掉那把 Key */
+const fromLink = ref(false)
 const confirmingDisconnect = ref(false)
 /** 断开时服务端没吊销成功：网页端 Key 列表的地址，提示用户手动吊销 */
 const revokeFailedUrl = ref<string | null>(null)
@@ -124,7 +126,8 @@ async function submitEntry(): Promise<void> {
   }
 }
 
-function openPreview(data: CreatorPlanPreview): void {
+function openPreview(data: CreatorPlanPreview, link = false): void {
+  fromLink.value = link
   preview.value = data
   selected.value = data.changes.filter((c) => c.defaultSelected).map((c) => c.role)
   storageSelected.value = data.storage?.defaultSelected ?? false
@@ -180,8 +183,21 @@ async function apply(): Promise<void> {
   }
   state.value = result.data
   preview.value = null
+  fromLink.value = false
   message.success(t('aiProvider.creatorPlan.applied'))
   emit('changed')
+}
+
+function closePreview(): void {
+  preview.value = null
+  if (fromLink.value) void creatorPlanAPI.linkDismiss()
+  fromLink.value = false
+}
+
+/** 网页链接带来的 Key 已经拉到清单：弹导入预览 */
+async function openLinkImport(): Promise<void> {
+  const data = await creatorPlanAPI.linkPreview()
+  if (data) openPreview(data, true)
 }
 
 async function disconnect(): Promise<void> {
@@ -283,11 +299,19 @@ const tierLine = computed(() => {
 })
 
 let unsubscribe: (() => void) | null = null
+let unsubscribeLink: (() => void) | null = null
 onMounted(() => {
   unsubscribe = creatorPlanAPI.onDeviceCode((next) => (prompt.value = next))
+  unsubscribeLink = creatorPlanAPI.onLinkImport((result) => {
+    if (result.ok) void openLinkImport()
+  })
   void load()
+  void openLinkImport()
 })
-onUnmounted(() => unsubscribe?.())
+onUnmounted(() => {
+  unsubscribe?.()
+  unsubscribeLink?.()
+})
 </script>
 
 <template>
@@ -514,7 +538,7 @@ onUnmounted(() => unsubscribe?.())
       :confirm-loading="applying"
       centered
       @ok="apply"
-      @cancel="preview = null"
+      @cancel="closePreview"
     >
       <div v-if="preview" class="preview">
         <p class="plan-desc">{{ $t('aiProvider.creatorPlan.previewDesc') }}</p>

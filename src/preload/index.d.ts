@@ -2278,6 +2278,11 @@ declare global {
       onDeviceCode: (
         callback: (prompt: import('../shared/creatorPlan').CreatorPlanDevicePrompt) => void
       ) => () => void
+      linkPreview: () => Promise<import('../shared/creatorPlan').CreatorPlanPreview | null>
+      linkDismiss: () => Promise<void>
+      onLinkImport: (
+        callback: (result: import('../shared/creatorPlan').CreatorPlanLinkImportResult) => void
+      ) => () => void
     }
     /**
      * Jina Reader / Search API
