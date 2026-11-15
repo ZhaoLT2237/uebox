@@ -548,11 +548,11 @@
         <template #content>
           <div class="tag-selector-dropdown">
             <TagSelector
-              :model-value="includeTagsProxy"
               v-model:include="includeTagsProxy"
               v-model:exclude="excludeTagsProxy"
               v-model:match-mode="tagMatchModeProxy"
               v-model:has-no-tags="hasNoTagsProxy"
+              :model-value="includeTagsProxy"
               :inline-mode="true"
             />
           </div>
