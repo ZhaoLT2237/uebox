@@ -1,6 +1,11 @@
 import { ipcMain, shell } from 'electron'
 import { registerCreatorPlanIPC } from './creatorPlan/ipc'
-import { hasProviderLink, takeProviderLink } from './providerLink'
+import {
+  applyProviderLink,
+  dismissProviderLink,
+  hasProviderLink,
+  previewProviderLink
+} from './providerLink'
 import { startCreatorPlanRefresh } from './creatorPlan/refresh'
 import { isPlanProvider } from '../../shared/creatorPlan'
 import { registerSpeechIPC } from '../ipc/speech'
@@ -228,8 +233,16 @@ export function registerAiProviderIPC(): void {
   // 没连接时每一轮都只读本机配置，不发请求
   startCreatorPlanRefresh()
   ipcMain.handle('ai-provider:catalog', () => PROVIDER_CATALOG)
-  ipcMain.handle('ai-provider:take-link', () => takeProviderLink())
   ipcMain.handle('ai-provider:has-link', () => hasProviderLink())
+  ipcMain.handle('ai-provider:link-preview', () => previewProviderLink())
+  ipcMain.handle('ai-provider:link-dismiss', () => dismissProviderLink())
+  ipcMain.handle('ai-provider:link-apply', async () => {
+    try {
+      return { ok: true, data: await applyProviderLink() }
+    } catch (error) {
+      return fail(error)
+    }
+  })
 
   ipcMain.handle('ai-provider:get-settings', async () => {
     invalidateSettingsCache()

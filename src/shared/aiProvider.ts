@@ -928,11 +928,18 @@ export interface SettingsView {
  *   `OPENAI_API_KEY`                  → 读环境变量
  *   `sk-proj-...`                     → 密钥本身，加密存起来
  */
-/** 网页链接带来、等用户在设置页确认的新服务商（见 main/ai/providerLink.ts） */
-export interface ProviderLinkRequest {
+/** 网页链接要添加（或更新）的一个对话来源（见 main/ai/providerLink.ts） */
+export interface ProviderLinkGroup {
+  providerId: string
   displayName: string
-  baseUrl: string
-  apiKey: string
+  protocol: ProviderProtocol
+  models: string[]
+  /** 已经有同协议同地址的来源：换 Key、补模型 */
+  existing: boolean
+}
+
+export interface ProviderLinkPreview {
+  groups: ProviderLinkGroup[]
 }
 
 export interface ProviderDraft {

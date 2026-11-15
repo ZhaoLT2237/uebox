@@ -604,6 +604,13 @@ export default {
       baseUrlRequired: '请先填写 API 地址',
       modelRequired: '请先添加模型'
     },
+    link: {
+      title: '添加 UEBox 服务商',
+      add: '添加',
+      models: '{count} 个模型',
+      update: '已有，更新密钥',
+      added: '已添加'
+    },
     messages: {
       saved: '已保存',
       saveFailed: '保存失败',

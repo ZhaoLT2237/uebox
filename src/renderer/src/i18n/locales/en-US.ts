@@ -600,6 +600,13 @@ First work out why the install failed from the output above. If you can run comm
       baseUrlRequired: 'Please enter a Base URL first',
       modelRequired: 'Add at least one model before testing'
     },
+    link: {
+      title: 'Add UEBox providers',
+      add: 'Add',
+      models: '{count} models',
+      update: 'Exists, key will be updated',
+      added: 'Added'
+    },
     messages: {
       saved: 'Saved',
       saveFailed: 'Save failed',

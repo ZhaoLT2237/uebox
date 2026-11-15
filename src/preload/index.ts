@@ -2335,10 +2335,12 @@ const api = {
     /** 内置厂商目录。纯静态数据，不联网 */
     catalog: () => ipcRenderer.invoke('ai-provider:catalog'),
     getSettings: () => ipcRenderer.invoke('ai-provider:get-settings'),
-    /** 网页链接 unrealbox://add-provider 带来的新服务商，取一次就没了 */
-    takeLink: () => ipcRenderer.invoke('ai-provider:take-link'),
+    /** 网页链接 unrealbox://add-provider：拉模型列表分组（不写盘）、确认写入、放弃 */
     hasLink: () => ipcRenderer.invoke('ai-provider:has-link'),
-    /** 网页链接到了。设置页据此取 takeLink */
+    linkPreview: () => ipcRenderer.invoke('ai-provider:link-preview'),
+    linkApply: () => ipcRenderer.invoke('ai-provider:link-apply'),
+    linkDismiss: () => ipcRenderer.invoke('ai-provider:link-dismiss'),
+    /** 网页链接到了。设置页据此拉预览 */
     onLink: (listener: () => void) => {
       const handler = (): void => listener()
       ipcRenderer.on('ai-provider:link', handler)

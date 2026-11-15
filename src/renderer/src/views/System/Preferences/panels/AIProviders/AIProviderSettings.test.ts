@@ -121,7 +121,8 @@ function stubAiProviderApi(overrides: Record<string, unknown> = {}): void {
     aiProvider: {
       getSettings: vi.fn(() => new Promise<SettingsView>(() => {})),
       catalog: vi.fn(async () => []),
-      takeLink: vi.fn(async () => null),
+      linkPreview: vi.fn(async () => null),
+      linkDismiss: vi.fn(async () => {}),
       onLink: vi.fn(() => () => {}),
       ...overrides
     }
@@ -569,113 +570,81 @@ describe('实时语音没绑时的那一行', () => {
 })
 
 describe('网页链接带来的 Key（unrealbox://add-provider）', () => {
-  const link = { displayName: 'UEBox', baseUrl: 'https://relay.example/v1', apiKey: 'sk-link' }
-  const listModels = (): ReturnType<typeof vi.fn> =>
-    vi.fn(async () => ({ ok: true, models: [{ id: 'gpt-x' }, { id: 'claude-y' }] }))
+  const preview = {
+    groups: [
+      {
+        providerId: 'uebox-claude',
+        displayName: 'UEBox Claude',
+        protocol: 'anthropic-messages',
+        models: ['claude-opus-5-5'],
+        existing: false
+      },
+      {
+        providerId: 'uebox',
+        displayName: 'UEBox',
+        protocol: 'openai-completions',
+        models: ['deepseek-flash', 'gpt-6-sol'],
+        existing: true
+      }
+    ]
+  }
+  const linkStubs = {
+    ...stubs,
+    AppModal: {
+      props: ['open', 'okText'],
+      emits: ['ok', 'cancel'],
+      template:
+        '<div v-if="open" class="link-modal"><slot /><button class="modal-ok" @click="$emit(\'ok\')">{{ okText }}</button><button class="modal-cancel" @click="$emit(\'cancel\')" /></div>'
+    }
+  }
+  const mountWithModal = (): ReturnType<typeof mount> =>
+    mount(AIProviderSettings, { global: { stubs: linkStubs } })
 
-  it('开一个预填好的新服务商、拉好模型，等用户保存', async () => {
-    const list = listModels()
-    const save = vi.fn()
+  it('按协议列出要加的来源，点「添加」才写入，然后打开第一个', async () => {
+    const apply = vi.fn(async () => ({ ok: true, data: ['uebox-claude', 'uebox'] }))
     stubAiProviderApi({
       getSettings: vi.fn(async () => loadedSettings),
-      takeLink: vi.fn(async () => link),
-      listModels: list,
-      saveProvider: save
+      linkPreview: vi.fn(async () => ({ ok: true, data: preview })),
+      linkApply: apply
     })
-    const wrapper = mountSettings()
+    const wrapper = mountWithModal()
     await flushPromises()
 
+    const modal = wrapper.find('.link-modal')
+    expect(modal.text()).toContain('UEBox Claude')
+    expect(modal.text()).toContain('Anthropic')
+    expect(modal.text()).toContain('OpenAI')
+    expect(apply).not.toHaveBeenCalled()
+
+    await wrapper.find('.modal-ok').trigger('click')
+    await flushPromises()
+    expect(apply).toHaveBeenCalledTimes(1)
+    expect(wrapper.find('.link-modal').exists()).toBe(false)
     expect(wrapper.find('.manager').attributes('data-open')).toBe('true')
-    expect(list).toHaveBeenCalledWith(
-      expect.objectContaining({
-        id: 'uebox',
-        displayName: 'UEBox',
-        baseUrl: 'https://relay.example/v1',
-        apiKeyInput: 'sk-link'
-      })
-    )
-    expect(save).not.toHaveBeenCalled()
   })
 
-  it('同一个中转站地址已经配过：打开那一条换上新 Key，不再叠一条', async () => {
-    const list = listModels()
+  it('取消：让主进程丢掉这把 Key，不写入', async () => {
+    const apply = vi.fn()
+    const dismiss = vi.fn(async () => {})
     stubAiProviderApi({
-      getSettings: vi.fn(async () => ({
-        ...loadedSettings,
-        providers: [
-          ...loadedSettings.providers,
-          {
-            id: 'my-relay',
-            displayName: 'My Relay',
-            kind: 'chat',
-            protocol: 'openai-completions',
-            baseUrl: 'https://relay.example/v1/',
-            models: [],
-            apiKey: { kind: 'literal', id: 'provider:my-relay' }
-          }
-        ]
-      })),
-      takeLink: vi.fn(async () => link),
-      listModels: list
+      getSettings: vi.fn(async () => loadedSettings),
+      linkPreview: vi.fn(async () => ({ ok: true, data: preview })),
+      linkApply: apply,
+      linkDismiss: dismiss
     })
-    mountSettings()
+    const wrapper = mountWithModal()
     await flushPromises()
-
-    expect(list).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'my-relay', apiKeyInput: 'sk-link' })
-    )
-  })
-
-  it('同地址的生图来源不算：另开一个对话来源，新拉来的生图、向量模型不进去', async () => {
-    const list = vi.fn(async () => ({
-      ok: true,
-      models: [
-        { id: 'gpt-6-sol' },
-        { id: 'gpt-image-2' },
-        { id: 'gpt-image-2.5-flare' },
-        { id: 'text-embedding-3-large' }
-      ]
-    }))
-    const save = vi.fn(async (draft: { models: Array<{ id: string }> }) => ({
-      ok: false,
-      error: JSON.stringify(draft.models.map((m) => m.id))
-    }))
-    stubAiProviderApi({
-      getSettings: vi.fn(async () => ({
-        ...loadedSettings,
-        providers: [
-          ...loadedSettings.providers,
-          {
-            id: 'openai-image',
-            displayName: 'OpenAI GPT Image',
-            kind: 'image',
-            protocol: 'openai-completions',
-            baseUrl: 'https://relay.example/v1',
-            models: [{ id: 'gpt-image-2' }],
-            apiKey: { kind: 'literal', id: 'provider:openai-image' }
-          }
-        ]
-      })),
-      takeLink: vi.fn(async () => link),
-      listModels: list,
-      saveProvider: save
-    })
-    const wrapper = mountSettings()
+    await wrapper.find('.modal-cancel').trigger('click')
     await flushPromises()
-
-    expect(list).toHaveBeenCalledWith(expect.objectContaining({ id: 'uebox', kind: 'chat' }))
-    // 用设置页的 state 存一次，看草稿里留下了哪些模型
-    const state = wrapper.findComponent(stubs.ModelManagerModal).props('state') as {
-      save: () => Promise<{ ok: boolean; error?: string }>
-    }
-    const result = await state.save()
-    expect(JSON.parse(result.error!)).toEqual(['gpt-6-sol'])
+    expect(dismiss).toHaveBeenCalledTimes(1)
+    expect(apply).not.toHaveBeenCalled()
   })
 
   it('没有链接时什么都不开', async () => {
     stubAiProviderApi({ getSettings: vi.fn(async () => loadedSettings) })
-    const wrapper = mountSettings()
+    const wrapper = mountWithModal()
     await flushPromises()
+    expect(wrapper.find('.link-modal').exists()).toBe(false)
     expect(wrapper.find('.manager').attributes('data-open')).toBe('false')
   })
 })

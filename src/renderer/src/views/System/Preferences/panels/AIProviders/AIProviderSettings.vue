@@ -26,33 +26,24 @@ import {
   BUILTIN_BROWSER_PROVIDER_ID,
   bindingSeesImages,
   findVisionCapableRole,
-  looksLikeEmbeddingModelId,
   missingForVoicePipeline,
   MODEL_ROLES,
   modelLabelWithBadge,
   type CatalogEntry,
-  type ModelRole
+  type ModelRole,
+  type ProviderLinkPreview
 } from '@core/shared/aiProvider'
+import AppModal from '@renderer/components/AppModal.vue'
 import CreatorPlanCard from './CreatorPlanCard.vue'
 import ProviderCatalogModal from './ProviderCatalogModal.vue'
 import ModelManagerModal from './ModelManagerModal.vue'
 import {
   filterModelOptionsForRole,
   modelOptionLabel,
-  slugify,
-  uniqueProviderId,
   useAiProviders,
   type ModelOption
 } from './useAiProviders'
 import { describeProbeFailure } from './probeCopy'
-import { findImageModelOption } from '@core/shared/imageGenerationModels'
-
-const IMAGE_MODEL_HINT = /image|dall-e|flux|seedream|imagen|midjourney|recraft|ideogram/i
-
-/** 模型 id 像生图或向量模型（中转站 /models 不标用途，只能按名字认） */
-function looksLikeNonChatModelId(id: string): boolean {
-  return IMAGE_MODEL_HINT.test(id) || !!findImageModelOption(id) || looksLikeEmbeddingModelId(id)
-}
 
 const { t } = useI18n()
 const state = useAiProviders()
@@ -154,46 +145,45 @@ const ROLES_WITHOUT_FALLBACK = new Set<ModelRole>([
 ])
 
 /**
- * 中转站网页「聊天 → UEBox」带来的 Key：开一个预填好的服务商、拉好模型，用户点保存才落盘。
- * 同一个中转站地址已经配过就打开那一条、换上新 Key，不再叠一条。
+ * 中转站网页「聊天 → UEBox」带来的 Key。主进程按协议把模型分好组（Claude 走 Anthropic，
+ * 其余走 OpenAI 兼容），这里列出来让用户确认，点了「添加」才写进配置。
  */
+const linkPreview = ref<ProviderLinkPreview | null>(null)
+const linkApplying = ref(false)
+
+const PROTOCOL_LABEL: Partial<Record<string, string>> = {
+  'anthropic-messages': 'Anthropic',
+  'openai-completions': 'OpenAI'
+}
+
 async function openProviderLink(): Promise<void> {
-  const link = await window.api.aiProvider.takeLink()
-  if (!link) return
-  if (!state.settings.value) await state.load()
-  // 只认对话用途的：同一个中转站地址也可能配着生图、嵌入等来源，Key 和模型不能往那里塞
-  const existing = managedProviders.value.find(
-    (item) =>
-      item.kind === 'chat' &&
-      !isPlanProvider(item.id) &&
-      item.baseUrl.replace(/\/+$/, '') === link.baseUrl
-  )
-  if (existing) {
-    state.selectProvider(existing.id)
-  } else {
-    state.startCreate()
-    const draft = state.draft.value
-    if (draft) {
-      draft.id = uniqueProviderId(slugify(link.displayName), managedProviders.value)
-      draft.displayName = link.displayName
-      draft.baseUrl = link.baseUrl
-    }
-  }
-  if (!state.draft.value) return
-  state.draft.value.apiKeyInput = link.apiKey
-  showManager.value = true
-  const before = new Set(state.draft.value.models.map((model) => model.id))
-  const imported = await state.importModels()
-  if (!imported.ok) {
-    message.error(describeProbeFailure(imported.error))
+  const result = await window.api.aiProvider.linkPreview()
+  if (!result) return
+  if (!result.ok) {
+    message.error(describeProbeFailure(result.error))
+    await window.api.aiProvider.linkDismiss()
     return
   }
-  // 中转站的 /models 把生图、向量模型和对话模型列在一起；这是对话来源，新拉来的只留对话模型
-  const draft = state.draft.value
-  if (draft)
-    draft.models = draft.models.filter(
-      (model) => before.has(model.id) || !looksLikeNonChatModelId(model.id)
-    )
+  linkPreview.value = result.data
+}
+
+async function applyProviderLink(): Promise<void> {
+  linkApplying.value = true
+  const result = await window.api.aiProvider.linkApply()
+  linkApplying.value = false
+  linkPreview.value = null
+  if (!result.ok) {
+    message.error(result.error)
+    return
+  }
+  await state.load()
+  message.success(t('aiProvider.link.added'))
+  if (result.data[0]) openProvider(result.data[0])
+}
+
+function cancelProviderLink(): void {
+  linkPreview.value = null
+  void window.api.aiProvider.linkDismiss()
 }
 
 let unsubscribeLink: (() => void) | null = null
@@ -656,6 +646,27 @@ async function handleRoleChange(role: ModelRole, value: string | undefined): Pro
       @add-provider="handleAddFromManager"
     />
 
+    <AppModal
+      :open="linkPreview !== null"
+      :title="$t('aiProvider.link.title')"
+      :ok-text="$t('aiProvider.link.add')"
+      :confirm-loading="linkApplying"
+      centered
+      @ok="applyProviderLink"
+      @cancel="cancelProviderLink"
+    >
+      <div v-if="linkPreview" class="link-groups">
+        <div v-for="group in linkPreview.groups" :key="group.providerId" class="link-group">
+          <span class="link-group-name">{{ group.displayName }}</span>
+          <span class="link-group-meta">
+            {{ PROTOCOL_LABEL[group.protocol] ?? group.protocol }} ·
+            {{ $t('aiProvider.link.models', { count: group.models.length }) }}
+            <template v-if="group.existing"> · {{ $t('aiProvider.link.update') }}</template>
+          </span>
+        </div>
+      </div>
+    </AppModal>
+
     <ProviderCatalogModal
       v-model:visible="showCatalog"
       :catalog="addableCatalog"
@@ -667,6 +678,22 @@ async function handleRoleChange(role: ModelRole, value: string | undefined): Pro
 </template>
 
 <style scoped>
+.link-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.link-group {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.link-group-meta {
+  color: var(--color-text-secondary);
+}
+
 /*
  * settings-section / setting-item / setting-desc 这一套在每个设置面板里都是
  * **各自 scoped 各自写一遍** 的（ProfileAI、McpSettings、ProfileGeneral…），

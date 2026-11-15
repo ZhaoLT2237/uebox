@@ -2179,8 +2179,14 @@ declare global {
     aiProvider: {
       catalog: () => Promise<import('../shared/aiProvider').CatalogEntry[]>
       getSettings: () => Promise<import('../shared/aiProvider').SettingsView>
-      takeLink: () => Promise<import('../shared/aiProvider').ProviderLinkRequest | null>
       hasLink: () => Promise<boolean>
+      linkPreview: () => Promise<
+        | { ok: true; data: import('../shared/aiProvider').ProviderLinkPreview }
+        | { ok: false; error: import('../shared/aiProvider').ProbeFailure }
+        | null
+      >
+      linkApply: () => Promise<{ ok: true; data: string[] } | { ok: false; error: string }>
+      linkDismiss: () => Promise<void>
       onLink: (callback: () => void) => () => void
       saveProvider: (
         draft: import('../shared/aiProvider').ProviderDraft
