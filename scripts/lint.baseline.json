@@ -496,7 +496,7 @@
     "warnings": 0
   },
   "src/renderer/src/views/AssetManagement/components/AssetFileList.vue": {
-    "errors": 215,
+    "errors": 212,
     "warnings": 0
   },
   "src/renderer/src/views/AssetManagement/components/AssetTree.vue": {
@@ -588,7 +588,7 @@
     "warnings": 0
   },
   "src/renderer/src/views/AssetManagement/composables/useFileSelection.ts": {
-    "errors": 28,
+    "errors": 26,
     "warnings": 0
   },
   "src/renderer/src/views/AssetManagement/composables/useVirtualScroll.ts": {
@@ -600,7 +600,7 @@
     "warnings": 0
   },
   "src/renderer/src/views/AssetManagement/index.vue": {
-    "errors": 130,
+    "errors": 129,
     "warnings": 0
   },
   "src/renderer/src/views/AssetManagement/TagManagement/index.vue": {
@@ -695,10 +695,6 @@
     "errors": 26,
     "warnings": 0
   },
-  "src/renderer/src/views/BlueprintLibrary/utils/blueprintTabRoute.ts": {
-    "errors": 1,
-    "warnings": 0
-  },
   "src/renderer/src/views/Home/components/EngineSection.vue": {
     "errors": 1,
     "warnings": 0
@@ -720,10 +716,6 @@
     "warnings": 0
   },
   "src/renderer/src/views/MaterialLibrary/MaterialLibraryLayout.test.ts": {
-    "errors": 1,
-    "warnings": 0
-  },
-  "src/renderer/src/views/MaterialLibrary/utils/materialTabRoute.ts": {
     "errors": 1,
     "warnings": 0
   },
@@ -772,7 +764,7 @@
     "warnings": 0
   },
   "src/renderer/src/views/ServerManagement/index.vue": {
-    "errors": 15,
+    "errors": 14,
     "warnings": 0
   },
   "src/renderer/src/views/System/NotFound.vue": {
@@ -780,7 +772,7 @@
     "warnings": 0
   },
   "src/renderer/src/views/System/Preferences/panels/ProfileAsset.vue": {
-    "errors": 17,
+    "errors": 16,
     "warnings": 0
   },
   "src/renderer/src/views/System/Preferences/panels/ProfileNamingRules.vue": {
