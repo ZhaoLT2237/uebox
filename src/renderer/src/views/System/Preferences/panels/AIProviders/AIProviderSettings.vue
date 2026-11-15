@@ -26,6 +26,7 @@ import {
   BUILTIN_BROWSER_PROVIDER_ID,
   bindingSeesImages,
   findVisionCapableRole,
+  looksLikeEmbeddingModelId,
   missingForVoicePipeline,
   MODEL_ROLES,
   modelLabelWithBadge,
@@ -44,6 +45,14 @@ import {
   type ModelOption
 } from './useAiProviders'
 import { describeProbeFailure } from './probeCopy'
+import { findImageModelOption } from '@core/shared/imageGenerationModels'
+
+const IMAGE_MODEL_HINT = /image|dall-e|flux|seedream|imagen|midjourney|recraft|ideogram/i
+
+/** 模型 id 像生图或向量模型（中转站 /models 不标用途，只能按名字认） */
+function looksLikeNonChatModelId(id: string): boolean {
+  return IMAGE_MODEL_HINT.test(id) || !!findImageModelOption(id) || looksLikeEmbeddingModelId(id)
+}
 
 const { t } = useI18n()
 const state = useAiProviders()
@@ -152,8 +161,12 @@ async function openProviderLink(): Promise<void> {
   const link = await window.api.aiProvider.takeLink()
   if (!link) return
   if (!state.settings.value) await state.load()
+  // 只认对话用途的：同一个中转站地址也可能配着生图、嵌入等来源，Key 和模型不能往那里塞
   const existing = managedProviders.value.find(
-    (item) => !isPlanProvider(item.id) && item.baseUrl.replace(/\/+$/, '') === link.baseUrl
+    (item) =>
+      item.kind === 'chat' &&
+      !isPlanProvider(item.id) &&
+      item.baseUrl.replace(/\/+$/, '') === link.baseUrl
   )
   if (existing) {
     state.selectProvider(existing.id)
@@ -169,8 +182,18 @@ async function openProviderLink(): Promise<void> {
   if (!state.draft.value) return
   state.draft.value.apiKeyInput = link.apiKey
   showManager.value = true
+  const before = new Set(state.draft.value.models.map((model) => model.id))
   const imported = await state.importModels()
-  if (!imported.ok) message.error(describeProbeFailure(imported.error))
+  if (!imported.ok) {
+    message.error(describeProbeFailure(imported.error))
+    return
+  }
+  // 中转站的 /models 把生图、向量模型和对话模型列在一起；这是对话来源，新拉来的只留对话模型
+  const draft = state.draft.value
+  if (draft)
+    draft.models = draft.models.filter(
+      (model) => before.has(model.id) || !looksLikeNonChatModelId(model.id)
+    )
 }
 
 let unsubscribeLink: (() => void) | null = null

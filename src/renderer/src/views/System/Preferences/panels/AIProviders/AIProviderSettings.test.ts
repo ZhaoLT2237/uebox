@@ -56,7 +56,7 @@ const stubs = {
   'a-skeleton': { template: '<div class="skeleton-card" />' },
   'a-skeleton-button': { template: '<div class="skeleton-select" />' },
   ModelManagerModal: {
-    props: ['open'],
+    props: ['open', 'state'],
     template: '<div class="manager" :data-open="open" />'
   },
   ProviderCatalogModal: { template: '<div />' },
@@ -624,6 +624,52 @@ describe('网页链接带来的 Key（unrealbox://add-provider）', () => {
     expect(list).toHaveBeenCalledWith(
       expect.objectContaining({ id: 'my-relay', apiKeyInput: 'sk-link' })
     )
+  })
+
+  it('同地址的生图来源不算：另开一个对话来源，新拉来的生图、向量模型不进去', async () => {
+    const list = vi.fn(async () => ({
+      ok: true,
+      models: [
+        { id: 'gpt-6-sol' },
+        { id: 'gpt-image-2' },
+        { id: 'gpt-image-2.5-flare' },
+        { id: 'text-embedding-3-large' }
+      ]
+    }))
+    const save = vi.fn(async (draft: { models: Array<{ id: string }> }) => ({
+      ok: false,
+      error: JSON.stringify(draft.models.map((m) => m.id))
+    }))
+    stubAiProviderApi({
+      getSettings: vi.fn(async () => ({
+        ...loadedSettings,
+        providers: [
+          ...loadedSettings.providers,
+          {
+            id: 'openai-image',
+            displayName: 'OpenAI GPT Image',
+            kind: 'image',
+            protocol: 'openai-completions',
+            baseUrl: 'https://relay.example/v1',
+            models: [{ id: 'gpt-image-2' }],
+            apiKey: { kind: 'literal', id: 'provider:openai-image' }
+          }
+        ]
+      })),
+      takeLink: vi.fn(async () => link),
+      listModels: list,
+      saveProvider: save
+    })
+    const wrapper = mountSettings()
+    await flushPromises()
+
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ id: 'uebox', kind: 'chat' }))
+    // 用设置页的 state 存一次，看草稿里留下了哪些模型
+    const state = wrapper.findComponent(stubs.ModelManagerModal).props('state') as {
+      save: () => Promise<{ ok: boolean; error?: string }>
+    }
+    const result = await state.save()
+    expect(JSON.parse(result.error!)).toEqual(['gpt-6-sol'])
   })
 
   it('没有链接时什么都不开', async () => {
