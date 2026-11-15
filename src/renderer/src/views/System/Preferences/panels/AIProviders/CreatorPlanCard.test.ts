@@ -16,7 +16,7 @@ const stubs = {
     props: ['open', 'okText', 'okDisabled'],
     emits: ['ok', 'cancel'],
     template:
-      '<div v-if="open" class="modal"><slot /><button class="modal-ok" :disabled="okDisabled" @click="$emit(\'ok\')">{{ okText }}</button><button class="modal-cancel" @click="$emit(\'cancel\')" /></div>'
+      '<div v-if="open" class="modal"><slot /><button class="modal-ok" :disabled="okDisabled" @click="$emit(\'ok\')">{{ okText }}</button></div>'
   }
 }
 
@@ -84,9 +84,6 @@ function stubApi(
     })),
     cancel: vi.fn(async () => {}),
     onDeviceCode: vi.fn(() => () => {}),
-    linkPreview: vi.fn(async () => null),
-    linkDismiss: vi.fn(async () => {}),
-    onLinkImport: vi.fn(() => () => {}),
     ...overrides
   }
   openExternal = vi.fn()
@@ -98,32 +95,6 @@ function stubApi(
 }
 
 describe('CreatorPlanCard', () => {
-  it('网页链接带来的导入：打开就弹预览；关掉让主进程丢掉那把 Key', async () => {
-    const api = stubApi({ linkPreview: vi.fn(async () => preview) })
-    const wrapper = mount(CreatorPlanCard, { global: { stubs } })
-    await flushPromises()
-    expect(wrapper.find('.modal').exists()).toBe(true)
-
-    await wrapper.find('.modal-cancel').trigger('click')
-    await flushPromises()
-    expect(api.linkDismiss).toHaveBeenCalledTimes(1)
-    expect(wrapper.find('.modal').exists()).toBe(false)
-  })
-
-  it('自己点连接弹的预览，关掉不碰链接导入', async () => {
-    const api = stubApi()
-    const wrapper = mount(CreatorPlanCard, { global: { stubs } })
-    await flushPromises()
-    await wrapper
-      .findAll('button')
-      .find((b) => b.text() === '连接')!
-      .trigger('click')
-    await flushPromises()
-    await wrapper.find('.modal-cancel').trigger('click')
-    await flushPromises()
-    expect(api.linkDismiss).not.toHaveBeenCalled()
-  })
-
   it('没连接：说明 + 「连接」按钮', async () => {
     stubApi()
     const wrapper = mount(CreatorPlanCard, { global: { stubs } })

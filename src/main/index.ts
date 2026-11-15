@@ -18,7 +18,7 @@ process.env.UV_THREADPOOL_SIZE = '16'
 import { app, BrowserWindow, dialog, ipcMain, Tray, Menu, protocol, screen } from 'electron'
 import { handleTeamDeepLink, teamDeepLinkFromArgv } from './ipc/team'
 import { handleShareDeepLink } from './ipc/share'
-import { handlePlanDeepLink } from './ai/creatorPlan/ipc'
+import { handleProviderDeepLink } from './ai/providerLink'
 import { join } from 'path'
 import os from 'os'
 import { existsSync, readdirSync } from 'fs'
@@ -404,7 +404,7 @@ function setupSingleInstanceLock(): boolean {
     if (
       teamLink &&
       (handleShareDeepLink(teamLink) ||
-        handlePlanDeepLink(teamLink) ||
+        handleProviderDeepLink(teamLink) ||
         handleTeamDeepLink(teamLink))
     )
       return
@@ -501,7 +501,9 @@ if (process.platform === 'darwin' && shouldInitializeApp) {
     event.preventDefault()
     void app
       .whenReady()
-      .then(() => handleShareDeepLink(url) || handlePlanDeepLink(url) || handleTeamDeepLink(url))
+      .then(
+        () => handleShareDeepLink(url) || handleProviderDeepLink(url) || handleTeamDeepLink(url)
+      )
   })
 }
 
@@ -739,7 +741,7 @@ appReady?.then(async () => {
     if (app.isPackaged && !app.isDefaultProtocolClient('unrealbox'))
       app.setAsDefaultProtocolClient('unrealbox')
     const coldTeamLink = teamDeepLinkFromArgv(process.argv)
-    if (coldTeamLink && !handleShareDeepLink(coldTeamLink) && !handlePlanDeepLink(coldTeamLink))
+    if (coldTeamLink && !handleShareDeepLink(coldTeamLink) && !handleProviderDeepLink(coldTeamLink))
       handleTeamDeepLink(coldTeamLink)
     // 加入过团队的：托盘连上通知流（问他改完没、通过 / 打回、冻结……）。没加入过就什么都不做
     setTimeout(() => {

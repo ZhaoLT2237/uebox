@@ -18,7 +18,7 @@ import AppTooltip from '@renderer/components/AppTooltip.vue'
  * 单个模型的能力位和档位阶梯绝大多数人一辈子不碰。全平铺在一页上，
  * 那些天天要用的就被埋在一屏控件里了。
  */
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { message } from '@renderer/utils/messageManager'
 import { isPlanProvider } from '@core/shared/creatorPlan'
@@ -38,9 +38,12 @@ import ModelManagerModal from './ModelManagerModal.vue'
 import {
   filterModelOptionsForRole,
   modelOptionLabel,
+  slugify,
+  uniqueProviderId,
   useAiProviders,
   type ModelOption
 } from './useAiProviders'
+import { describeProbeFailure } from './probeCopy'
 
 const { t } = useI18n()
 const state = useAiProviders()
@@ -141,9 +144,42 @@ const ROLES_WITHOUT_FALLBACK = new Set<ModelRole>([
   'music'
 ])
 
-onMounted(() => {
-  void state.load()
+/**
+ * 中转站网页「聊天 → UEBox」带来的 Key：开一个预填好的服务商、拉好模型，用户点保存才落盘。
+ * 同一个中转站地址已经配过就打开那一条、换上新 Key，不再叠一条。
+ */
+async function openProviderLink(): Promise<void> {
+  const link = await window.api.aiProvider.takeLink()
+  if (!link) return
+  if (!state.settings.value) await state.load()
+  const existing = managedProviders.value.find(
+    (item) => !isPlanProvider(item.id) && item.baseUrl.replace(/\/+$/, '') === link.baseUrl
+  )
+  if (existing) {
+    state.selectProvider(existing.id)
+  } else {
+    state.startCreate()
+    const draft = state.draft.value
+    if (draft) {
+      draft.id = uniqueProviderId(slugify(link.displayName), managedProviders.value)
+      draft.displayName = link.displayName
+      draft.baseUrl = link.baseUrl
+    }
+  }
+  if (!state.draft.value) return
+  state.draft.value.apiKeyInput = link.apiKey
+  showManager.value = true
+  const imported = await state.importModels()
+  if (!imported.ok) message.error(describeProbeFailure(imported.error))
+}
+
+let unsubscribeLink: (() => void) | null = null
+onMounted(async () => {
+  unsubscribeLink = window.api.aiProvider.onLink(() => void openProviderLink())
+  await state.load()
+  await openProviderLink()
 })
+onUnmounted(() => unsubscribeLink?.())
 
 // ==================== 服务商 ====================
 

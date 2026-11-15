@@ -369,11 +369,6 @@ export interface CreatorPlanDevicePrompt {
   verificationUri: string
 }
 
-/** 网页链接导入拉清单的结果：成功后去设置页取预览，失败按错误码提示 */
-export type CreatorPlanLinkImportResult =
-  | { ok: true }
-  | { ok: false; code: CreatorPlanErrorCode; error: string }
-
 export type CreatorPlanErrorCode =
   | 'cancelled'
   | 'denied'

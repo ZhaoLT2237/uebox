@@ -57,18 +57,6 @@ let pendingManifest: CreatorPlanManifest | null = null
  * 应用重启就没了（Key 还在安全存储里，重新连接一次即可）。
  */
 let pendingConnection: { baseUrl: string; apiKey: string } | null = null
-/**
- * 网页链接带来的 Key（`unrealbox://box-plan?key=…`）。和设备授权不同，这把 Key 等用户在预览里
- * 点了导入才写进安全存储：链接谁都能发，不能没经用户确认就把已有的连接换掉。
- */
-let pendingLinkKey: string | null = null
-/** 链接导入的预览，设置页打开时取 */
-let pendingLinkPreview: CreatorPlanPreview | null = null
-
-function clearLinkImport(): void {
-  pendingLinkKey = null
-  pendingLinkPreview = null
-}
 
 /** 已落盘的连接，没有就用刚授权、还没导入的那份 */
 async function activeConnection(): Promise<{ baseUrl: string; apiKey: string | null } | null> {
@@ -158,7 +146,6 @@ export async function connectPlan(options: {
     const manifest = await fetchFresh(issued.baseUrl, issued.apiKey)
     // Key 先存进安全存储；来源和绑定等用户在预览里确认后才落盘
     await saveLiteralKey(PLAN_KEY_ID, issued.apiKey)
-    clearLinkImport()
     pendingManifest = manifest
     pendingConnection = { baseUrl: issued.baseUrl, apiKey: issued.apiKey }
     return await preview(manifest)
@@ -166,33 +153,6 @@ export async function connectPlan(options: {
     options.signal?.removeEventListener('abort', onAbort)
     if (pending === controller) pending = null
   }
-}
-
-/**
- * 链接导入：用网页带来的 Key 拉清单，回导入预览。Key 先只放在内存里，确认导入时才保存。
- * 地址固定是本应用的中转站，链接里只取 Key。
- */
-export async function importPlanKey(apiKey: string): Promise<CreatorPlanPreview> {
-  const baseUrl = `${CREATOR_PLAN_ORIGIN}/v1`
-  const manifest = await fetchFresh(baseUrl, apiKey)
-  pendingManifest = manifest
-  pendingConnection = { baseUrl, apiKey }
-  pendingLinkKey = apiKey
-  pendingLinkPreview = await preview(manifest)
-  return pendingLinkPreview
-}
-
-/** 还没处理的链接导入预览 */
-export function linkImportPreview(): CreatorPlanPreview | null {
-  return pendingLinkPreview
-}
-
-/** 用户关掉了链接导入的预览：丢掉这把 Key */
-export function dismissLinkImport(): void {
-  if (!pendingLinkKey) return
-  pendingManifest = null
-  pendingConnection = null
-  clearLinkImport()
 }
 
 export function cancelConnect(): void {
@@ -222,25 +182,7 @@ export async function applyPlanRoles(
   // 先记原绑定再落盘：反过来的话，写完配置、记录没写成，断开时就还原不回去了
   const planState = await readPlanState()
   const originals = recordOriginals(planState.originals, current, manifest, selected)
-  const linkKey = pendingLinkKey
-  let imported = planState.imported === true
-  if (linkKey) {
-    // 换成链接带来的 Key：原来那把是设备授权签发的，在服务端吊销掉，不留一把没人管的 Key
-    const previous = await planConnection()
-    if (!imported && previous?.apiKey && previous.apiKey !== linkKey)
-      await revokeKey(previous.baseUrl, previous.apiKey)
-    await saveLiteralKey(PLAN_KEY_ID, linkKey)
-    imported = true
-  } else if (pendingConnection) {
-    // 刚走完设备授权
-    imported = false
-  }
-  await writePlanState({
-    ...planState,
-    originals,
-    unauthorized: false,
-    imported: imported || undefined
-  })
+  await writePlanState({ ...planState, originals, unauthorized: false })
   // 落盘排进队里、在最新的配置上应用：和后台清单对账同时发生时，谁都不拿旧快照盖掉对方
   const written = await updateSettings((latest) =>
     applyPlan(latest, manifest, { kind: 'literal', id: PLAN_KEY_ID }, selected, originals)
@@ -248,7 +190,6 @@ export async function applyPlanRoles(
   await applyPlanStorage(manifest, options?.storage)
   pendingManifest = null
   pendingConnection = null
-  clearLinkImport()
   return {
     connected: true,
     summary: planSummary(manifest),
@@ -267,15 +208,10 @@ export async function applyPlanRoles(
 export async function disconnectPlan(): Promise<CreatorPlanDisconnectResult> {
   pendingManifest = null
   pendingConnection = null
-  clearLinkImport()
   const conn = await planConnection()
+  // 本机连 Key 都没有了，服务端那把也吊销不了，同样提示去网页端
+  const revoked = conn?.apiKey ? await revokeKey(conn.baseUrl, conn.apiKey) : false
   const planState = await readPlanState()
-  // 网页带来的 Key 是用户自己的令牌，不替他删；本机连 Key 都没有了，服务端那把也吊销不了，同样提示去网页端
-  const revoked = planState.imported
-    ? true
-    : conn?.apiKey
-      ? await revokeKey(conn.baseUrl, conn.apiKey)
-      : false
   await updateSettings((latest) => removePlan(latest, planState.originals))
   await restorePlanStorage()
   await deleteLiteralKey(PLAN_KEY_ID)

@@ -76,10 +76,7 @@ async function openPreview(
       connect: vi.fn(async () => ({ ok: true, data: preview })),
       apply,
       cancel: vi.fn(async () => {}),
-      onDeviceCode: vi.fn(() => () => {}),
-      linkPreview: vi.fn(async () => null),
-      linkDismiss: vi.fn(async () => {}),
-      onLinkImport: vi.fn(() => () => {})
+      onDeviceCode: vi.fn(() => () => {})
     },
     shell: { openExternal: vi.fn() }
   } as unknown as typeof window.api

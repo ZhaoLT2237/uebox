@@ -2179,6 +2179,9 @@ declare global {
     aiProvider: {
       catalog: () => Promise<import('../shared/aiProvider').CatalogEntry[]>
       getSettings: () => Promise<import('../shared/aiProvider').SettingsView>
+      takeLink: () => Promise<import('../shared/aiProvider').ProviderLinkRequest | null>
+      hasLink: () => Promise<boolean>
+      onLink: (callback: () => void) => () => void
       saveProvider: (
         draft: import('../shared/aiProvider').ProviderDraft
       ) => Promise<
@@ -2263,11 +2266,6 @@ declare global {
       openManage: () => Promise<void>
       onDeviceCode: (
         callback: (prompt: import('../shared/creatorPlan').CreatorPlanDevicePrompt) => void
-      ) => () => void
-      linkPreview: () => Promise<import('../shared/creatorPlan').CreatorPlanPreview | null>
-      linkDismiss: () => Promise<void>
-      onLinkImport: (
-        callback: (result: import('../shared/creatorPlan').CreatorPlanLinkImportResult) => void
       ) => () => void
     }
     /**

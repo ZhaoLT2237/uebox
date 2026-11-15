@@ -16,7 +16,7 @@ import { message } from '@renderer/utils/messageManager'
 import { useI18n } from '@renderer/hooks/useI18n'
 import TeamGlobalHost from '@renderer/views/AssetManagement/team/TeamGlobalHost.vue'
 import SharedSkillInstallHost from '@renderer/views/System/Preferences/panels/share/SharedSkillInstallHost.vue'
-import CreatorPlanLinkHost from '@renderer/views/System/Preferences/panels/AIProviders/CreatorPlanLinkHost.vue'
+import ProviderLinkHost from '@renderer/views/System/Preferences/panels/AIProviders/ProviderLinkHost.vue'
 // 导入样式系统。调色板必须在最前面 —— 后面每个文件都在引用它定义的语义变量。
 import '@renderer/assets/styles/palette.generated.css'
 import '@renderer/assets/styles/theme.css'
@@ -148,7 +148,7 @@ onUnmounted(() => {
         </div>
         <TeamGlobalHost />
         <SharedSkillInstallHost />
-        <CreatorPlanLinkHost />
+        <ProviderLinkHost />
       </div>
     </template>
   </ConfigProvider>

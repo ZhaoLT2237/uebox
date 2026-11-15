@@ -2335,6 +2335,15 @@ const api = {
     /** 内置厂商目录。纯静态数据，不联网 */
     catalog: () => ipcRenderer.invoke('ai-provider:catalog'),
     getSettings: () => ipcRenderer.invoke('ai-provider:get-settings'),
+    /** 网页链接 unrealbox://add-provider 带来的新服务商，取一次就没了 */
+    takeLink: () => ipcRenderer.invoke('ai-provider:take-link'),
+    hasLink: () => ipcRenderer.invoke('ai-provider:has-link'),
+    /** 网页链接到了。设置页据此取 takeLink */
+    onLink: (listener: () => void) => {
+      const handler = (): void => listener()
+      ipcRenderer.on('ai-provider:link', handler)
+      return () => ipcRenderer.removeListener('ai-provider:link', handler)
+    },
     saveProvider: (draft: unknown) => ipcRenderer.invoke('ai-provider:save-provider', draft),
     deleteProvider: (providerId: string) =>
       ipcRenderer.invoke('ai-provider:delete-provider', providerId),
@@ -2402,18 +2411,6 @@ const api = {
         listener(prompt as { userCode: string; verificationUri: string })
       ipcRenderer.on('creator-plan:device-code', handler)
       return () => ipcRenderer.removeListener('creator-plan:device-code', handler)
-    },
-    /** 网页链接 unrealbox://box-plan?key=… 带来的导入预览，没有回 null */
-    linkPreview: () => ipcRenderer.invoke('creator-plan:link-preview'),
-    linkDismiss: () => ipcRenderer.invoke('creator-plan:link-dismiss'),
-    /** 链接导入拉完清单（ok）或失败时推过来 */
-    onLinkImport: (
-      listener: (result: import('../shared/creatorPlan').CreatorPlanLinkImportResult) => void
-    ) => {
-      const handler = (_: Electron.IpcRendererEvent, result: unknown): void =>
-        listener(result as import('../shared/creatorPlan').CreatorPlanLinkImportResult)
-      ipcRenderer.on('creator-plan:link-import', handler)
-      return () => ipcRenderer.removeListener('creator-plan:link-import', handler)
     }
   },
   /**

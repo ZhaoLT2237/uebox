@@ -55,7 +55,10 @@ const stubs = {
   },
   'a-skeleton': { template: '<div class="skeleton-card" />' },
   'a-skeleton-button': { template: '<div class="skeleton-select" />' },
-  ModelManagerModal: { template: '<div />' },
+  ModelManagerModal: {
+    props: ['open'],
+    template: '<div class="manager" :data-open="open" />'
+  },
   ProviderCatalogModal: { template: '<div />' },
   // 套餐卡片一挂上就要走 IPC 问状态
   CreatorPlanCard: { template: '<div class="plan-card-stub" />' }
@@ -118,6 +121,8 @@ function stubAiProviderApi(overrides: Record<string, unknown> = {}): void {
     aiProvider: {
       getSettings: vi.fn(() => new Promise<SettingsView>(() => {})),
       catalog: vi.fn(async () => []),
+      takeLink: vi.fn(async () => null),
+      onLink: vi.fn(() => () => {}),
       ...overrides
     }
   } as unknown as typeof window.api
@@ -560,5 +565,71 @@ describe('实时语音没绑时的那一行', () => {
     const row = realtimeRow(wrapper)
     expect(row).toContain('语音通话不可用')
     expect(row).not.toContain('通话由主模型应答')
+  })
+})
+
+describe('网页链接带来的 Key（unrealbox://add-provider）', () => {
+  const link = { displayName: 'UEBox', baseUrl: 'https://relay.example/v1', apiKey: 'sk-link' }
+  const listModels = (): ReturnType<typeof vi.fn> =>
+    vi.fn(async () => ({ ok: true, models: [{ id: 'gpt-x' }, { id: 'claude-y' }] }))
+
+  it('开一个预填好的新服务商、拉好模型，等用户保存', async () => {
+    const list = listModels()
+    const save = vi.fn()
+    stubAiProviderApi({
+      getSettings: vi.fn(async () => loadedSettings),
+      takeLink: vi.fn(async () => link),
+      listModels: list,
+      saveProvider: save
+    })
+    const wrapper = mountSettings()
+    await flushPromises()
+
+    expect(wrapper.find('.manager').attributes('data-open')).toBe('true')
+    expect(list).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'uebox',
+        displayName: 'UEBox',
+        baseUrl: 'https://relay.example/v1',
+        apiKeyInput: 'sk-link'
+      })
+    )
+    expect(save).not.toHaveBeenCalled()
+  })
+
+  it('同一个中转站地址已经配过：打开那一条换上新 Key，不再叠一条', async () => {
+    const list = listModels()
+    stubAiProviderApi({
+      getSettings: vi.fn(async () => ({
+        ...loadedSettings,
+        providers: [
+          ...loadedSettings.providers,
+          {
+            id: 'my-relay',
+            displayName: 'My Relay',
+            kind: 'chat',
+            protocol: 'openai-completions',
+            baseUrl: 'https://relay.example/v1/',
+            models: [],
+            apiKey: { kind: 'literal', id: 'provider:my-relay' }
+          }
+        ]
+      })),
+      takeLink: vi.fn(async () => link),
+      listModels: list
+    })
+    mountSettings()
+    await flushPromises()
+
+    expect(list).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'my-relay', apiKeyInput: 'sk-link' })
+    )
+  })
+
+  it('没有链接时什么都不开', async () => {
+    stubAiProviderApi({ getSettings: vi.fn(async () => loadedSettings) })
+    const wrapper = mountSettings()
+    await flushPromises()
+    expect(wrapper.find('.manager').attributes('data-open')).toBe('false')
   })
 })
