@@ -269,7 +269,7 @@ importers:
         version: 11.4.19(vue@3.5.45(typescript@5.9.2))
       vue-router:
         specifier: '4'
-        version: 4.5.1(vue@3.5.45(typescript@5.9.2))
+        version: 4.6.4(vue@3.5.45(typescript@5.9.2))
       webdav:
         specifier: ^5.11.0
         version: 5.11.0
@@ -6585,10 +6585,10 @@ packages:
     peerDependencies:
       vue: ^3.0.0
 
-  vue-router@4.5.1:
-    resolution: {integrity: sha512-ogAF3P97NPm8fJsE4by9dwSYtDwXIY1nFY9T6DyQnGHd1E2Da94w9JIolpe42LJGIl0DwOHBi8TcRPlPGwbTtw==}
+  vue-router@4.6.4:
+    resolution: {integrity: sha512-Hz9q5sa33Yhduglwz6g9skT8OBPii+4bFn88w6J+J4MfEo4KRRpmiNG/hHHkdbRFlLBOqxN8y8gf2Fb0MTUgVg==}
     peerDependencies:
-      vue: ^3.2.0
+      vue: ^3.5.0
 
   vue-tsc@3.3.13:
     resolution: {integrity: sha512-jE4/bXdOMSHVxEGgQCqNllJy+9N3Gx6tfSAsg0yhFK/MAN6eXqISihupnDEKSCt12VVnjN2gI3AqLYcqoh5x/A==}
@@ -13703,7 +13703,7 @@ snapshots:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.45(typescript@5.9.2)
 
-  vue-router@4.5.1(vue@3.5.45(typescript@5.9.2)):
+  vue-router@4.6.4(vue@3.5.45(typescript@5.9.2)):
     dependencies:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.45(typescript@5.9.2)
