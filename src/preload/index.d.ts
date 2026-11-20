@@ -31,6 +31,7 @@ import type {
   DependencyGraphEdge,
   DependencyGraphNode
 } from '../shared/assetDependency'
+import type { CapabilityKind, IdleAction, IdleView } from '../shared/capabilityIdle'
 import type { AgentTurnUsage } from '../shared/agentUsage'
 import type { EditorHealthResult } from '../shared/editorHealth'
 import type {
@@ -3588,6 +3589,10 @@ declare global {
       }>
       listSessions: () => Promise<AgentV3SessionMeta[]>
       /** 技能清单。输入框的 / 菜单和「技能」设置页共用，含来源和开关状态 */
+      manageIdle: (
+        kind: CapabilityKind,
+        action?: IdleAction
+      ) => Promise<{ success: boolean; data: IdleView; error?: string }>
       listSkills: () => Promise<{ skills: AgentV3SkillSummary[] }>
       /** 详情弹窗：读 SKILL.md 全文（含 frontmatter）。名字对不上时 document 为 null */
       readSkill: (name: string) => Promise<{ document: AgentV3SkillDocument | null }>

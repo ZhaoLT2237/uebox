@@ -137,6 +137,7 @@ export interface ChatMessage {
   actionButtons?: Array<{ label: string; action: string; data?: any }>
   agentProcess?: AgentProcessItem[]
   thinking?: string // 思考过程内容
+  completedAt?: number
   startTime?: number // 消息开始时间（用于计算duration）
   citations?: Array<{
     id: string
@@ -503,12 +504,14 @@ export const useChatMessagesStore = defineStore(
       }
     ): string {
       ensureContainer(sid)
-      const id = `${Date.now()}-a-${Math.random().toString(16).slice(2)}`
+      const completedAt = Date.now()
+      const id = `${completedAt}-a-${Math.random().toString(16).slice(2)}`
       const message: ChatMessage = {
         id,
         role: 'assistant',
         content,
         status: 'done',
+        completedAt,
         toolResults: options?.toolResults,
         actionButtons: options?.actionButtons,
         agentProcess: options?.agentProcess ? snapshotAgentProcess(options.agentProcess) : undefined
@@ -577,6 +580,7 @@ export const useChatMessagesStore = defineStore(
             stack: new Error().stack?.split('\n').slice(1, 4).join('\n')
           })
         }
+        msg.completedAt = done ? (msg.completedAt ?? Date.now()) : undefined
         msg.status = newStatus
 
         // 仅在提供时更新可选属性
@@ -641,7 +645,12 @@ export const useChatMessagesStore = defineStore(
             newContent = `${newContent}\n\n*[用户终止]*`
           }
         }
-        arr[idx] = { ...arr[idx], content: newContent, status: 'done' }
+        arr[idx] = {
+          ...arr[idx],
+          content: newContent,
+          status: 'done',
+          completedAt: arr[idx].completedAt ?? Date.now()
+        }
       }
     }
 

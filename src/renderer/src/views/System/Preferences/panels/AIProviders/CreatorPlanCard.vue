@@ -623,5 +623,4 @@ onUnmounted(() => unsubscribe?.())
   flex-shrink: 0;
   white-space: nowrap;
 }
-
 </style>

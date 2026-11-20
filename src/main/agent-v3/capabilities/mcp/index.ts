@@ -5,6 +5,8 @@
  * `shutdownMcp`。连接不随每个 agent 重建 —— 拉子进程 + 握手是有代价的。
  */
 
+import type { IdleRow } from '../../../../shared/capabilityIdle'
+import { editIdle, observe, recordUse } from '../idleStore'
 import { McpClientManager } from './McpClientManager'
 import { discoverEpicMcpServersFromRuntime } from './epicToolsets'
 import {
@@ -16,7 +18,7 @@ import {
 import type { UnrealAgentTool } from '../../tools/defineTool'
 import { readHostSettings, writeHostSettings, type McpHostSettings } from './hostStore'
 import { readMcpSettings } from './store'
-import type { McpServerStatus } from './types'
+import type { McpServerConfig, McpServerStatus } from './types'
 
 export { McpClientManager } from './McpClientManager'
 export { McpServerHost, selectExposedTools } from './McpServerHost'
@@ -42,6 +44,43 @@ export * from './types'
 let manager: McpClientManager | undefined
 let connecting: Promise<McpClientManager> | undefined
 
+async function availableMcpServers(): Promise<Record<string, McpServerConfig>> {
+  const { enabledPluginMcpServers } = await import('../plugins/registry')
+  const [settings, plugins, engine] = await Promise.all([
+    readMcpSettings(),
+    enabledPluginMcpServers().catch(() => ({})),
+    discoverEpicMcpServersFromRuntime()
+  ])
+  return { ...engine, ...settings.mcpServers, ...plugins }
+}
+
+async function inspectIdleMcp(all: Record<string, McpServerConfig>): Promise<IdleRow[]> {
+  const enabled = Object.keys(all).filter((id) => !all[id].disabled)
+  return editIdle((state) => {
+    for (const [id, config] of Object.entries(all)) {
+      if (config.disabled) delete state.entries['mcp/' + id]
+    }
+    return observe(state, 'mcp', enabled)
+  })
+}
+
+export async function refreshIdleMcp(): Promise<IdleRow[]> {
+  const all = await availableMcpServers()
+  const rows = await inspectIdleMcp(all)
+  const active = manager ?? (connecting ? await connecting : undefined)
+  for (const row of rows) {
+    if (row.disabled && active) await active.disable(row.id)
+  }
+  return rows
+}
+
+export async function restoreIdleMcp(id: string): Promise<void> {
+  const all = await availableMcpServers()
+  if (!Object.hasOwn(all, id) || all[id].disabled) throw new Error('MCP unavailable')
+  const active = manager ?? (connecting ? await connecting : undefined)
+  if (active) await active.addServer(id, all[id])
+}
+
 /**
  * 拿到已连接的 manager。
  *
@@ -53,29 +92,20 @@ export function ensureConnected(): Promise<McpClientManager> {
   if (connecting) return connecting
 
   connecting = (async () => {
-    const instance = new McpClientManager()
+    const instance = new McpClientManager(async (id) => {
+      if (!(await recordUse('mcp', id))) throw new Error(`MCP server "${id}" is disabled`)
+    })
     try {
-      const settings = await readMcpSettings()
-
-      // 插件自带的 server 一并连上。serverId 带插件 id 前缀，
-      // 不会和用户手配的撞名（见 plugins/registry.ts）。
-      const { enabledPluginMcpServers } = await import('../plugins/registry')
-      const fromPlugins = await enabledPluginMcpServers().catch(() => ({}))
-
-      // UE 5.8 起引擎内置了官方 MCP server，自动发现、自动接上（见 epicToolsets.ts）。
-      // 放在最前面合并 —— 用户在 mcp.json 里手写同名条目就能覆盖掉自动发现的结果，
-      // 这是唯一能让他改端口或干脆停掉的口子。
-      const fromEngine = await discoverEpicMcpServersFromRuntime()
-
-      const all = { ...fromEngine, ...settings.mcpServers, ...fromPlugins }
+      const all = await availableMcpServers()
+      const rows = await inspectIdleMcp(all).catch((error) => {
+        console.warn('[Idle] Usage state unavailable', error)
+        return []
+      })
+      for (const row of rows) {
+        if (row.disabled) all[row.id] = { ...all[row.id], disabled: true }
+      }
       const count = Object.keys(all).length
       if (count > 0) {
-        console.log(
-          `[AgentV3][MCP] 正在连接 ${count} 个 server` +
-            `（用户 ${Object.keys(settings.mcpServers).length}` +
-            ` / 插件 ${Object.keys(fromPlugins).length}` +
-            ` / 引擎内置 ${Object.keys(fromEngine).length}）…`
-        )
         await instance.connectAll(all)
       }
     } catch (error) {
